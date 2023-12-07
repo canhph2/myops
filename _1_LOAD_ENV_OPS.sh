@@ -19,6 +19,24 @@ export REPOSITORY=$(php _ops/_shared_lib/REPOSITORY)
 export HEAD_COMMIT_ID=$(php _ops/_shared_lib/HEAD_COMMIT_ID)
 # === END ===
 
+# === engage-api-deploy vars ===
+if [ "${BRANCH}" = "develop" ]; then
+  export ENV=dev
+  export API_DEPLOY_BRANCH=develop-multi-container
+  export EB_ENVIRONMENT_NAME="develop-multi-container"
+fi
+if [ "${BRANCH}" = "staging" ]; then
+  export ENV=stg
+  export API_DEPLOY_BRANCH=staging-multi-container
+  export EB_ENVIRONMENT_NAME="staging-multi-container"
+fi
+if [ "${BRANCH}" = "master" ]; then
+  export ENV=prd
+  export API_DEPLOY_BRANCH=master-multi-container
+  export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container"
+fi
+# === END ===
+
 # === AWS Account configuration ===
 export AWS_ACCOUNT_ID="982080672983"
 export REGION="ap-east-1"
@@ -31,25 +49,6 @@ export ECR_REPO_INTEGRATION_API="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.c
 export S3_EB_APP_VERSION_BUCKET_NAME="elasticbeanstalk-${REGION}-${AWS_ACCOUNT_ID}"
 export EB_APP_VERSION_FOLDER_NAME="engageplus"
 export EB_APP_NAME="engageplus"
-# === END ===
-
-# === engage-api-deploy vars ===
-# vars
-if [ "${BRANCH}" = "develop" ]; then
-  export ENV=dev
-  export API_DEPLOY_BRANCH=develop-multi-container
-  export EB_ENVIRONMENT_NAME="develop-multi-container"
-fi
-if [ "${BRANCH}" = "staging" ]; then
-  export ENV=stg
-  export API_DEPLOY_BRANCH=staging-multi-container
-  export EB_ENVIRONMENT_NAME="staging-multi-container"
-fi
-if [ "${BRANCH}" = "master" ]; then
-  export ENV=stg
-  export API_DEPLOY_BRANCH=master-multi-container
-  export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container"
-fi
 # === END ===
 
 # === EngagePlus configuration ===
