@@ -12,11 +12,11 @@
 #    move to _shared_lib folder
 SHARED_LIB_DIR="$(php _ops/_shared_lib/WORKING_DIR)/_ops/_shared_lib";
 echo "===";
-echo " > Jump to '${SHARED_LIB_DIR}'";
-cd "${SHARED_LIB_DIR}" || exit;
 echo " > Clear directory '${SHARED_LIB_DIR}' and pull new code";
 rm -rf ${SHARED_LIB_DIR}
 mkdir -p ${SHARED_LIB_DIR}
+echo " > Jump to '${SHARED_LIB_DIR}'";
+cd "${SHARED_LIB_DIR}" || exit;
 git clone https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/infohkengage/engage-api.git .
 #   remove some git files
 rm -rf .git
