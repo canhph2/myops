@@ -12,7 +12,7 @@ $param1 = $argv[1] ?? null;
 //    validate env vars
 $repository = $param1 === 'ENGAGE_API_DEPLOY' ? 'engage-api-deploy' : getenv('REPOSITORY');
 $branch = $param1 === 'ENGAGE_API_DEPLOY' ? getenv('API_DEPLOY_BRANCH') : getenv('BRANCH');
-$EngagePlusCachesRepositoryDir = getenv('ENGAGEPLUS_CACHES_REPOSITORY_DIR');
+$EngagePlusCachesRepositoryDir = sprintf("%s/%s", getenv('ENGAGEPLUS_CACHES_DIR'), $repository);
 $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
 
 if (!$repository || !$branch || !$EngagePlusCachesRepositoryDir || !$GitHubPersonalAccessToken) {
