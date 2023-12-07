@@ -20,11 +20,11 @@ echo "===\n";
 echo "=== HANDLE CACHES AND GIT ===\n";
 //     case checkout
 if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
-    echo "The directory '${$EngagePlusCachesRepositoryDir}' exist, SKIP to handle git repository\n";
+    echo "The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository\n";
     //
     // case clone
 } else {
-    echo "[ERROR] The directory '${$EngagePlusCachesRepositoryDir}' does not exist, clone new repository\n";
+    echo "[ERROR] The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository\n";
     $output = null;
     $resultCode = null;
     exec(join(';', [
@@ -34,8 +34,8 @@ if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
         sprintf("git clone -b %s https://%s@github.com/infohkengage/%s.git .", $branch, $GitHubPersonalAccessToken, $repository),
     ]), $output, $resultCode);
     // print output
-    foreach (explode(PHP_EOL, $output) as $outputLine) {
-        echo sprintf("    + %s\n", $outputLine);
+    foreach ($output as $line) {
+        echo sprintf("    + %s\n", $line);
     }
 }
 // === update new code ===
@@ -48,7 +48,7 @@ exec(join(';', [
     'git pull',
 ]), $output, $resultCode);
 // print output
-foreach (explode(PHP_EOL, $output) as $outputLine) {
-    echo sprintf("    + %s\n", $outputLine);
+foreach ($output as $line) {
+    echo sprintf("    + %s\n", $line);
 }
 echo "===\n\n";
