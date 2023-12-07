@@ -57,11 +57,10 @@ fi
 
 # === EngagePlus configuration ===
 ENGAGEPLUS_CACHES_FOLDER=".caches_engageplus"
-export ENGAGEPLUS_CACHES_REPOSITORY_DIR="$(php _ops/_shared_lib/HOME_DIR)/${ENGAGEPLUS_CACHES_FOLDER}/${REPOSITORY}"
+export ENGAGEPLUS_CACHES_DIR="$(php _ops/_shared_lib/HOME_DIR)/${ENGAGEPLUS_CACHES_FOLDER}"
+export ENGAGEPLUS_CACHES_REPOSITORY_DIR="${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 # === END ===
 
 # === get DEVICE from param 1 ===
 export DEVICE="$1"
 # === END ===
-
-
