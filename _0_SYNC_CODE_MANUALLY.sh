@@ -17,7 +17,7 @@ rm -rf ${SHARED_LIB_DIR}
 mkdir -p ${SHARED_LIB_DIR}
 echo " > Jump to '${SHARED_LIB_DIR}'";
 cd "${SHARED_LIB_DIR}" || exit;
-git clone https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/infohkengage/engage-api.git .
+git clone https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/congnqnexlesoft/_ops_shared_lib.git .
 #   remove some git files
 rm -rf .git
 rm -f .gitignore
