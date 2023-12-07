@@ -2,11 +2,16 @@
 <?php
 // usage:
 //    php _ops/_shared_lib/HANDLE_CACHES_AND_GIT
+//
+// case engage-api-deploy, to build api docker image
+//    php _ops/_shared_lib/HANDLE_CACHES_AND_GIT ENGAGE_API_DEPLOY
 
+// === param ===
+$param1 = $argv[1] ?? null;
 // === validate ===
 //    validate env vars
-$repository = getenv('REPOSITORY');
-$branch = getenv('BRANCH');
+$repository = $param1 === 'ENGAGE_API_DEPLOY' ? 'engage-api-deploy' : getenv('REPOSITORY');
+$branch = $param1 === 'ENGAGE_API_DEPLOY' ? getenv('API_DEPLOY_BRANCH') : getenv('BRANCH');
 $EngagePlusCachesRepositoryDir = getenv('ENGAGEPLUS_CACHES_REPOSITORY_DIR');
 $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
 
@@ -15,9 +20,12 @@ if (!$repository || !$branch || !$EngagePlusCachesRepositoryDir || !$GitHubPerso
     exit(); // END
 }
 
+// === handle case engage-api-deploy ===
+
 // === handle ===
 echo "===\n";
 echo "=== HANDLE CACHES AND GIT ===\n";
+echo "REPOSITORY=$repository    BRANCH=$branch   DIR='$EngagePlusCachesRepositoryDir' \n";
 //     case checkout
 if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
     echo "The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository\n";

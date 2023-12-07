@@ -5,7 +5,7 @@
 
 // === validate ===
 //    validate a message
-$message = $argv[1];
+$message = $argv[1] ?? null;
 if (!$message) {
     echo "[ERROR] missing a MESSAGE, should be 'php _ops/NOTIFY_TO_SLACK \"YOU MESSAGE\";' \n";
     exit(); // END
