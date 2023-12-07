@@ -33,9 +33,6 @@ export EB_APP_VERSION_FOLDER_NAME="engageplus"
 export EB_APP_NAME="engageplus"
 # === END ===
 
-#todo test
-BRANCH=develop
-
 # === engage-api-deploy vars ===
 # vars
 if [ "${BRANCH}" = "develop" ]; then
