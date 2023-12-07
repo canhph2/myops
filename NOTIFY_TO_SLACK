@@ -25,7 +25,6 @@ $slackUrl = "https://slack.com/api/chat.postMessage";
 $curl = curl_init();
 curl_setopt($curl, CURLOPT_URL, $slackUrl);
 curl_setopt($curl, CURLOPT_POST, true);
-var_dump(sprintf("Authorization: Bearer %s", $slackBotToken));
 curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
 curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
     "channel" => $slackChannel,
