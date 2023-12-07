@@ -1,0 +1,6 @@
+#!/usr/bin/env php
+<?php
+// usage:
+//    php _ops/_shared_lib/HOME_DIR
+
+echo $_SERVER['HOME'];

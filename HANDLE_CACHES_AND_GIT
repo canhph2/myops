@@ -1,0 +1,54 @@
+#!/usr/bin/env php
+<?php
+// usage:
+//    php _ops/_shared_lib/HANDLE_CACHES_AND_GIT
+
+// === validate ===
+//    validate env vars
+$repository = getenv('REPOSITORY');
+$branch = getenv('BRANCH');
+$EngagePlusCachesRepositoryDir = getenv('ENGAGEPLUS_CACHES_REPOSITORY_DIR');
+$GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
+
+if (!$repository || !$branch || !$EngagePlusCachesRepositoryDir || !$GitHubPersonalAccessToken) {
+    echo "[ERROR] missing a BRANCH or REPOSITORY or ENGAGEPLUS_CACHES_REPOSITORY_DIR or GITHUB_PERSONAL_ACCESS_TOKEN\n";
+    exit(); // END
+}
+
+// === handle ===
+echo "===\n";
+echo "=== HANDLE CACHES AND GIT ===\n";
+//     case checkout
+if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
+    echo "The directory '${$EngagePlusCachesRepositoryDir}' exist, SKIP to handle git repository\n";
+    //
+    // case clone
+} else {
+    echo "[ERROR] The directory '${$EngagePlusCachesRepositoryDir}' does not exist, clone new repository\n";
+    $output = null;
+    $resultCode = null;
+    exec(join(';', [
+        sprintf("rm -rf \"%s\"", $EngagePlusCachesRepositoryDir),
+        sprintf("mkdir -p \"%s\"", $EngagePlusCachesRepositoryDir),
+        sprintf("cd \"%s\"", $EngagePlusCachesRepositoryDir), # jump into this directory
+        sprintf("git clone -b %s https://%s@github.com/infohkengage/%s.git .", $branch, $GitHubPersonalAccessToken, $repository),
+    ]), $output, $resultCode);
+    // print output
+    foreach (explode(PHP_EOL, $output) as $outputLine) {
+        echo sprintf("    + %s\n", $outputLine);
+    }
+}
+// === update new code ===
+$output = null;
+$resultCode = null;
+exec(join(';', [
+    sprintf("cd \"%s\"", $EngagePlusCachesRepositoryDir), # jump into this directory
+    'git reset --hard HEAD',
+    sprintf("git checkout %s", $branch),
+    'git pull',
+]), $output, $resultCode);
+// print output
+foreach (explode(PHP_EOL, $output) as $outputLine) {
+    echo sprintf("    + %s\n", $outputLine);
+}
+echo "===\n\n";
