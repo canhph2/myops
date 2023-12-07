@@ -21,6 +21,7 @@ git clone https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/congnqnexlesoft/_op
 #   remove some git files
 rm -rf .git
 rm -f .gitignore
+rm -f README.MD
 
 #3  === need to push to Git to update
 echo "===";
