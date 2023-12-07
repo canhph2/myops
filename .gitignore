@@ -1,0 +1,16 @@
+# === DotENV ===
+.env
+.env-ops
+# === END ===
+
+# ----------------------------
+# IDEs and editors
+# ----------------------------
+/.idea
+
+# ----------------------------
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor

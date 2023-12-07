@@ -1,0 +1,6 @@
+#!/usr/bin/env php
+<?php
+// usage:
+//    php _ops/_shared_lib/REPOSITORY
+
+echo basename(str_replace('.git', '', exec('git config --get remote.origin.url')));
