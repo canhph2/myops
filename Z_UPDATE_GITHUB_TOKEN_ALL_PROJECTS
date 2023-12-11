@@ -1,0 +1,54 @@
+#!/usr/bin/env php
+<?php
+// usage:
+//    php _ops/_shared_lib/Z_UPDATE_GITHUB_TOKEN_ALL_PROJECTS
+//
+
+// key = GitHub project name, value =  GitHub username
+$listProjectsSupport = [
+    'engage-api' => 'infohkengage',
+    'engage-spa' => 'infohkengage',
+    'engage-booking-api' => 'infohkengage',
+    'engage-booking-spa' => 'infohkengage',
+    'invoice-service' => 'infohkengage',
+    'payment-service' => 'infohkengage',
+    'integration-api' => 'infohkengage',
+    'email-service' => 'infohkengage',
+    //
+    'engage-api-deploy' => 'infohkengage',
+    //
+    'engage-database-utils' => 'congnqnexlesoft',
+    '_ops_shared_lib' => 'congnqnexlesoft',
+];
+
+$GITHUB_PERSONAL_ACCESS_TOKEN_NEW = readline("Please input new GITHUB_PERSONAL_ACCESS_TOKEN? ");
+if (!$GITHUB_PERSONAL_ACCESS_TOKEN_NEW) {
+    echo "[ERROR] GitHub Personal Token should be string\n";
+    exit();
+}
+//
+$workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
+echo "WORKSPACE DIR = $workspaceDir\n";
+foreach ($listProjectsSupport as $projectName => $GitHubUsername) {
+    echo sprintf(" + Project '%s > %s': %s\n",
+        $GitHubUsername,
+        $projectName,
+        is_dir(sprintf("%s/%s", $workspaceDir, $projectName)) ? "✔" : "X"
+    );
+}
+// update token
+foreach ($listProjectsSupport as $projectName => $GitHubUsername) {
+    $projectDir = sprintf("%s/%s", $workspaceDir, $projectName);
+    if (is_dir($projectDir)) {
+        $output = null;
+        $resultCode = null;
+        exec(join(';', [
+            sprintf("cd \"%s\"", $projectDir), # jump into this directory
+            sprintf("git remote set-url origin https://%s@github.com/%s/%s.git", $GITHUB_PERSONAL_ACCESS_TOKEN_NEW, $GitHubUsername, $projectName),
+        ]), $output, $resultCode);
+        // print output
+        foreach ($output as $line) {
+            echo sprintf("    + %s\n", $line);
+        }
+    }
+}
