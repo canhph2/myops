@@ -18,7 +18,7 @@ mkdir -p ${SHARED_LIB_DIR}
 echo " > Jump to '${SHARED_LIB_DIR}'";
 cd "${SHARED_LIB_DIR}" || exit;
 git clone https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/congnqnexlesoft/_ops_shared_lib.git .
-#   remove some git files
+#   remove others file
 rm -rf .git
 rm -f .gitignore
 rm -f README.MD
