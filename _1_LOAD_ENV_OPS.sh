@@ -20,8 +20,8 @@ export HEAD_COMMIT_ID=$(php _ops/_shared_lib/HEAD_COMMIT_ID)
 # === END ===
 
 # === constants ===
-DOCKER_BASE_TAG_PRODUCTION="production"
-DOCKER_BASE_TAG_DEVELOP="develop"
+export DOCKER_BASE_TAG_PRODUCTION="production"
+export DOCKER_BASE_TAG_DEVELOP="develop"
 
 # === engage-api-deploy vars ===
 if [ "${BRANCH}" = "develop" ]; then
@@ -71,7 +71,7 @@ export EB_APP_NAME="engageplus"
 # === END ===
 
 # === EngagePlus configuration ===
-ENGAGEPLUS_CACHES_FOLDER=".caches_engageplus"
+export ENGAGEPLUS_CACHES_FOLDER=".caches_engageplus"
 export ENGAGEPLUS_CACHES_DIR="$(php _ops/_shared_lib/HOME_DIR)/${ENGAGEPLUS_CACHES_FOLDER}"
 export ENGAGEPLUS_CACHES_REPOSITORY_DIR="${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 # === END ===
