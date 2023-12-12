@@ -19,6 +19,10 @@ export REPOSITORY=$(php _ops/_shared_lib/REPOSITORY)
 export HEAD_COMMIT_ID=$(php _ops/_shared_lib/HEAD_COMMIT_ID)
 # === END ===
 
+# === constants ===
+DOCKER_BASE_TAG_PRODUCTION="production"
+DOCKER_BASE_TAG_DEVELOP="develop"
+
 # === engage-api-deploy vars ===
 if [ "${BRANCH}" = "develop" ]; then
   export ENV=dev
@@ -26,7 +30,7 @@ if [ "${BRANCH}" = "develop" ]; then
   export EB_ENVIRONMENT_NAME="develop-multi-container"
   #
   export COMPOSER_UPDATE="composer update"
-  export DOCKER_BASE_TAG="develop"
+  export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_DEVELOP}"
 fi
 if [ "${BRANCH}" = "staging" ]; then
   export ENV=stg
@@ -34,7 +38,7 @@ if [ "${BRANCH}" = "staging" ]; then
   export EB_ENVIRONMENT_NAME="staging-multi-container"
   #
   export COMPOSER_UPDATE="composer update --no-dev --optimize-autoloader --no-scripts"
-  export DOCKER_BASE_TAG="production"
+  export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
 fi
 if [ "${BRANCH}" = "master" ]; then
   export ENV=prd
@@ -42,7 +46,7 @@ if [ "${BRANCH}" = "master" ]; then
   export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container"
   #
   export COMPOSER_UPDATE="composer update --no-dev --optimize-autoloader --no-scripts"
-  export DOCKER_BASE_TAG="production"
+  export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
 fi
 # === END ===
 
@@ -50,6 +54,12 @@ fi
 export AWS_ACCOUNT_ID="982080672983"
 export REGION="ap-east-1"
 #    ECR configuration
+#        base and caches repositories
+export ECR_REPO_API_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-base-api-repository"
+export ECR_REPO_PAYMENT_SERVICE_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-base-payment-service-repository"
+export ECR_REPO_INVOICE_SERVICE_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-base-invoice-service-repository"
+export ECR_REPO_INTEGRATION_API_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-base-integration-api-repository"
+#        normal repositories
 export ECR_REPO_API="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-api-repository"
 export ECR_REPO_PAYMENT_SERVICE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-payment-service-repository"
 export ECR_REPO_INVOICE_SERVICE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-invoice-service-repository"
