@@ -22,7 +22,7 @@ export HEAD_COMMIT_ID=$(php _ops/_shared_lib/HEAD_COMMIT_ID)
 # === constants ===
 export DOCKER_BASE_TAG_PRODUCTION="production"
 export DOCKER_BASE_TAG_DEVELOP="develop"
-export COMPOSER_UPDATE_DEVELOP="composer update"
+export COMPOSER_UPDATE_DEVELOP="composer update --no-scripts"
 export COMPOSER_UPDATE_PRODUCTION="composer update --no-dev --optimize-autoloader --no-scripts"
 
 # === engage-api-deploy vars ===
