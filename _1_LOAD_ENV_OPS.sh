@@ -31,6 +31,7 @@ if [ "${BRANCH}" = "develop" ]; then
   export ENV=dev
   export API_DEPLOY_BRANCH=develop-multi-container
   export EB_ENVIRONMENT_NAME="develop-multi-container"
+  export ENV_URL_PREFIX="${BRANCH}-"
   #
   export COMPOSER_UPDATE="${COMPOSER_UPDATE_DEVELOP}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_DEVELOP}"
@@ -39,6 +40,7 @@ if [ "${BRANCH}" = "staging" ]; then
   export ENV=stg
   export API_DEPLOY_BRANCH=staging-multi-container
   export EB_ENVIRONMENT_NAME="staging-multi-container"
+  export ENV_URL_PREFIX="${BRANCH}-"
   #
   export COMPOSER_UPDATE="${COMPOSER_UPDATE_PRODUCTION}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
@@ -47,6 +49,7 @@ if [ "${BRANCH}" = "master" ]; then
   export ENV=prd
   export API_DEPLOY_BRANCH=master-multi-container
   export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container"
+  export ENV_URL_PREFIX=""
   #
   export COMPOSER_UPDATE="${COMPOSER_UPDATE_PRODUCTION}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
