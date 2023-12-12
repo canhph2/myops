@@ -24,16 +24,25 @@ if [ "${BRANCH}" = "develop" ]; then
   export ENV=dev
   export API_DEPLOY_BRANCH=develop-multi-container
   export EB_ENVIRONMENT_NAME="develop-multi-container"
+  #
+  export COMPOSER_UPDATE="composer update"
+  export DOCKER_BASE_TAG="develop"
 fi
 if [ "${BRANCH}" = "staging" ]; then
   export ENV=stg
   export API_DEPLOY_BRANCH=staging-multi-container
   export EB_ENVIRONMENT_NAME="staging-multi-container"
+  #
+  export COMPOSER_UPDATE="composer update --no-dev --optimize-autoloader --no-scripts"
+  export DOCKER_BASE_TAG="production"
 fi
 if [ "${BRANCH}" = "master" ]; then
   export ENV=prd
   export API_DEPLOY_BRANCH=master-multi-container
   export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container"
+  #
+  export COMPOSER_UPDATE="composer update --no-dev --optimize-autoloader --no-scripts"
+  export DOCKER_BASE_TAG="production"
 fi
 # === END ===
 
