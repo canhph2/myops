@@ -22,6 +22,8 @@ export HEAD_COMMIT_ID=$(php _ops/_shared_lib/HEAD_COMMIT_ID)
 # === constants ===
 export DOCKER_BASE_TAG_PRODUCTION="production"
 export DOCKER_BASE_TAG_DEVELOP="develop"
+export COMPOSER_UPDATE_DEVELOP="composer update"
+export COMPOSER_UPDATE_PRODUCTION="composer update --no-dev --optimize-autoloader --no-scripts"
 
 # === engage-api-deploy vars ===
 if [ "${BRANCH}" = "develop" ]; then
@@ -29,7 +31,7 @@ if [ "${BRANCH}" = "develop" ]; then
   export API_DEPLOY_BRANCH=develop-multi-container
   export EB_ENVIRONMENT_NAME="develop-multi-container"
   #
-  export COMPOSER_UPDATE="composer update"
+  export COMPOSER_UPDATE="${COMPOSER_UPDATE_DEVELOP}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_DEVELOP}"
 fi
 if [ "${BRANCH}" = "staging" ]; then
@@ -37,7 +39,7 @@ if [ "${BRANCH}" = "staging" ]; then
   export API_DEPLOY_BRANCH=staging-multi-container
   export EB_ENVIRONMENT_NAME="staging-multi-container"
   #
-  export COMPOSER_UPDATE="composer update --no-dev --optimize-autoloader --no-scripts"
+  export COMPOSER_UPDATE="${COMPOSER_UPDATE_PRODUCTION}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
 fi
 if [ "${BRANCH}" = "master" ]; then
@@ -45,7 +47,7 @@ if [ "${BRANCH}" = "master" ]; then
   export API_DEPLOY_BRANCH=master-multi-container
   export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container"
   #
-  export COMPOSER_UPDATE="composer update --no-dev --optimize-autoloader --no-scripts"
+  export COMPOSER_UPDATE="${COMPOSER_UPDATE_PRODUCTION}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
 fi
 # === END ===
