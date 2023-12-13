@@ -27,7 +27,7 @@ echo "===\n";
 echo "=== HANDLE CACHES AND GIT ===\n";
 echo "REPOSITORY=$repository    BRANCH=$branch   DIR='$EngagePlusCachesRepositoryDir' \n";
 //
-$gitRemoteURLWithToken = sprintf("https://%s@github.com/infohkengage/%s.git .", $GitHubPersonalAccessToken, $repository);
+$gitRemoteURLWithToken = sprintf("https://%s@github.com/infohkengage/%s.git", $GitHubPersonalAccessToken, $repository);
 //     case checkout
 if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
     echo "The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository\n";
