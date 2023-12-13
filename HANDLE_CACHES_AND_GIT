@@ -26,6 +26,8 @@ if (!$repository || !$branch || !$EngagePlusCachesRepositoryDir || !$GitHubPerso
 echo "===\n";
 echo "=== HANDLE CACHES AND GIT ===\n";
 echo "REPOSITORY=$repository    BRANCH=$branch   DIR='$EngagePlusCachesRepositoryDir' \n";
+//
+$gitRemoteURLWithToken = sprintf("https://%s@github.com/infohkengage/%s.git .", $GitHubPersonalAccessToken, $repository);
 //     case checkout
 if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
     echo "The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository\n";
@@ -39,7 +41,7 @@ if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
         sprintf("rm -rf \"%s\"", $EngagePlusCachesRepositoryDir),
         sprintf("mkdir -p \"%s\"", $EngagePlusCachesRepositoryDir),
         sprintf("cd \"%s\"", $EngagePlusCachesRepositoryDir), # jump into this directory
-        sprintf("git clone -b %s https://%s@github.com/infohkengage/%s.git .", $branch, $GitHubPersonalAccessToken, $repository),
+        sprintf("git clone -b %s %s .", $branch, $gitRemoteURLWithToken),
     ]), $output, $resultCode);
     // print output
     foreach ($output as $line) {
@@ -51,6 +53,7 @@ $output = null;
 $resultCode = null;
 exec(join(';', [
     sprintf("cd \"%s\"", $EngagePlusCachesRepositoryDir), # jump into this directory
+    sprintf("git remote set-url origin %s", $gitRemoteURLWithToken),
     'git reset --hard HEAD',
     sprintf("git checkout %s", $branch),
     'git pull',
