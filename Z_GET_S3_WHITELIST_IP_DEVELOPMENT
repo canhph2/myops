@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+// usage:
+//    php _ops/_shared_lib/Z_GET_S3_WHITELIST_IP_DEVELOPMENT
+
+$NEXLE_IPS = [
+    '115.73.208.177', // Nexle VPN
+    '115.73.208.182', // Nexle HCM office - others
+    '115.73.208.183 ', // Nexle HCM office - others
+    '14.161.25.117', // Nexle HCM office - others
+    '118.69.176.228', // Nexle DN office
+];
+$GITHUB_RUNNER_SERVER_IP = '18.167.126.148';
+$EC2DevelopIp = exec("echo $(curl https://develop-api.engageplus.io/api/booking/IP-QYIa20HxwQ)");
+$EC2StagingIp = exec("echo $(curl https://staging-api.engageplus.io/api/booking/IP-QYIa20HxwQ)");
+//
+$S3_WHITELIST_IP_DEVELOPMENT = array_merge($NEXLE_IPS, [
+    $GITHUB_RUNNER_SERVER_IP,
+    $EC2DevelopIp,
+    $EC2StagingIp
+]);
+//
+echo sprintf("\n\n%s\n\n", json_encode($S3_WHITELIST_IP_DEVELOPMENT));
