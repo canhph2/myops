@@ -1,4 +1,5 @@
 # _OPS/_SHARED_LIB
+*DevOps | CICD*
 
 ---
 *Add this and the other project's README.MD (should be in the DevOps Notes section):*
