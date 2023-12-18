@@ -25,10 +25,10 @@ export DOCKER_BASE_TAG_DEVELOP="develop"
 #    WARNING: delete 'auth.json' after use this command 'COMPOSER_CONFIG_GITHUB_TOKEN'
 export COMPOSER_CONFIG_GITHUB_TOKEN="composer config github-oauth.github.com ${GITHUB_PERSONAL_ACCESS_TOKEN}"
 export COMPOSER_CONFIG_ALLOW_PLUGINS_SYMFONY_FLEX="composer config --no-plugins allow-plugins.symfony/flex true"
-export COMPOSER_UPDATE_DEVELOP="composer update"
-export COMPOSER_UPDATE_DEVELOP_TO_BUILD_CACHES="composer update --no-autoloader --no-scripts --no-plugins"
-export COMPOSER_UPDATE_PRODUCTION="composer update --no-dev --optimize-autoloader"
-export COMPOSER_UPDATE_PRODUCTION_TO_BUILD_CACHES="composer update --no-dev --no-autoloader --no-scripts --no-plugins"
+export COMPOSER_INSTALL_DEVELOP="composer install"
+export COMPOSER_INSTALL_DEVELOP_TO_BUILD_CACHES="composer install --no-autoloader --no-scripts --no-plugins"
+export COMPOSER_INSTALL_PRODUCTION="composer install --no-dev --optimize-autoloader"
+export COMPOSER_INSTALL_PRODUCTION_TO_BUILD_CACHES="composer install --no-dev --no-autoloader --no-scripts --no-plugins"
 
 # === engage-api-deploy vars ===
 if [ "${BRANCH}" = "develop" ]; then
@@ -37,7 +37,7 @@ if [ "${BRANCH}" = "develop" ]; then
   export EB_ENVIRONMENT_NAME="develop-multi-container"
   export ENV_URL_PREFIX="${BRANCH}-"
   #
-  export COMPOSER_UPDATE="${COMPOSER_UPDATE_DEVELOP}"
+  export COMPOSER_INSTALL="${COMPOSER_INSTALL_DEVELOP}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_DEVELOP}"
   export DOCKER_BASE_TAG_API="${DOCKER_BASE_TAG_DEVELOP}" # maybe remove after email-service
 fi
@@ -47,7 +47,7 @@ if [ "${BRANCH}" = "staging" ]; then
   export EB_ENVIRONMENT_NAME="staging-multi-container"
   export ENV_URL_PREFIX="${BRANCH}-"
   #
-  export COMPOSER_UPDATE="${COMPOSER_UPDATE_PRODUCTION}"
+  export COMPOSER_INSTALL="${COMPOSER_INSTALL_PRODUCTION}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
   export DOCKER_BASE_TAG_API="${DOCKER_BASE_TAG_DEVELOP}" # maybe remove after email-service
 fi
@@ -57,7 +57,7 @@ if [ "${BRANCH}" = "master" ]; then
   export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container"
   export ENV_URL_PREFIX=""
   #
-  export COMPOSER_UPDATE="${COMPOSER_UPDATE_PRODUCTION}"
+  export COMPOSER_INSTALL="${COMPOSER_INSTALL_PRODUCTION}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
   export DOCKER_BASE_TAG_API="${DOCKER_BASE_TAG_PRODUCTION}" # maybe remove after email-service
 fi
