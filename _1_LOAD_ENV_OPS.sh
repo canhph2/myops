@@ -39,6 +39,7 @@ if [ "${BRANCH}" = "develop" ]; then
   #
   export COMPOSER_UPDATE="${COMPOSER_UPDATE_DEVELOP}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_DEVELOP}"
+  export DOCKER_BASE_TAG_API="${DOCKER_BASE_TAG_DEVELOP}" # maybe remove after email-service
 fi
 if [ "${BRANCH}" = "staging" ]; then
   export ENV=stg
@@ -48,6 +49,7 @@ if [ "${BRANCH}" = "staging" ]; then
   #
   export COMPOSER_UPDATE="${COMPOSER_UPDATE_PRODUCTION}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
+  export DOCKER_BASE_TAG_API="${DOCKER_BASE_TAG_DEVELOP}" # maybe remove after email-service
 fi
 if [ "${BRANCH}" = "master" ]; then
   export ENV=prd
@@ -57,6 +59,7 @@ if [ "${BRANCH}" = "master" ]; then
   #
   export COMPOSER_UPDATE="${COMPOSER_UPDATE_PRODUCTION}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
+  export DOCKER_BASE_TAG_API="${DOCKER_BASE_TAG_PRODUCTION}" # maybe remove after email-service
 fi
 # === END ===
 
