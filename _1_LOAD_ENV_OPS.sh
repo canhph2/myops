@@ -24,9 +24,9 @@ export DOCKER_BASE_TAG_PRODUCTION="production"
 export DOCKER_BASE_TAG_DEVELOP="develop"
 #    WARNING: delete 'auth.json' after use this command 'COMPOSER_CONFIG_GITHUB_TOKEN'
 export COMPOSER_CONFIG_GITHUB_TOKEN="composer config github-oauth.github.com ${GITHUB_PERSONAL_ACCESS_TOKEN}"
-export COMPOSER_UPDATE_DEVELOP="composer update"
+export COMPOSER_UPDATE_DEVELOP="composer update -a"
 export COMPOSER_UPDATE_DEVELOP_TO_BUILD_CACHES="composer update --no-autoloader --no-scripts --no-plugins"
-export COMPOSER_UPDATE_PRODUCTION="composer update --no-dev --optimize-autoloader"
+export COMPOSER_UPDATE_PRODUCTION="composer update --no-dev --optimize-autoloader -a"
 export COMPOSER_UPDATE_PRODUCTION_TO_BUILD_CACHES="composer update --no-dev --no-autoloader --no-scripts --no-plugins"
 
 # === engage-api-deploy vars ===
