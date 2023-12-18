@@ -6,7 +6,7 @@
 $NEXLE_IPS = [
     '115.73.208.177', // Nexle VPN
     '115.73.208.182', // Nexle HCM office - others
-    '115.73.208.183 ', // Nexle HCM office - others
+    '115.73.208.183', // Nexle HCM office - others
     '14.161.25.117', // Nexle HCM office - others
     '118.69.176.228', // Nexle DN office
 ];
