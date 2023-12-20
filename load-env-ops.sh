@@ -3,7 +3,7 @@
 #    . _ops/lib/load-env-_ops.sh
 
 # === get Ops .env on AWS Secret Manager  ===
-aws secretsmanager get-secret-value --secret-id env-_ops --query SecretString --output text > .env-_ops
+aws secretsmanager get-secret-value --secret-id env-ops --query SecretString --output text > .env-ops
 #    source this .env
 . ".env-ops";
 #    remove this .env-_ops to keep safe

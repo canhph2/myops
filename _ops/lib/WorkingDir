@@ -1,0 +1,6 @@
+#!/usr/bin/env php
+<?php
+// usage:
+//    php _ops/lib/WorkingDir
+
+echo $_SERVER['PWD'];
