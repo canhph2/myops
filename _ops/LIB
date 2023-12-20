@@ -1,0 +1,83 @@
+#!/usr/bin/env php
+<?php
+/**
+ * usage:
+ *     php _ops/LIB COMMAND PARAM_1
+ *
+ * view list of commands:
+ *     php LIB help
+ */
+
+// === params ===
+$command = $argv[1] ?? null;
+$param1 = $argv[2] ?? null; // to use if needed
+
+// === vars zone ===
+const HELP = 'help';
+const BRANCH = 'branch';
+/**
+ * @var array $supportCommands
+ * key => value | key is command, value is description
+ */
+$supportCommands = [
+    'help' => 'show list support command and usage',
+    'branch' => 'get git branch / GitHub branch',
+    'repository' => 'get GitHub repository name',
+    'head-commit-id' => 'get head commit id of branch',
+    'home-dir' => 'return home directory of machine / server',
+    'script-dir'=>'return directory of script',
+    'working-dir'=>'get root project directory / current working directory',
+];
+
+// === validation ===
+if (!$command) {
+    echo "[ERROR] missing command, should be 'php _ops/LIB COMMAND'\n";
+    help($supportCommands);
+    exit(); // END
+}
+if (!array_key_exists($command, $supportCommands)) {
+    echo sprintf("[ERROR] do not support this command '%s'\n", $command);
+    help($supportCommands);
+    exit(); // END
+}
+
+// === handle ===
+switch ($command) {
+    case 'help':
+        help($supportCommands);
+        break;
+    case 'branch':
+        echo exec("git symbolic-ref HEAD | sed 's/refs\/heads\///g'");
+        break;
+    case 'repository':
+        echo basename(str_replace('.git', '', exec('git config --get remote.origin.url')));
+        break;
+    case 'head-commit-id':
+        echo exec("git rev-parse --short HEAD");
+        break;
+    case 'home-dir':
+        echo $_SERVER['HOME'];
+        break;
+    case 'script-dir':
+        echo str_replace('/' . basename($_SERVER['SCRIPT_FILENAME']), '', sprintf("%s/%s", $_SERVER['PWD'], $_SERVER['SCRIPT_FILENAME']));
+        break;
+    case 'working-dir':
+        echo $_SERVER['PWD'];
+        break;
+    default:
+        echo "[ERROR] Unknown error";
+        break;
+}
+
+
+// === functions ===]
+function help(array $supportCommands)
+{
+    echo "\n[INFO] usage:  php _ops/LIB COMMAND  \n";
+    echo "               php _ops/LIB COMMAND PARAM_1 \n\n";
+    echo "[INFO] Support commands:\n";
+    foreach ($supportCommands as $command => $description) {
+        echo sprintf(" +    %s    :  %s\n", $command, $description);
+    }
+    echo "\n===\n\n";
+}

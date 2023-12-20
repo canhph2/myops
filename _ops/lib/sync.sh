@@ -5,6 +5,10 @@
 #1 === load env to get github token ===
 . _ops/lib/load-env-ops.sh
 
+
+echo "SLACK_CHANNEL=${SLACK_CHANNEL}"
+return;
+
 #2 === sync library
 #    move to _ops/lib folder
 SHARED_LIB_DIR="$(php _ops/lib/WorkingDir)/_ops/lib";

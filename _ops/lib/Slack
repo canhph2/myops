@@ -7,7 +7,7 @@
 //    validate a message
 $message = $argv[1] ?? null;
 if (!$message) {
-    echo "[ERROR] missing a MESSAGE, should be 'php _ops/Slack \"YOU MESSAGE\";' \n";
+    echo "[ERROR] missing a MESSAGE\n";
     exit(); // END
 }
 //    validate env vars
