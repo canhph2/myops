@@ -14,7 +14,3 @@
 /public/storage
 /storage/*.key
 /vendor
-
-
-# development
-/_ops

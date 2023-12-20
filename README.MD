@@ -18,5 +18,9 @@ sh _ops/lib/sync.sh
 Add a list of unused files and directories in other projects here
 
 ### 2 | Format
-- this project: place files in ``root directory``
-- in others projects: place files in ``_ops/lib``
+- in others projects:
+```
+_ops
+    LIB    PHP
+    lib    directory
+```

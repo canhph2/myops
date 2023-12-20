@@ -1,6 +1,0 @@
-#!/usr/bin/env php
-<?php
-// usage:
-//    php _ops/lib/Branch
-
-echo exec("git symbolic-ref HEAD | sed 's/refs\/heads\///g'");

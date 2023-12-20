@@ -2,7 +2,6 @@
 .git
 .gitignore
 README.MD
-ZGetS3WhiteListIpsDevelopment
-ZHandleSyncIgnore
-ZUpdateGitHubTokenAllProjects
-ScriptDir
+_ops/lib/ZGetS3WhiteListIpsDevelopment
+_ops/lib/ZHandleSyncIgnore
+_ops/lib/ZUpdateGitHubTokenAllProjects

@@ -1,6 +1,0 @@
-#!/usr/bin/env php
-<?php
-// usage:
-//    php _ops/lib/HeadCommitID
-
-echo exec("git rev-parse --short HEAD");
