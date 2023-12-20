@@ -1,12 +1,22 @@
-# _OPS/_SHARED_LIB
-*DevOps | CICD*
+# ops-lib
+*DevOps | CICD | DevOps Shared Library*
 
 ---
-*Add this and the other project's README.MD (should be in the DevOps Notes section):*
+### Usage
+- *Add this and the other project's README.MD (should be in the DevOps Notes section):*
 
 ---
-### _OPS/_SHARED_LIB
-- [MANUALLY SYNC] Run the following command to sync the new code
+### ops-lib | to sync new code (manually)
 ```shell
-sh _ops/_shared_lib/_0_SYNC_CODE_MANUALLY.sh
+sh _ops/lib/sync.sh
 ```
+
+---
+## Project Notes
+
+### 1 | .syncignore | sync ignore list
+Add a list of unused files and directories in other projects here
+
+### 2 | Format
+- this project: place files in ``root directory``
+- in others projects: place files in ``_ops/lib``

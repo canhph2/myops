@@ -1,22 +1,22 @@
 #!/usr/bin/env php
 <?php
 // usage:
-//    php _ops/_shared_lib/NOTIFY_TO_SLACK "YOU MESSAGE";
+//    php _ops/lib/Slack "YOU MESSAGE";
 
 // === validate ===
 //    validate a message
 $message = $argv[1] ?? null;
 if (!$message) {
-    echo "[ERROR] missing a MESSAGE, should be 'php _ops/NOTIFY_TO_SLACK \"YOU MESSAGE\";' \n";
+    echo "[ERROR] missing a MESSAGE, should be 'php _ops/Slack \"YOU MESSAGE\";' \n";
     exit(); // END
 }
 //    validate env vars
-$repository = getenv('REPOSITORY');
-$branch = getenv('BRANCH');
+$repository = getenv('Repository');
+$branch = getenv('Branch');
 $slackBotToken = getenv('SLACK_BOT_TOKEN');
 $slackChannel = getenv('SLACK_CHANNEL');
 if (!$repository || !$branch || !$slackBotToken || !$slackChannel) {
-    echo "[ERROR] missing a BRANCH or REPOSITORY or SLACK_BOT_TOKEN or SLACK_CHANNEL\n";
+    echo "[ERROR] missing a Branch or Repository or SLACK_BOT_TOKEN or SLACK_CHANNEL\n";
     exit(); // END
 }
 

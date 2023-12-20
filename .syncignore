@@ -1,0 +1,8 @@
+.syncignore
+.git
+.gitignore
+README.MD
+ZGetS3WhiteListIpsDevelopment
+ZHandleSyncIgnore
+ZUpdateGitHubTokenAllProjects
+ScriptDir

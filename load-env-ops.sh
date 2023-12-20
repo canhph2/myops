@@ -1,22 +1,19 @@
 #!/bin/bash
-#set -e # tells the shell to exit if a command returns a non-zero exit status
-#set -x # tells the shell to print the commands that are being executed
-
 # usage:
-#    . _ops/_shared_lib/_1_LOAD_ENV_OPS.sh
+#    . _ops/lib/load-env-_ops.sh
 
 # === get Ops .env on AWS Secret Manager  ===
-aws secretsmanager get-secret-value --secret-id env-ops --query SecretString --output text > .env-ops
+aws secretsmanager get-secret-value --secret-id env-_ops --query SecretString --output text > .env-_ops
 #    source this .env
 . ".env-ops";
-#    remove this .env-ops to keep safe
+#    remove this .env-_ops to keep safe
 rm -f ".env-ops";
 # === END ===
 
 # === load Repository Info ===
-export BRANCH=$(php _ops/_shared_lib/BRANCH)
-export REPOSITORY=$(php _ops/_shared_lib/REPOSITORY)
-export HEAD_COMMIT_ID=$(php _ops/_shared_lib/HEAD_COMMIT_ID)
+export BRANCH=$(php _ops/lib/Branch)
+export REPOSITORY=$(php _ops/lib/Repository)
+export HEAD_COMMIT_ID=$(php _ops/lib/HeadCommitID)
 # === END ===
 
 # === constants ===
@@ -87,7 +84,7 @@ export EB_APP_NAME="engageplus"
 
 # === EngagePlus configuration ===
 export ENGAGEPLUS_CACHES_FOLDER=".caches_engageplus"
-export ENGAGEPLUS_CACHES_DIR="$(php _ops/_shared_lib/HOME_DIR)/${ENGAGEPLUS_CACHES_FOLDER}"
+export ENGAGEPLUS_CACHES_DIR="$(php _ops/lib/HomeDir)/${ENGAGEPLUS_CACHES_FOLDER}"
 export ENGAGEPLUS_CACHES_REPOSITORY_DIR="${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 # === END ===
 

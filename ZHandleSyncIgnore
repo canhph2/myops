@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+// usage:
+//    php _ops/lib/ZHandleSyncIgnore
+//    php ZHandleSyncIgnore
+
+$scriptDir = str_replace('/' . basename($_SERVER['SCRIPT_FILENAME']), '', sprintf("%s/%s", $_SERVER['PWD'], $_SERVER['SCRIPT_FILENAME']));
+if (strpos($scriptDir, '_ops/lib') !== false) {
+    echo "[Handle Sync Ignore] Start to handle sync ignore files and directories\n";
+} else {
+    echo "[Handle Sync Ignore] [ERROR] detect current project is '_ops-lib' project\n";
+}
