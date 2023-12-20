@@ -4,10 +4,20 @@
 //    php _ops/lib/ZHandleSyncIgnore
 //    php ZHandleSyncIgnore
 
+// === validate ===
 $scriptDir = str_replace('/' . basename($_SERVER['SCRIPT_FILENAME']), '', sprintf("%s/%s", $_SERVER['PWD'], $_SERVER['SCRIPT_FILENAME']));
-echo "directory = ".basename($scriptDir);
-if (strpos($scriptDir, '_ops/lib') !== false) {
-    echo "[Handle Sync Ignore] Start to handle sync ignore files and directories\n";
-} else {
-    echo "[Handle Sync Ignore] [ERROR] detect current project is 'ops-lib' project\n";
+$dir = basename($scriptDir);
+switch ($dir) {
+    case 'lib':
+        echo "[Handle Sync Ignore] Start to handle sync ignore files and directories\n";
+        break;
+    case 'ops-lib':
+        echo "[Handle Sync Ignore] [ERROR] detect current project is 'ops-lib' project\n";
+        return; // END
+    default:
+        echo "[Handle Sync Ignore] [ERROR] anther error, dir='$dir' \n";
+        return; // END
 }
+
+// === handle ===
+
