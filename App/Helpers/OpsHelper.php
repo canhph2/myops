@@ -74,8 +74,8 @@ class OpsHelper
     public static function sync(string $SHELL_HANDLE_ENV_OPS_DATA_BASE64)
     {
         // load env into PHP
-        $test = AWSHelper::loadOpsEnvAndHandleMore($SHELL_HANDLE_ENV_OPS_DATA_BASE64);
-        var_dump($test); // die();
+        $opsEnvAllData = AWSHelper::loadOpsEnvAndHandleMore($SHELL_HANDLE_ENV_OPS_DATA_BASE64);
+        self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore($SHELL_HANDLE_ENV_OPS_DATA_BASE64));
         // load caches of this source code
         GitHubHelper::handleCachesAndGit([
             'script path',
@@ -93,5 +93,33 @@ class OpsHelper
                 DirHelper::getWorkingDir()
             ),
         ]))->execMultiInWorkDir()->printOutput();
+    }
+
+    /**
+     * need to get
+     * - ENGAGEPLUS_CACHES_FOLDER
+     * - ENGAGEPLUS_CACHES_DIR="$(php _ops/lib home-dir)/${ENGAGEPLUS_CACHES_FOLDER}"
+     * - GITHUB_PERSONAL_ACCESS_TOKEN
+     * and put to PHP env
+     * @return void
+     */
+    private static function parseEnoughDataForSync(string $opsEnvAllData)
+    {
+        $tempArr = explode(PHP_EOL, $opsEnvAllData);
+        foreach ($tempArr as $line) {
+            if (strpos($line, "export ENGAGEPLUS_CACHES_FOLDER") !== false) {
+                $key = explode('=', str_replace('export ', '', $line), 2)[0];
+                $value = explode('=', str_replace('export ', '', $line), 2)[1];
+                $value = trim($value, '"');
+                putenv("$key=$value");
+            }
+            if (strpos($line, "export GITHUB_PERSONAL_ACCESS_TOKEN") !== false) {
+                putenv(trim(str_replace('export ', '', $line), '"'));
+            }
+        }
+        //
+        putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DirHelper::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
+        echo getenv('ENGAGEPLUS_CACHES_DIR');
+        die();
     }
 }
