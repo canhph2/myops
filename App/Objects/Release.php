@@ -3,8 +3,10 @@
 namespace App\Objects;
 
 use App\App;
+use App\Enum\GitHubEnum;
 use App\Helpers\DEVHelper;
 use App\Helpers\DirHelper;
+use DateTime;
 
 class Release
 {
@@ -67,6 +69,12 @@ class Release
         $this->handleLibrariesClass();
         $this->handleAppClass();
         echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);
+        // push new release to GitHub
+        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
+            GitHubEnum::ADD_ALL_FILES_COMMAND,
+            sprintf("git commit -m 'release new code of _ops/lib on %s'", (new DateTime())->format('Y-m-d H:i:s')),
+            GitHubEnum::PUSH_COMMAND,
+        ]))->execMultiInWorkDir()->printOutput();
     }
 
     /**
@@ -108,7 +116,7 @@ class Release
         // handle shell data
         $appClassContentClassOnly = str_replace(
             "const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = '';",
-sprintf("const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = '%s';", base64_encode(file_get_contents("App/_shell_/handle-env-ops.sh"))),
+            sprintf("const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = '%s';", base64_encode(file_get_contents("App/_shell_/handle-env-ops.sh"))),
             $appClassContentClassOnly
         );
         //
