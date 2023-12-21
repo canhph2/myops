@@ -5,10 +5,10 @@ namespace App\Helpers;
 class TextHelper
 {
     /**
-     * @param string $text
+     * @param string|null $text
      * @return void
      */
-    public static function message(string $text): void
+    public static function message(string $text = null): void
     {
         echo sprintf("%s\n", $text);
     }

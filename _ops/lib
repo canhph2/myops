@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-// === OPS SHARED LIBRARY (PHP) ===
+// === OPS SHARED LIBRARY (PHP) v2.0 ===
 
 // === Generated libraries classes ===
 
@@ -13,6 +13,7 @@ class CommandEnum
     // === this app commands ===
     const HELP = 'help';
     const RELEASE = 'release';
+    const VERSION = 'version';
     // === ops commands ===
     const BRANCH = 'branch';
     const REPOSITORY = 'repository';
@@ -20,6 +21,9 @@ class CommandEnum
     const HOME_DIR = 'home-dir';
     const SCRIPT_DIR = 'script-dir';
     const WORKING_DIR = 'working-dir';
+    const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
+    const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
+    const SLACK = 'slack';
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
     const UPDATE_GITHUB_TOKEN_ALL_PROJECT = 'update-github-token-all-project';
@@ -32,6 +36,7 @@ class CommandEnum
     const SUPPORT_COMMANDS = [
         self::HELP => 'show list support command and usage',
         self::RELEASE => 'combine all PHP files into \'_ops/lib\'',
+        self::VERSION => 'show app version',
         //
         self::BRANCH => 'get git branch / GitHub branch',
         self::REPOSITORY => 'get GitHub repository name',
@@ -39,10 +44,27 @@ class CommandEnum
         self::HOME_DIR => 'return home directory of machine / server',
         self::SCRIPT_DIR => 'return directory of script',
         self::WORKING_DIR => 'get root project directory / current working directory',
+        self::REPLACE_TEXT_IN_FILE => 'php _ops/lib replace-text-in-file "search text" "replace text" "file path"',
+        self::HANDLE_CACHES_AND_GIT => 'handle GitHub repository in caches directory',
+        self::SLACK => 'notify a message to Slack',
         // private
         self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => '[PRIVATE] get S3 whitelist IPs to add to AWS Policy',
         self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => '[PRIVATE] update token all projects in workspace',
     ];
+}
+
+// [REMOVED] namespace App\Enum;
+
+class GitHubEnum
+{
+    public const REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
+    public const RESET_BRANCH_COMMAND = 'git reset --hard HEAD'; // rollback all changing
+    public const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
+    public const PULL_COMMAND = 'git pull'; // get the newest code
+    public const ADD_ALL_FILES_COMMAND = 'git add -A';
+    public const PUSH_COMMAND = 'git push';
+    public const GET_REMOTE_ORIGIN_URL_COMMAND = 'git config --get remote.origin.url';
+    public const GET_REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
 }
 
 // [REMOVED] namespace App\Helpers;
@@ -195,8 +217,286 @@ class OpsHelper
 
 }
 
+// [REMOVED] namespace App\Helpers;
+
+class TextHelper
+{
+    /**
+     * @param string|null $text
+     * @return void
+     */
+    public static function message(string $text = null): void
+    {
+        echo sprintf("%s\n", $text);
+    }
+
+    /**
+     * print a separate line
+     * @return void
+     */
+    public static function messageSeparate(): void
+    {
+        self::message('===');
+    }
+
+    /**
+     * print a separate line
+     * @return void
+     */
+    public static function messageSeparateHigh(): void
+    {
+        self::message(PHP_EOL);
+        self:: message('.');
+        self::message('.');
+        self::message('---------------------------------------');
+        self::message('.');
+        self::message('.');
+        self::message(PHP_EOL);
+    }
+
+    /**
+     * print a title
+     * @return void
+     */
+    public static function messageTitle(string $title): void
+    {
+        self::message(sprintf("=== %s ===", $title));
+    }
+
+    /**
+     * print a text to screen with tag SUCCESS
+     * @param string $errorText
+     * @return void
+     */
+    public static function messageSUCCESS(string $errorText): void
+    {
+        self::message(sprintf("[SUCCESS] %s", $errorText));
+    }
+
+    /**
+     * print a text to screen with tag ERROR
+     * @param string $errorText
+     * @return void
+     */
+    public static function messageERROR(string $errorText): void
+    {
+        self::message(sprintf("[ERROR] %s", $errorText));
+    }
+
+    /**
+     *  php _ops/lib replace-text-in-file "search text" "replace text" "file path"
+     * required
+     * - "search text"  (param 2)
+     * - "replace text"  (param 3)
+     * = "file path" ((param 4)
+     * @return void
+     */
+    public static function replaceTextInFile(array $argv)
+    {
+// === validate ===
+//    validate a message
+        $searchText = $argv[2] ?? null;
+        $replaceText = $argv[3] ?? null;
+        $filePath = $argv[4] ?? null;
+        if (!$searchText || is_null($replaceText) || !$filePath) {
+            TextHelper::messageERROR("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
+            exit(); // END
+        }
+        if (!is_file($filePath)) {
+            TextHelper::messageERROR("$filePath does not exist");
+            exit(); // END
+        }
+
+// === handle ===
+        $oldText = file_get_contents($filePath);
+        file_put_contents($filePath, str_replace($searchText, $replaceText, $oldText));
+        $newText = file_get_contents($filePath);
+//    validate result
+        if ($oldText === $newText) {
+            TextHelper::messageERROR("replace done with failed result");
+        } else {
+            TextHelper::messageSUCCESS("replace done with successful result");
+        }
+
+    }
+}
+
+// [REMOVED] namespace App\Helpers;
+
+// [REMOVED] use App\Enum\GitHubEnum;
+// [REMOVED] use App\Objects\Process;
+
+class GitHubHelper
+{
+    /**
+     * get current GitHub info, will return
+     * [REMOTE_ORIGIN_URL, GITHUB_PERSONAL_TOKEN, USERNAME, REPOSITORY_NAME]
+     *
+     * @param string|null $remoteOriginUrl
+     * @return array
+     */
+    public static function parseGitHub(string $remoteOriginUrl = null): array
+    {
+        $remoteOriginUrl = $remoteOriginUrl ?? self::getRemoteOriginUrl();
+        return [
+            $remoteOriginUrl,
+            strpos($remoteOriginUrl, "@") !== false
+                ? str_replace('https://', '', explode('@', $remoteOriginUrl)[0])
+                : null,
+            basename(str_replace(basename($remoteOriginUrl), '', $remoteOriginUrl)),
+            basename(str_replace('.git', '', $remoteOriginUrl))
+        ];
+    }
+
+    public static function getRemoteOriginUrl(): ?string
+    {
+        return exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND);
+    }
+
+    public static function getBranchUsingCommand(string $workDir): ?string
+    {
+        $process = (new Process(__FUNCTION__, $workDir, [
+            GitHubEnum::GET_BRANCH_COMMAND
+        ]))->execMultiInWorkDir()
+            ->printOutput();
+        return $process->getOutput() ? $process->getOutput()[count($process->getOutput()) - 1] : null;
+    }
+
+    /**
+     * checking git already exist in this directory / folder
+     * @param string $dirToCheck
+     * @return bool
+     */
+    public static function isGit(string $dirToCheck): bool
+    {
+        return is_dir(sprintf("%s/.git", $dirToCheck));
+    }
+
+    public static function getRepositoryDirCommand(): string
+    {
+        return exec(GitHubEnum::GET_REPOSITORY_DIR_COMMAND);
+    }
+
+    /**
+     * usage:
+     *     php _ops/lib handle-caches-and-git REPOSITORY
+     *
+     * case engage-api-deploy, to build api docker image
+     *     php _ops/lib_temp/HandleCachesAndGit ENGAGE_API_DEPLOY
+     */
+    public static function handleCachesAndGit(array $argv)
+    {
+        // === param ===
+        $param2 = $argv[2] ?? null;
+        // === validate ===
+        //    validate env vars
+        $repository = $param2 === 'ENGAGE_API_DEPLOY' ? 'engage-api-deploy' : getenv('Repository');
+        $branch = $param2 === 'ENGAGE_API_DEPLOY' ? getenv('API_DEPLOY_BRANCH') : getenv('Branch');
+        $EngagePlusCachesRepositoryDir = sprintf("%s/%s", getenv('ENGAGEPLUS_CACHES_DIR'), $repository);
+        $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
+
+        if (!$repository || !$branch || !$EngagePlusCachesRepositoryDir || !$GitHubPersonalAccessToken) {
+            echo "[ERROR] missing a Branch or Repository or ENGAGEPLUS_CACHES_REPOSITORY_DIR or GITHUB_PERSONAL_ACCESS_TOKEN\n";
+            exit(); // END
+        }
+
+        // === handle case engage-api-deploy ===
+
+        // === handle ===
+        echo "===\n";
+        echo "=== HANDLE CACHES AND GIT ===\n";
+        echo "Repository=$repository    Branch=$branch   DIR='$EngagePlusCachesRepositoryDir' \n";
+        //
+        $gitRemoteURLWithToken = sprintf("https://%s@github.com/infohkengage/%s.git", $GitHubPersonalAccessToken, $repository);
+        //     case checkout
+        if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
+            echo "The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository\n";
+            //
+            // case clone
+        } else {
+            echo "[ERROR] The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository\n";
+            $output = null;
+            $resultCode = null;
+            exec(join(';', [
+                sprintf("rm -rf \"%s\"", $EngagePlusCachesRepositoryDir),
+                sprintf("mkdir -p \"%s\"", $EngagePlusCachesRepositoryDir),
+                sprintf("cd \"%s\"", $EngagePlusCachesRepositoryDir), # jump into this directory
+                sprintf("git clone -b %s %s .", $branch, $gitRemoteURLWithToken),
+            ]), $output, $resultCode);
+            // print output
+            foreach ($output as $line) {
+                echo sprintf("    + %s\n", $line);
+            }
+        }
+        // === update new code ===
+        $output = null;
+        $resultCode = null;
+        exec(join(';', [
+            sprintf("cd \"%s\"", $EngagePlusCachesRepositoryDir), # jump into this directory
+            sprintf("git remote set-url origin %s", $gitRemoteURLWithToken),
+            'git reset --hard HEAD',
+            sprintf("git checkout %s", $branch),
+            'git pull',
+        ]), $output, $resultCode);
+        // print output
+        foreach ($output as $line) {
+            echo sprintf("    + %s\n", $line);
+        }
+        echo "===\n\n";
+
+    }
+}
+
+// [REMOVED] namespace App\Helpers;
+
+class ServicesHelper
+{
+    // usage:
+    //    php _ops/lib slack "YOU MESSAGE";
+    public static function SlackMessage(array $argv)
+    {
+        // === validate ===
+        //    validate a message
+        $message = $argv[2] ?? null;
+        if (!$message) {
+            echo "[ERROR] missing a MESSAGE\n";
+            exit(); // END
+        }
+        //    validate env vars
+        $repository = getenv('Repository');
+        $branch = getenv('Branch');
+        $slackBotToken = getenv('SLACK_BOT_TOKEN');
+        $slackChannel = getenv('SLACK_CHANNEL');
+        if (!$repository || !$branch || !$slackBotToken || !$slackChannel) {
+            echo "[ERROR] missing a Branch or Repository or SLACK_BOT_TOKEN or SLACK_CHANNEL\n";
+            exit(); // END
+        }
+
+        // === handle ===
+        $slackUrl = "https://slack.com/api/chat.postMessage";
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $slackUrl);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
+            "channel" => $slackChannel,
+            "text" => sprintf("[%s] [%s] > %s", $repository, $branch, $message),
+        ]));
+        if (!curl_exec($curl)) {
+            echo 'Curl error: ' . curl_error($curl);
+        } else {
+            $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            echo $responseCode === 200
+                ? "\nMessage sent successfully\n"
+                : "\nError sending message with code $responseCode \n";
+        }
+
+    }
+}
+
 // [REMOVED] namespace App\Objects;
 
+// [REMOVED] use App\App;
 // [REMOVED] use App\Helpers\DEVHelper;
 // [REMOVED] use App\Helpers\DirHelper;
 
@@ -209,12 +509,17 @@ class Release
     const FILES_LIST = [
         // === Enum ===
         'App/Enum/CommandEnum.php',
+        'App/Enum/GitHubEnum.php',
         // === Helper ===
         'App/Helpers/DEVHelper.php',
         'App/Helpers/DirHelper.php',
         'App/Helpers/OpsHelper.php',
+        'App/Helpers/TextHelper.php',
+        'App/Helpers/GitHubHelper.php',
+        'App/Helpers/ServicesHelper.php',
         // === Objects ===
         'App/Objects/Release.php',
+        'App/Objects/Process.php',
         // always on bottom
         'App/app.php',
     ];
@@ -251,7 +556,7 @@ class Release
         }
         // handle
         echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
-        file_put_contents(self::RELEASE_PATH, "#!/usr/bin/env php\n\n// === OPS SHARED LIBRARY (PHP) ===\n"); // init file
+        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n\n// === %s v%s ===\n", App::APP_NAME, App::APP_VERSION)); // init file
         $this->handleLibrariesClass();
         $this->handleAppClass();
         echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);
@@ -316,6 +621,165 @@ class Release
     }
 }
 
+// [REMOVED] namespace App\Objects;
+
+// [REMOVED] use SharedLib\Enum\GitHubEnum;
+// [REMOVED] use SharedLib\Helpers\DotENVHelper;
+// [REMOVED] use SharedLib\Helpers\TextHelper;
+
+class Process
+{
+    /** @var string|null */
+    private $workName;
+
+    /** @var string|null */
+    private $workDir;
+
+    /** @var array|null */
+    private $commands;
+
+    /** @var array|null */
+    private $output;
+
+    /**
+     * @param string|null $workName
+     * @param string|null $workDir
+     * @param array|null $commands
+     */
+    public function __construct(
+        string $workName = null,
+        string $workDir = null,
+        array  $commands = null
+    )
+    {
+        $this->workName = $workName;
+        $this->workDir = $workDir;
+        $this->commands = $commands;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getWorkName(): ?string
+    {
+        return $this->workName;
+    }
+
+    /**
+     * @param string|null $workName
+     * @return Process
+     */
+    public function setWorkName(?string $workName): Process
+    {
+        $this->workName = $workName;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getWorkDir(): ?string
+    {
+        return $this->workDir;
+    }
+
+    /**
+     * @param string|null $workDir
+     * @return Process
+     */
+    public function setWorkDir(?string $workDir): Process
+    {
+        $this->workDir = $workDir;
+        return $this;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getCommands(): ?array
+    {
+        return $this->commands;
+    }
+
+    /**
+     * @param array|null $commands
+     * @return Process
+     */
+    public function setCommands(?array $commands): Process
+    {
+        $this->commands = $commands;
+        return $this;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getOutput(): ?array
+    {
+        return $this->output;
+    }
+
+    /**
+     * @param array|null $output
+     * @return Process
+     */
+    public function setOutput(?array $output): Process
+    {
+        $this->output = $output;
+        return $this;
+    }
+
+    // === UTILS ZONE ===
+
+    public function execMulti(): Process
+    {
+        // load .env
+       $this ->commands = array_merge(DotENVHelper::loadDotENV_SHELLCommand(),$this ->commands);
+        //
+        if ($this->commands) {
+            $resultCode = null;
+            exec(join(';', $this->commands), $this->output, $resultCode);
+        }
+        //
+        return $this;
+    }
+
+    public function execMultiInWorkDir(bool $skipCheckDir = false): Process
+    {
+        // dir commands
+        $arrDirCommands[] = sprintf("cd '%s'", $this->workDir); // cd
+        if (!$skipCheckDir) {
+            $arrDirCommands[] = GitHubEnum::REPOSITORY_DIR_COMMAND; // check dir
+        }
+        $this->commands = array_merge($arrDirCommands, $this->commands);
+        $this->execMulti();
+        //
+        return $this;
+    }
+
+    public function printOutput(): Process
+    {
+        TextHelper::message(sprintf("\n[WORK] %s", $this->workName));
+        TextHelper::message("- Commands: ");
+        if ($this->commands) {
+            foreach ($this->commands as $command) {
+                TextHelper::message(sprintf("    > %s", $command));
+            }
+        }
+        TextHelper::message("- Output: ");
+        if ($this->output) {
+            foreach ($this->output as $outputLine) {
+                TextHelper::message(sprintf("    + %s", $outputLine));
+            }
+        }
+        //
+        return $this;
+    }
+
+    // === END UTILS ZONE ===
+
+}
+
 // === end Generated libraries classes ===
 
 
@@ -323,6 +787,14 @@ class Release
 
 class App
 {
+    const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
+    /**
+     * 1.0: multiple files PHP and bash scripts
+     * 2.0: combine 1 lib file
+     * @var string
+     */
+    const APP_VERSION = '2.0';
+
     public function __construct()
     {
 
@@ -355,6 +827,9 @@ class App
             case CommandEnum::RELEASE:
                 (new Release())->handle();
                 break;
+            case CommandEnum::VERSION:
+                TextHelper::message(sprintf("%s v%s", self::APP_NAME, self::APP_VERSION));
+                break;
             // === ops ===
             case CommandEnum::BRANCH:
                 echo exec("git symbolic-ref HEAD | sed 's/refs\/heads\///g'");
@@ -374,6 +849,15 @@ class App
             case CommandEnum::WORKING_DIR:
                 echo $_SERVER['PWD'];
                 break;
+            case CommandEnum::REPLACE_TEXT_IN_FILE:
+                TextHelper::replaceTextInFile($argv);
+                break;
+            case CommandEnum::HANDLE_CACHES_AND_GIT:
+                GitHubHelper::handleCachesAndGit($argv);
+                break;
+            case CommandEnum::SLACK:
+                ServicesHelper::SlackMessage($argv);
+                break;
             // === private ===
             case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
                 echo OpsHelper::getS3WhiteListIpsDevelopment();
@@ -389,7 +873,9 @@ class App
 
     private function help()
     {
-        echo "\n[INFO] usage:  php _ops/lib COMMAND  \n";
+        TextHelper::message();
+        TextHelper::messageTitle(sprintf("%s v%s", self::APP_NAME, self::APP_VERSION));
+        echo "[INFO] usage:  php _ops/lib COMMAND  \n";
         echo "               php _ops/lib COMMAND PARAM_1 \n\n";
         echo "[INFO] Support commands:\n";
         foreach (CommandEnum::SUPPORT_COMMANDS as $command => $description) {

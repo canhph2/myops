@@ -7,6 +7,7 @@ class CommandEnum
     // === this app commands ===
     const HELP = 'help';
     const RELEASE = 'release';
+    const VERSION = 'version';
     // === ops commands ===
     const BRANCH = 'branch';
     const REPOSITORY = 'repository';
@@ -29,6 +30,7 @@ class CommandEnum
     const SUPPORT_COMMANDS = [
         self::HELP => 'show list support command and usage',
         self::RELEASE => 'combine all PHP files into \'_ops/lib\'',
+        self::VERSION => 'show app version',
         //
         self::BRANCH => 'get git branch / GitHub branch',
         self::REPOSITORY => 'get GitHub repository name',

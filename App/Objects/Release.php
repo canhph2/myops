@@ -2,6 +2,7 @@
 
 namespace App\Objects;
 
+use App\App;
 use App\Helpers\DEVHelper;
 use App\Helpers\DirHelper;
 
@@ -61,7 +62,7 @@ class Release
         }
         // handle
         echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
-        file_put_contents(self::RELEASE_PATH, "#!/usr/bin/env php\n<?php\n// === OPS SHARED LIBRARY (PHP) ===\n"); // init file
+        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s v%s ===\n", App::APP_NAME, App::APP_VERSION)); // init file
         $this->handleLibrariesClass();
         $this->handleAppClass();
         echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);

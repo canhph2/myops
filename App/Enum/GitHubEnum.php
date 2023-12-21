@@ -12,4 +12,5 @@ class GitHubEnum
     public const PUSH_COMMAND = 'git push';
     public const GET_REMOTE_ORIGIN_URL_COMMAND = 'git config --get remote.origin.url';
     public const GET_REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
+    public const GET_HEAD_COMMIT_ID_COMMAND = 'git rev-parse --short HEAD';
 }

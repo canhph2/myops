@@ -8,7 +8,6 @@ class ServicesHelper
     //    php _ops/lib slack "YOU MESSAGE";
     public static function SlackMessage(array $argv)
     {
-
         // === validate ===
         //    validate a message
         $message = $argv[2] ?? null;

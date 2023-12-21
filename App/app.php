@@ -8,7 +8,9 @@ require_once 'App/Helpers/DirHelper.php';
 
 // === class zone ====
 use App\Enum\CommandEnum;
+use App\Enum\GitHubEnum;
 use App\Helpers\AppHelper;
+use App\Helpers\DirHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OpsHelper;
 use App\Helpers\ServicesHelper;
@@ -19,6 +21,14 @@ AppHelper::requireOneAllPHPFilesInDir('');
 
 class App
 {
+    const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
+    /**
+     * 1.0: multiple files PHP and bash scripts
+     * 2.0: combine 1 lib file
+     * @var string
+     */
+    const APP_VERSION = '2.0';
+
     public function __construct()
     {
 
@@ -51,24 +61,27 @@ class App
             case CommandEnum::RELEASE:
                 (new Release())->handle();
                 break;
+            case CommandEnum::VERSION:
+                TextHelper::message(sprintf("%s v%s", self::APP_NAME, self::APP_VERSION));
+                break;
             // === ops ===
             case CommandEnum::BRANCH:
-                echo exec("git symbolic-ref HEAD | sed 's/refs\/heads\///g'");
+                echo exec(GitHubEnum::GET_BRANCH_COMMAND);
                 break;
             case  CommandEnum::REPOSITORY:
-                echo basename(str_replace('.git', '', exec('git config --get remote.origin.url')));
+                echo basename(str_replace('.git', '', exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND)));
                 break;
             case CommandEnum::HEAD_COMMIT_ID:
-                echo exec("git rev-parse --short HEAD");
+                echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
                 break;
             case CommandEnum::HOME_DIR:
-                echo $_SERVER['HOME'];
+                echo DirHelper::getHomeDir();
                 break;
             case  CommandEnum::SCRIPT_DIR:
-                echo str_replace('/' . basename($_SERVER['SCRIPT_FILENAME']), '', sprintf("%s/%s", $_SERVER['PWD'], $_SERVER['SCRIPT_FILENAME']));
+               echo DirHelper::getScriptDir();
                 break;
             case CommandEnum::WORKING_DIR:
-                echo $_SERVER['PWD'];
+                echo DirHelper::getWorkingDir();
                 break;
             case CommandEnum::REPLACE_TEXT_IN_FILE:
                 TextHelper::replaceTextInFile($argv);
@@ -84,7 +97,7 @@ class App
                 echo OpsHelper::getS3WhiteListIpsDevelopment();
                 break;
             case CommandEnum::UPDATE_GITHUB_TOKEN_ALL_PROJECT:
-                echo OpsHelper::updateGitHubTokenAllProjects();
+                OpsHelper::updateGitHubTokenAllProjects();
                 break;
             default:
                 echo "[ERROR] Unknown error";
@@ -94,7 +107,9 @@ class App
 
     private function help()
     {
-        echo "\n[INFO] usage:  php _ops/lib COMMAND  \n";
+        TextHelper::message();
+        TextHelper::messageTitle(sprintf("%s v%s", self::APP_NAME, self::APP_VERSION));
+        echo "[INFO] usage:  php _ops/lib COMMAND  \n";
         echo "               php _ops/lib COMMAND PARAM_1 \n\n";
         echo "[INFO] Support commands:\n";
         foreach (CommandEnum::SUPPORT_COMMANDS as $command => $description) {
