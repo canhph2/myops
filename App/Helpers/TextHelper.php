@@ -82,7 +82,7 @@ class TextHelper
         $replaceText = $argv[3] ?? null;
         $filePath = $argv[4] ?? null;
         if (!$searchText || is_null($replaceText) || !$filePath) {
-            TextHelper::messageERROR("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
+            TextHelper::messageERROR("[PARAMS] missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
             exit(); // END
         }
         if (!is_file($filePath)) {

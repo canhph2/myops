@@ -2,6 +2,8 @@
 
 namespace App\Helpers;
 
+use App\Enum\GitHubEnum;
+
 class OpsHelper
 {
     public static function getS3WhiteListIpsDevelopment(): string
@@ -29,42 +31,23 @@ class OpsHelper
 
     public static function updateGitHubTokenAllProjects()
     {
-
-// key = GitHub project name, value =  GitHub username
-        $listProjectsSupport = [
-            'engage-api' => 'infohkengage',
-            'engage-spa' => 'infohkengage',
-            'engage-booking-api' => 'infohkengage',
-            'engage-booking-spa' => 'infohkengage',
-            'invoice-service' => 'infohkengage',
-            'payment-service' => 'infohkengage',
-            'integration-api' => 'infohkengage',
-            'email-service' => 'infohkengage',
-            //
-            'engage-api-deploy' => 'infohkengage',
-            //
-            'engage-database-utils' => 'congnqnexlesoft',
-            'ops-lib' => 'congnqnexlesoft',
-            'docker-base-images' => 'congnqnexlesoft',
-        ];
-
         $GITHUB_PERSONAL_ACCESS_TOKEN_NEW = readline("Please input new GITHUB_PERSONAL_ACCESS_TOKEN? ");
         if (!$GITHUB_PERSONAL_ACCESS_TOKEN_NEW) {
-            echo "[ERROR] GitHub Personal Token should be string\n";
-            exit();
+            TextHelper::messageERROR("GitHub Personal Token should be string");
+            exit(); // END
         }
 //
         $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
-        echo "WORKSPACE DIR = $workspaceDir\n";
-        foreach ($listProjectsSupport as $projectName => $GitHubUsername) {
-            echo sprintf(" + Project '%s > %s': %s\n",
+        TextHelper::message("WORKSPACE DIR = $workspaceDir");
+        foreach (GitHubEnum::GITHUB_REPOSITORIES as $projectName => $GitHubUsername) {
+            TextHelper::message(sprintf(" + Project '%s > %s': %s",
                 $GitHubUsername,
                 $projectName,
                 is_dir(sprintf("%s/%s", $workspaceDir, $projectName)) ? "✔" : "X"
-            );
+            ));
         }
 // update token
-        foreach ($listProjectsSupport as $projectName => $GitHubUsername) {
+        foreach (GitHubEnum::GITHUB_REPOSITORIES as $projectName => $GitHubUsername) {
             $projectDir = sprintf("%s/%s", $workspaceDir, $projectName);
             if (is_dir($projectDir)) {
                 $output = null;
@@ -75,7 +58,7 @@ class OpsHelper
                 ]), $output, $resultCode);
                 // print output
                 foreach ($output as $line) {
-                    echo sprintf("    + %s\n", $line);
+                    TextHelper::message(sprintf("    + %s", $line));
                 }
             }
         }

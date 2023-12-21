@@ -60,6 +60,9 @@ class GitHubHelper
      * usage:
      *     php _ops/lib handle-caches-and-git REPOSITORY
      *
+     * required:
+     *     ENV > GITHUB_PERSONAL_ACCESS_TOKEN
+     *
      * case engage-api-deploy, to build api docker image
      *     php _ops/lib_temp/HandleCachesAndGit ENGAGE_API_DEPLOY
      */
@@ -67,61 +70,53 @@ class GitHubHelper
     {
         // === param ===
         $param2 = $argv[2] ?? null;
+        $param3 = $argv[3] ?? null;
         // === validate ===
         //    validate env vars
-        $repository = $param2 === 'ENGAGE_API_DEPLOY' ? 'engage-api-deploy' : getenv('Repository');
-        $branch = $param2 === 'ENGAGE_API_DEPLOY' ? getenv('API_DEPLOY_BRANCH') : getenv('Branch');
+        $repository = $param2 ?? getenv('REPOSITORY');
+        $branch = $param3 ?? getenv('BRANCH');
+        if ($repository === 'engage-api-deploy') {
+            $branch = $param3 ?? getenv('API_DEPLOY_BRANCH');
+        }
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", getenv('ENGAGEPLUS_CACHES_DIR'), $repository);
         $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
 
         if (!$repository || !$branch || !$EngagePlusCachesRepositoryDir || !$GitHubPersonalAccessToken) {
-            echo "[ERROR] missing a Branch or Repository or ENGAGEPLUS_CACHES_REPOSITORY_DIR or GITHUB_PERSONAL_ACCESS_TOKEN\n";
+            TextHelper::messageERROR("[ENV] missing a BRANCH or BRANCH or ENGAGEPLUS_CACHES_REPOSITORY_DIR or GITHUB_PERSONAL_ACCESS_TOKEN");
             exit(); // END
         }
-
-        // === handle case engage-api-deploy ===
+        //     message validate
+        TextHelper::message(sprintf("[%] REPOSITORY = $repository", $param2 ? 'CUSTOM' : 'ENV'));
+        TextHelper::message(sprintf("[%] BRANCH = $branch", $param3 ? 'CUSTOM' : 'ENV'));
+        TextHelper::message("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
-        echo "===\n";
-        echo "=== HANDLE CACHES AND GIT ===\n";
-        echo "Repository=$repository    Branch=$branch   DIR='$EngagePlusCachesRepositoryDir' \n";
-        //
-        $gitRemoteURLWithToken = sprintf("https://%s@github.com/infohkengage/%s.git", $GitHubPersonalAccessToken, $repository);
+        //     var
+        $remoteOriginUrl = sprintf("https://%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, GitHubEnum::GITHUB_REPOSITORIES[$repository], $repository);
+        TextHelper::messageTitle("Handle Caches and Git");
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
-            echo "The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository\n";
+            TextHelper::message("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
             //
             // case clone
         } else {
-            echo "[ERROR] The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository\n";
-            $output = null;
-            $resultCode = null;
-            exec(join(';', [
+            TextHelper::messageERROR("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
+            //
+            (new Process("Remove old directory", null, [
                 sprintf("rm -rf \"%s\"", $EngagePlusCachesRepositoryDir),
                 sprintf("mkdir -p \"%s\"", $EngagePlusCachesRepositoryDir),
-                sprintf("cd \"%s\"", $EngagePlusCachesRepositoryDir), # jump into this directory
-                sprintf("git clone -b %s %s .", $branch, $gitRemoteURLWithToken),
-            ]), $output, $resultCode);
-            // print output
-            foreach ($output as $line) {
-                echo sprintf("    + %s\n", $line);
-            }
+            ]))->execMulti()->printOutput();
+            //
+            (new Process("CLONE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
+                printf("git clone -b %s %s .", $branch, $remoteOriginUrl),
+            ]))->execMultiInWorkDir(true)->printOutput();
         }
         // === update new code ===
-        $output = null;
-        $resultCode = null;
-        exec(join(';', [
-            sprintf("cd \"%s\"", $EngagePlusCachesRepositoryDir), # jump into this directory
-            sprintf("git remote set-url origin %s", $gitRemoteURLWithToken),
-            'git reset --hard HEAD',
+        (new Process("CLONE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
+            sprintf("git remote set-url origin %s", $remoteOriginUrl),
+            GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout %s", $branch),
-            'git pull',
-        ]), $output, $resultCode);
-        // print output
-        foreach ($output as $line) {
-            echo sprintf("    + %s\n", $line);
-        }
-        echo "===\n\n";
-
+            GitHubEnum::PULL_COMMAND
+        ]))->execMultiInWorkDir()->printOutput();
     }
 }

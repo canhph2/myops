@@ -4,6 +4,11 @@ namespace App\Helpers;
 
 class ServicesHelper
 {
+    /**
+     * php _ops/lib slack "a message"
+     * @param array $argv
+     * @return void
+     */
     public static function SlackMessage(array $argv)
     {
         // === validate ===
