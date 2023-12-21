@@ -78,13 +78,15 @@ class GitHubHelper
         if ($repository === 'engage-api-deploy') {
             $branch = $param3 ?? getenv('API_DEPLOY_BRANCH');
         }
-        $EngagePlusCachesRepositoryDir = sprintf("%s/%s", getenv('ENGAGEPLUS_CACHES_DIR'), $repository);
+        $engagePlusCachesDir = getenv('ENGAGEPLUS_CACHES_DIR');
         $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
 
-        if (!$repository || !$branch || !$EngagePlusCachesRepositoryDir || !$GitHubPersonalAccessToken) {
-            TextHelper::messageERROR("[ENV] missing a BRANCH or BRANCH or ENGAGEPLUS_CACHES_REPOSITORY_DIR or GITHUB_PERSONAL_ACCESS_TOKEN");
+        if (!$repository || !$branch || !$engagePlusCachesDir || !$GitHubPersonalAccessToken) {
+            TextHelper::messageERROR("[ENV] missing a BRANCH or BRANCH or ENGAGEPLUS_CACHES_DIR or GITHUB_PERSONAL_ACCESS_TOKEN");
             exit(); // END
         }
+
+        $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
         TextHelper::message(sprintf("[%s] REPOSITORY = %s", $param2 ? 'CUSTOM' : 'ENV', $repository));
         TextHelper::message(sprintf("[%s] BRANCH = %s", $param3 ? 'CUSTOM' : 'ENV', $branch));

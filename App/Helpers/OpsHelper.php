@@ -119,7 +119,5 @@ class OpsHelper
         }
         //
         putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DirHelper::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
-        echo getenv('ENGAGEPLUS_CACHES_DIR');
-        die();
     }
 }
