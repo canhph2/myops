@@ -14,6 +14,13 @@ class CommandEnum
     const HOME_DIR = 'home-dir';
     const SCRIPT_DIR = 'script-dir';
     const WORKING_DIR = 'working-dir';
+    const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
+    const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
+    const SLACK = 'slack';
+    // === ops private commands ===
+    const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
+    const UPDATE_GITHUB_TOKEN_ALL_PROJECT = 'update-github-token-all-project';
+
 
     /**
      * @var array
@@ -29,5 +36,11 @@ class CommandEnum
         self::HOME_DIR => 'return home directory of machine / server',
         self::SCRIPT_DIR => 'return directory of script',
         self::WORKING_DIR => 'get root project directory / current working directory',
+        self::REPLACE_TEXT_IN_FILE => 'php _ops/lib replace-text-in-file "search text" "replace text" "file path"',
+        self::HANDLE_CACHES_AND_GIT => 'handle GitHub repository in caches directory',
+        self::SLACK => 'notify a message to Slack',
+        // private
+        self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => '[PRIVATE] get S3 whitelist IPs to add to AWS Policy',
+        self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => '[PRIVATE] update token all projects in workspace',
     ];
 }

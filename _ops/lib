@@ -20,6 +20,10 @@ class CommandEnum
     const HOME_DIR = 'home-dir';
     const SCRIPT_DIR = 'script-dir';
     const WORKING_DIR = 'working-dir';
+    // === ops private commands ===
+    const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
+    const UPDATE_GITHUB_TOKEN_ALL_PROJECT = 'update-github-token-all-project';
+
 
     /**
      * @var array
@@ -35,6 +39,9 @@ class CommandEnum
         self::HOME_DIR => 'return home directory of machine / server',
         self::SCRIPT_DIR => 'return directory of script',
         self::WORKING_DIR => 'get root project directory / current working directory',
+        // private
+        self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => '[PRIVATE] get S3 whitelist IPs to add to AWS Policy',
+        self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => '[PRIVATE] update token all projects in workspace',
     ];
 }
 
@@ -70,9 +77,128 @@ class DEVHelper
     }
 }
 
+// [REMOVED] namespace App\Helpers;
+
+class DirHelper
+{
+    /**
+     * get home directory / get root directory of user
+     * @return string
+     */
+    public static function getHomeDir(): string
+    {
+        return $_SERVER['HOME'];
+    }
+
+    public static function getWorkingDir(): string
+    {
+        return $_SERVER['PWD'];
+    }
+
+    /**
+     * get current working directory of script
+     * @return string
+     */
+    public static function getScriptDir(): string
+    {
+        return str_replace('/' . basename($_SERVER['SCRIPT_FILENAME']), '', sprintf("%s/%s", self::getWorkingDir(), $_SERVER['SCRIPT_FILENAME']));
+    }
+
+    // backup code
+//    public static function getRepositoryDir()
+//    {
+//        return exec('git rev-parse --show-toplevel');
+//    }
+}
+
+// [REMOVED] namespace App\Helpers;
+
+class OpsHelper
+{
+    public static function getS3WhiteListIpsDevelopment(): string
+    {
+
+        $NEXLE_IPS = [
+            '115.73.208.177', // Nexle VPN
+            '115.73.208.182', // Nexle HCM office - others
+            '115.73.208.183', // Nexle HCM office - others
+            '14.161.25.117', // Nexle HCM office - others
+            '118.69.176.228', // Nexle DN office
+        ];
+        $GITHUB_RUNNER_SERVER_IP = '18.167.126.148';
+        $EC2DevelopIp = exec("echo $(curl https://develop-api.engageplus.io/api/booking/IP-QYIa20HxwQ)");
+        $EC2StagingIp = exec("echo $(curl https://staging-api.engageplus.io/api/booking/IP-QYIa20HxwQ)");
+        //
+        $S3_WHITELIST_IP_DEVELOPMENT = array_merge($NEXLE_IPS, [
+            $GITHUB_RUNNER_SERVER_IP,
+            $EC2DevelopIp,
+            $EC2StagingIp
+        ]);
+        //
+        return sprintf("\n\n%s\n\n", json_encode($S3_WHITELIST_IP_DEVELOPMENT));
+    }
+
+    public static function updateGitHubTokenAllProjects()
+    {
+
+// key = GitHub project name, value =  GitHub username
+        $listProjectsSupport = [
+            'engage-api' => 'infohkengage',
+            'engage-spa' => 'infohkengage',
+            'engage-booking-api' => 'infohkengage',
+            'engage-booking-spa' => 'infohkengage',
+            'invoice-service' => 'infohkengage',
+            'payment-service' => 'infohkengage',
+            'integration-api' => 'infohkengage',
+            'email-service' => 'infohkengage',
+            //
+            'engage-api-deploy' => 'infohkengage',
+            //
+            'engage-database-utils' => 'congnqnexlesoft',
+            'ops-lib' => 'congnqnexlesoft',
+            'docker-base-images' => 'congnqnexlesoft',
+        ];
+
+        $GITHUB_PERSONAL_ACCESS_TOKEN_NEW = readline("Please input new GITHUB_PERSONAL_ACCESS_TOKEN? ");
+        if (!$GITHUB_PERSONAL_ACCESS_TOKEN_NEW) {
+            echo "[ERROR] GitHub Personal Token should be string\n";
+            exit();
+        }
+//
+        $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
+        echo "WORKSPACE DIR = $workspaceDir\n";
+        foreach ($listProjectsSupport as $projectName => $GitHubUsername) {
+            echo sprintf(" + Project '%s > %s': %s\n",
+                $GitHubUsername,
+                $projectName,
+                is_dir(sprintf("%s/%s", $workspaceDir, $projectName)) ? "✔" : "X"
+            );
+        }
+// update token
+        foreach ($listProjectsSupport as $projectName => $GitHubUsername) {
+            $projectDir = sprintf("%s/%s", $workspaceDir, $projectName);
+            if (is_dir($projectDir)) {
+                $output = null;
+                $resultCode = null;
+                exec(join(';', [
+                    sprintf("cd \"%s\"", $projectDir), # jump into this directory
+                    sprintf("git remote set-url origin https://%s@github.com/%s/%s.git", $GITHUB_PERSONAL_ACCESS_TOKEN_NEW, $GitHubUsername, $projectName),
+                ]), $output, $resultCode);
+                // print output
+                foreach ($output as $line) {
+                    echo sprintf("    + %s\n", $line);
+                }
+            }
+        }
+    }
+
+
+}
+
 // [REMOVED] namespace App\Objects;
 
 // [REMOVED] use App\Helpers\DEVHelper;
+// [REMOVED] use App\Helpers\DirHelper;
 
 class Release
 {
@@ -85,6 +211,8 @@ class Release
         'App/Enum/CommandEnum.php',
         // === Helper ===
         'App/Helpers/DEVHelper.php',
+        'App/Helpers/DirHelper.php',
+        'App/Helpers/OpsHelper.php',
         // === Objects ===
         'App/Objects/Release.php',
         // always on bottom
@@ -98,8 +226,30 @@ class Release
 
     }
 
-    public function handle()
+    /**
+     *  null: validate OK
+     *  string: error message
+     * @return string|null
+     */
+    private function validate(): ?string
     {
+        switch (basename(DirHelper::getScriptDir())) {
+            case 'App':
+                return null;
+            case '_ops':
+                return "[ERROR] in release directory \ another project, stop release job\n";
+            default:
+                return "[ERROR] unknown error\n";
+        }
+    }
+
+    public function handle(): void
+    {
+        if ($this->validate()) {
+            echo DEVHelper::message($this->validate(), __CLASS__, __FUNCTION__);
+            return; // END
+        }
+        // handle
         echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
         file_put_contents(self::RELEASE_PATH, "#!/usr/bin/env php\n\n// === OPS SHARED LIBRARY (PHP) ===\n"); // init file
         $this->handleLibrariesClass();
@@ -198,12 +348,14 @@ class App
 
         // === handle ===
         switch ($command) {
+            // === this app ===
             case CommandEnum::HELP:
                 $this->help();
                 break;
             case CommandEnum::RELEASE:
                 (new Release())->handle();
                 break;
+            // === ops ===
             case CommandEnum::BRANCH:
                 echo exec("git symbolic-ref HEAD | sed 's/refs\/heads\///g'");
                 break;
@@ -221,6 +373,13 @@ class App
                 break;
             case CommandEnum::WORKING_DIR:
                 echo $_SERVER['PWD'];
+                break;
+            // === private ===
+            case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
+                echo OpsHelper::getS3WhiteListIpsDevelopment();
+                break;
+            case CommandEnum::UPDATE_GITHUB_TOKEN_ALL_PROJECT:
+                echo OpsHelper::updateGitHubTokenAllProjects();
                 break;
             default:
                 echo "[ERROR] Unknown error";

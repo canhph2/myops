@@ -3,6 +3,7 @@
 namespace App\Objects;
 
 use App\Helpers\DEVHelper;
+use App\Helpers\DirHelper;
 
 class Release
 {
@@ -13,10 +14,17 @@ class Release
     const FILES_LIST = [
         // === Enum ===
         'App/Enum/CommandEnum.php',
+        'App/Enum/GitHubEnum.php',
         // === Helper ===
         'App/Helpers/DEVHelper.php',
+        'App/Helpers/DirHelper.php',
+        'App/Helpers/OpsHelper.php',
+        'App/Helpers/TextHelper.php',
+        'App/Helpers/GitHubHelper.php',
+        'App/Helpers/ServicesHelper.php',
         // === Objects ===
         'App/Objects/Release.php',
+        'App/Objects/Process.php',
         // always on bottom
         'App/app.php',
     ];
@@ -28,8 +36,30 @@ class Release
 
     }
 
-    public function handle()
+    /**
+     *  null: validate OK
+     *  string: error message
+     * @return string|null
+     */
+    private function validate(): ?string
     {
+        switch (basename(DirHelper::getScriptDir())) {
+            case 'App':
+                return null;
+            case '_ops':
+                return "[ERROR] in release directory \ another project, stop release job\n";
+            default:
+                return "[ERROR] unknown error\n";
+        }
+    }
+
+    public function handle(): void
+    {
+        if ($this->validate()) {
+            echo DEVHelper::message($this->validate(), __CLASS__, __FUNCTION__);
+            return; // END
+        }
+        // handle
         echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
         file_put_contents(self::RELEASE_PATH, "#!/usr/bin/env php\n<?php\n// === OPS SHARED LIBRARY (PHP) ===\n"); // init file
         $this->handleLibrariesClass();

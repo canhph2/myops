@@ -9,6 +9,10 @@ require_once 'App/Helpers/DirHelper.php';
 // === class zone ====
 use App\Enum\CommandEnum;
 use App\Helpers\AppHelper;
+use App\Helpers\GitHubHelper;
+use App\Helpers\OpsHelper;
+use App\Helpers\ServicesHelper;
+use App\Helpers\TextHelper;
 use App\Objects\Release;
 
 AppHelper::requireOneAllPHPFilesInDir('');
@@ -40,12 +44,14 @@ class App
 
         // === handle ===
         switch ($command) {
+            // === this app ===
             case CommandEnum::HELP:
                 $this->help();
                 break;
             case CommandEnum::RELEASE:
                 (new Release())->handle();
                 break;
+            // === ops ===
             case CommandEnum::BRANCH:
                 echo exec("git symbolic-ref HEAD | sed 's/refs\/heads\///g'");
                 break;
@@ -63,6 +69,22 @@ class App
                 break;
             case CommandEnum::WORKING_DIR:
                 echo $_SERVER['PWD'];
+                break;
+            case CommandEnum::REPLACE_TEXT_IN_FILE:
+                TextHelper::replaceTextInFile($argv);
+                break;
+            case CommandEnum::HANDLE_CACHES_AND_GIT:
+                GitHubHelper::handleCachesAndGit($argv);
+                break;
+            case CommandEnum::SLACK:
+                ServicesHelper::SlackMessage($argv);
+                break;
+            // === private ===
+            case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
+                echo OpsHelper::getS3WhiteListIpsDevelopment();
+                break;
+            case CommandEnum::UPDATE_GITHUB_TOKEN_ALL_PROJECT:
+                echo OpsHelper::updateGitHubTokenAllProjects();
                 break;
             default:
                 echo "[ERROR] Unknown error";
