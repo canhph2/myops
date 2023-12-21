@@ -7,6 +7,7 @@ use App\Enum\GitHubEnum;
 use App\Helpers\AppHelper;
 use App\Helpers\DEVHelper;
 use App\Helpers\DirHelper;
+use App\Helpers\TextHelper;
 use DateTime;
 
 class Release
@@ -81,6 +82,9 @@ class Release
             sprintf("git commit -m 'release %s on %s UTC'", App::versionNew(), (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
+        //
+        TextHelper::messageSeparate();
+        TextHelper::messageSUCCESS(sprintf("Release successful %s", App::version()));
     }
 
     /**
