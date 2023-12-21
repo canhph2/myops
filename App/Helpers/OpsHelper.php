@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\App;
 use App\Enum\GitHubEnum;
 use App\Objects\Process;
 
@@ -96,7 +97,8 @@ class OpsHelper
         //
         TextHelper::messageSeparate();
         TextHelper::messageSUCCESS("sync done");
-    }
+        TextHelper::message(App::version());
+        }
 
     /**
      * need to get

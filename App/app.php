@@ -67,7 +67,7 @@ class App
                 (new Release())->handle();
                 break;
             case CommandEnum::VERSION:
-                TextHelper::message(sprintf("%s v%s", self::APP_NAME, self::APP_VERSION));
+                TextHelper::message(App::version());
                 break;
             case CommandEnum::SYNC:
                 OpsHelper::sync(self::SHELL_HANDLE_ENV_OPS_DATA_BASE64);
@@ -137,6 +137,11 @@ class App
             echo sprintf(" +    %s    :  %s\n", $command, $description);
         }
         echo "\n===\n\n";
+    }
+
+    public static function version(): string
+    {
+        return sprintf("%s v%s", self::APP_NAME, self::APP_VERSION);
     }
 }
 
