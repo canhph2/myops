@@ -11,9 +11,13 @@ class Release
      * to release
      */
     const FILES_LIST = [
+        // === Enum ===
+        'App/Enum/CommandEnum.php',
+        // === Helper ===
+        'App/Helpers/DEVHelper.php',
+        // === Objects ===
         'App/Objects/Release.php',
         // always on bottom
-        'App/Enum/CommandEnum.php',
         'App/app.php',
     ];
 
