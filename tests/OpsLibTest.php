@@ -9,7 +9,7 @@ class OpsLibTest extends BaseTestCase
         $this->assertIsString("OpsLibTest test string");
     }
 
-    public function testCommandHelp()
+    public function testCommandVersion()
     {
         $oldVersion = exec("php App/app.php version");
         $this->customAssertIsStringAndContainsString( "OPS SHARED LIBRARY (PHP)", $oldVersion);
