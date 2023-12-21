@@ -8,7 +8,7 @@
 ---
 ### ops-lib | to sync new code (manually)
 ```shell
-sh _ops/lib_temp/sync.sh
+sh _ops/lib sync
 ```
 
 ---
