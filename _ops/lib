@@ -650,7 +650,7 @@ class Release
         // push new release to GitHub
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
-            sprintf("git commit -m 'release new code of _ops/lib on %s'", (new DateTime())->format('Y-m-d H:i:s')),
+            sprintf("git commit -m 'release new code of _ops/lib on %s UTC'", (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
     }
