@@ -30,7 +30,7 @@ class App
      * 2.1: with test lib before ship
      * @var string
      */
-    const APP_VERSION = '2.0.74';
+    const APP_VERSION = '2.0.75';
 
     const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = '';
 
