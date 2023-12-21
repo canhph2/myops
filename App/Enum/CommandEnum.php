@@ -8,6 +8,7 @@ class CommandEnum
     const HELP = 'help';
     const RELEASE = 'release';
     const VERSION = 'version';
+    const SYNC ='sync';
     // === SHELL DATA commands
     const LOAD_ENV_OPS = 'load-env-ops';
     const GET_SECRET_ENV = 'get-secret-env';
@@ -33,7 +34,8 @@ class CommandEnum
     const SUPPORT_COMMANDS = [
         self::HELP => 'show list support command and usage',
         self::RELEASE => 'combine all PHP files into \'_ops/lib\'',
-        self::VERSION => "show app version\n",
+        self::VERSION => "show app version",
+        self::SYNC => "sync new release code to project at _ops/lib",
         // AWS releated commands
         self::LOAD_ENV_OPS => "[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:\n\n                         eval \"$(php _ops/lib load-env-ops)\"    \n",
         self::GET_SECRET_ENV => "[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName\n",

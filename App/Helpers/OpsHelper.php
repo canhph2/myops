@@ -64,5 +64,20 @@ class OpsHelper
         }
     }
 
-
+    /**
+     * sync new release code to project at _ops/lib
+     * sync strategy:
+     * - clone 'ops-lib' project at caches folder
+     * - copy new lib file into project at _ops/lib
+     */
+    public static function sync()
+    {
+        // load caches of this source code
+        GitHubHelper::handleCachesAndGit([
+            'script path',
+            'command-name', // param 1
+            'ops-lib', // param 2, in this case is repository
+            'main', // param 3, in this case is branch
+        ]);
+    }
 }

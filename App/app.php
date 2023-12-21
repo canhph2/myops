@@ -69,6 +69,9 @@ class App
             case CommandEnum::VERSION:
                 TextHelper::message(sprintf("%s v%s", self::APP_NAME, self::APP_VERSION));
                 break;
+            case CommandEnum::SYNC:
+                OpsHelper::sync();
+                break;
             // === AWS related ===
             case CommandEnum::LOAD_ENV_OPS:
                 echo AWSHelper::loadOpsEnvAndHandleMore(self::SHELL_HANDLE_ENV_OPS_DATA_BASE64);
