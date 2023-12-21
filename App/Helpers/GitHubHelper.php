@@ -86,8 +86,8 @@ class GitHubHelper
             exit(); // END
         }
         //     message validate
-        TextHelper::message(sprintf("[%] REPOSITORY = $repository", $param2 ? 'CUSTOM' : 'ENV'));
-        TextHelper::message(sprintf("[%] BRANCH = $branch", $param3 ? 'CUSTOM' : 'ENV'));
+        TextHelper::message(sprintf("[%s] REPOSITORY = %s", $param2 ? 'CUSTOM' : 'ENV', $repository));
+        TextHelper::message(sprintf("[%s] BRANCH = %s", $param3 ? 'CUSTOM' : 'ENV', $branch));
         TextHelper::message("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
@@ -108,11 +108,11 @@ class GitHubHelper
             ]))->execMulti()->printOutput();
             //
             (new Process("CLONE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
-                printf("git clone -b %s %s .", $branch, $remoteOriginUrl),
+                sprintf("git clone -b %s %s .", $branch, $remoteOriginUrl),
             ]))->execMultiInWorkDir(true)->printOutput();
         }
         // === update new code ===
-        (new Process("CLONE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
+        (new Process("UPDATE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
             sprintf("git remote set-url origin %s", $remoteOriginUrl),
             GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout %s", $branch),
