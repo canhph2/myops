@@ -93,6 +93,9 @@ class OpsHelper
                 DirHelper::getWorkingDir()
             ),
         ]))->execMultiInWorkDir()->printOutput();
+        //
+        TextHelper::messageSeparate();
+        TextHelper::messageSUCCESS("sync done");
     }
 
     /**
