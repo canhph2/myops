@@ -48,11 +48,16 @@ class Release
     {
         // remove php tag
         $classContent = str_replace('<?php', '', trim(file_get_contents($classPath)));
-        // remove 'namespace A'
+        // remove unused elements
         $lines = explode("\n", $classContent);
         $modifiedLines = [];
         foreach ($lines as $line) {
+            // remove 'namespace'
             if (strpos($line, "namespace ") === 0) {
+                $line = "// [REMOVED] " . $line;
+            }
+            // remove 'use'
+            if (strpos($line, "use ") === 0) {
                 $line = "// [REMOVED] " . $line;
             }
             $modifiedLines[] = $line;
