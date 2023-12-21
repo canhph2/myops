@@ -67,8 +67,10 @@ class Release
             return; // END
         }
         // handle
+        echo App::version(); // todo
         //    increase app version
         AppHelper::increaseVersion();
+        echo App::version(); // todo
         //    generate files
         echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
         file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", App::version())); // init file
