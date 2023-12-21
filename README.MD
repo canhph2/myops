@@ -2,7 +2,7 @@
 *DevOps | CICD | DevOps Shared Library*
 
 ---
-### Usage
+## === Usage ===
 - *Add this and the other project's README.MD (should be in the DevOps Notes section):*
 
 ---
@@ -12,7 +12,7 @@ php _ops/lib sync
 ```
 
 ---
-## Project Notes
+## === Project Notes ===
 
 ### Note 1 | How to work
 1. Code ops shared library in PHP
@@ -38,9 +38,18 @@ _ops/lib    (PHP)
   - combine and release
 ```shell
 php App/app.php release
-echo " todo php test here"
+php vendor/phpunit/phpunit/phpunit tests
 ```
 - Test local project
 ```shell
 php App/app.php help
+```
+
+
+---
+## === Test  | PHPUNIT ===
+- add phpunit (v7.0 for php 7.2): ``composer require phpunit/phpunit:^7.0 --dev``
+- run test
+```shell
+  php vendor/phpunit/phpunit/phpunit tests
 ```
