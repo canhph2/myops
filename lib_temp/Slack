@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 // usage:
-//    php _ops/lib/Slack "YOU MESSAGE";
+//    php _ops/lib_temp/Slack "YOU MESSAGE";
 
 // === validate ===
 //    validate a message

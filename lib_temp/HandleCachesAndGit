@@ -2,10 +2,10 @@
 <?php
 /**
  * usage:
- *     php _ops/lib/HandleCachesAndGit
+ *     php _ops/lib_temp/HandleCachesAndGit
  *
  * case engage-api-deploy, to build api docker image
- *     php _ops/lib/HandleCachesAndGit ENGAGE_API_DEPLOY
+ *     php _ops/lib_temp/HandleCachesAndGit ENGAGE_API_DEPLOY
  */
 
 // === param ===

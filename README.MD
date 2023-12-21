@@ -8,19 +8,41 @@
 ---
 ### ops-lib | to sync new code (manually)
 ```shell
-sh _ops/lib/sync.sh
+sh _ops/lib_temp/sync.sh
 ```
 
 ---
 ## Project Notes
 
-### 1 | .syncignore | sync ignore list
+### Note 1 | How to work
+1. Code ops shared library in PHP
+2. Combine / build all files into 1 file php which call ``lib``
+   - Combine all file into ``lib``
+   - Test all function every release new code
+   - Handle with version
+3. Deploy to other project, should be ``_ops/lib``
+
+### Note 2 | .syncignore | sync ignore list
 Add a list of unused files and directories in other projects here
 
-### 2 | Format
-- in others projects:
+### Note 3 | Project structure
+- In others projects:
 ```
-_ops
-    LIB    PHP
-    lib    directory
+_ops/lib    (PHP)
+```
+- In this project (development and library):
+- [RELEASE] Building project will result ``_ops/lib``
+  - add new files to FILES_LIST in Release class 
+  - combine and release
+```shell
+php App/app.php release
+echo " todo php test here"
+```
+- release and run: 
+```
+php _ops/lib
+```
+- test local project
+```shell
+php App/app.php help
 ```

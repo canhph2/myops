@@ -1,0 +1,209 @@
+#!/usr/bin/env php
+<?php
+// === OPS SHARED LIBRARY (PHP) ===
+
+// === Generated libraries classes ===
+
+
+
+// [REMOVED] namespace App\Objects;
+
+use App\Helpers\DEVHelper;
+
+class Release
+{
+    /**
+     * @var array
+     * to release
+     */
+    const FILES_LIST = [
+        'App/Objects/Release.php',
+        // always on bottom
+        'App/Enum/CommandEnum.php',
+        'App/app.php',
+    ];
+
+    const RELEASE_PATH = '_ops/lib';
+
+    public function __construct()
+    {
+
+    }
+
+    public function handle()
+    {
+        echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
+        file_put_contents(self::RELEASE_PATH, "#!/usr/bin/env php\n\n// === OPS SHARED LIBRARY (PHP) ===\n"); // init file
+        $this->handleLibrariesClass();
+        $this->handleAppClass();
+        echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);
+    }
+
+    /**
+     * remove tab 
+     * remove namespace
+     * remove some unused elements
+     * @param string $classPath
+     * @return string
+     */
+    private function handlePHPClassContent(string $classPath): string
+    {
+        // remove php tag
+        $classContent = str_replace('', '', trim(file_get_contents($classPath)));
+        // remove 'namespace A'
+        $lines = explode("\n", $classContent);
+        $modifiedLines = [];
+        foreach ($lines as $line) {
+            if (strpos($line, "namespace ") === 0) {
+                $line = "// [REMOVED] " . $line;
+            }
+            $modifiedLines[] = $line;
+        }
+        return implode("\n", $modifiedLines);
+    }
+
+    /**
+     * @return void
+     */
+    private function handleAppClass(): void
+    {
+        $appClassContent = $this->handlePHPClassContent(self::FILES_LIST[count(self::FILES_LIST) - 1]);
+        $appClassContentClassOnly = sprintf("class App%s", explode('class App', $appClassContent)[1]);
+        file_put_contents(
+            self::RELEASE_PATH,
+            sprintf("\n// === Generated app class ===\n\n%s\n\n// === end Generated app class ===\n\n", $appClassContentClassOnly),
+            FILE_APPEND
+        ); // init file
+    }
+
+    /**
+     * @return void
+     */
+    private function handleLibrariesClass(): void
+    {
+        $librariesClassesContent = "";
+        for ($i = 0; $i < count(self::FILES_LIST) - 1; $i++) {
+            $librariesClassesContent .= $this->handlePHPClassContent(self::FILES_LIST[$i]);
+        }
+        file_put_contents(
+            self::RELEASE_PATH,
+            sprintf("\n// === Generated libraries classes ===\n\n%s\n\n// === end Generated libraries classes ===\n\n", $librariesClassesContent),
+            FILE_APPEND
+        ); // init file
+    }
+}
+
+// [REMOVED] namespace App\Enum;
+
+class CommandEnum
+{
+    // === this app commands ===
+    const HELP = 'help';
+    const RELEASE = 'release';
+    // === ops commands ===
+    const BRANCH = 'branch';
+    const REPOSITORY = 'repository';
+    const HEAD_COMMIT_ID = 'head-commit-id';
+    const HOME_DIR = 'home-dir';
+    const SCRIPT_DIR = 'script-dir';
+    const WORKING_DIR = 'working-dir';
+
+    /**
+     * @var array
+     * key => value | key is command, value is description
+     */
+    const SUPPORT_COMMANDS = [
+        self::HELP => 'show list support command and usage',
+        self::RELEASE => 'combine all PHP files into \'_ops/lib\'',
+        //
+        self::BRANCH => 'get git branch / GitHub branch',
+        self::REPOSITORY => 'get GitHub repository name',
+        self::HEAD_COMMIT_ID => 'get head commit id of branch',
+        self::HOME_DIR => 'return home directory of machine / server',
+        self::SCRIPT_DIR => 'return directory of script',
+        self::WORKING_DIR => 'get root project directory / current working directory',
+    ];
+}
+
+// === end Generated libraries classes ===
+
+
+// === Generated app class ===
+
+class App
+{
+    public function __construct()
+    {
+
+    }
+
+    public function run(array $argv)
+    {
+        // === params ===
+        $command = $argv[1] ?? null;
+        $param1 = $argv[2] ?? null; // to use if needed
+
+        // === validation ===
+        if (!$command) {
+            echo "[ERROR] missing command, should be 'php _ops/LIB COMMAND'\n";
+            $this->help();
+            exit(); // END
+        }
+        if (!array_key_exists($command, CommandEnum::SUPPORT_COMMANDS)) {
+            echo sprintf("[ERROR] do not support this command '%s'\n", $command);
+            $this->help();
+            exit(); // END
+        }
+
+        // === handle ===
+        switch ($command) {
+            case CommandEnum::HELP:
+                $this->help();
+                break;
+            case CommandEnum::RELEASE:
+                (new Release())->handle();
+                break;
+            case CommandEnum::BRANCH:
+                echo exec("git symbolic-ref HEAD | sed 's/refs\/heads\///g'");
+                break;
+            case  CommandEnum::REPOSITORY:
+                echo basename(str_replace('.git', '', exec('git config --get remote.origin.url')));
+                break;
+            case CommandEnum::HEAD_COMMIT_ID:
+                echo exec("git rev-parse --short HEAD");
+                break;
+            case CommandEnum::HOME_DIR:
+                echo $_SERVER['HOME'];
+                break;
+            case  CommandEnum::SCRIPT_DIR:
+                echo str_replace('/' . basename($_SERVER['SCRIPT_FILENAME']), '', sprintf("%s/%s", $_SERVER['PWD'], $_SERVER['SCRIPT_FILENAME']));
+                break;
+            case CommandEnum::WORKING_DIR:
+                echo $_SERVER['PWD'];
+                break;
+            default:
+                echo "[ERROR] Unknown error";
+                break;
+        }
+    }
+
+    private function help()
+    {
+        echo "\n[INFO] usage:  php _ops/lib COMMAND  \n";
+        echo "               php _ops/lib COMMAND PARAM_1 \n\n";
+        echo "[INFO] Support commands:\n";
+        foreach (CommandEnum::SUPPORT_COMMANDS as $command => $description) {
+            echo sprintf(" +    %s    :  %s\n", $command, $description);
+        }
+        echo "\n===\n\n";
+    }
+}
+
+// === end class zone ====
+
+// === execute zone ===
+(new App())->run($argv);
+// === end execute zone ===
+
+// === end Generated app class ===
+

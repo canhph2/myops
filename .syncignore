@@ -1,7 +1,0 @@
-.syncignore
-.git
-.gitignore
-README.MD
-_ops/lib/ZGetS3WhiteListIpsDevelopment
-_ops/lib/ZHandleSyncIgnore
-_ops/lib/ZUpdateGitHubTokenAllProjects

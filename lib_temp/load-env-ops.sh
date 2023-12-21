@@ -1,6 +1,6 @@
 #!/bin/bash
 # usage:
-#    . _ops/lib/load-env-ops.sh
+#    . _ops/lib_temp/load-env-ops.sh
 
 # === get Ops .env on AWS Secret Manager  ===
 aws secretsmanager get-secret-value --secret-id env-ops --query SecretString --output text > .env-ops

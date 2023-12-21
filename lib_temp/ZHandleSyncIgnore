@@ -1,18 +1,18 @@
 #!/usr/bin/env php
 <?php
 // usage:
-//    php _ops/lib/ZHandleSyncIgnore
+//    php _ops/lib_temp/ZHandleSyncIgnore
 //    php ZHandleSyncIgnore
 
 // === validate ===
 $scriptDir = str_replace('/' . basename($_SERVER['SCRIPT_FILENAME']), '', sprintf("%s/%s", $_SERVER['PWD'], $_SERVER['SCRIPT_FILENAME']));
 $dir = basename($scriptDir);
 switch ($dir) {
-    case 'lib':
+    case 'lib_temp':
         echo "[Handle Sync Ignore] Start to handle sync ignore files and directories\n";
         break;
-    case 'ops-lib':
-        echo "[Handle Sync Ignore] [ERROR] detect current project is 'ops-lib' project\n";
+    case 'ops-lib_temp':
+        echo "[Handle Sync Ignore] [ERROR] detect current project is 'ops-lib_temp' project\n";
         return; // END
     default:
         echo "[Handle Sync Ignore] [ERROR] anther error, dir='$dir' \n";
