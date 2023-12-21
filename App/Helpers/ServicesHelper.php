@@ -4,24 +4,22 @@ namespace App\Helpers;
 
 class ServicesHelper
 {
-    // usage:
-    //    php _ops/lib slack "YOU MESSAGE";
     public static function SlackMessage(array $argv)
     {
         // === validate ===
         //    validate a message
         $message = $argv[2] ?? null;
         if (!$message) {
-            echo "[ERROR] missing a MESSAGE\n";
+            TextHelper::messageERROR("missing a MESSAGE");
             exit(); // END
         }
         //    validate env vars
-        $repository = getenv('Repository');
-        $branch = getenv('Branch');
+        $repository = getenv('REPOSITORY');
+        $branch = getenv('BRANCH');
         $slackBotToken = getenv('SLACK_BOT_TOKEN');
         $slackChannel = getenv('SLACK_CHANNEL');
         if (!$repository || !$branch || !$slackBotToken || !$slackChannel) {
-            echo "[ERROR] missing a Branch or Repository or SLACK_BOT_TOKEN or SLACK_CHANNEL\n";
+            TextHelper::messageERROR("[ENV] missing a BRANCH or REPOSITORY or SLACK_BOT_TOKEN or SLACK_CHANNEL");
             exit(); // END
         }
 
@@ -35,13 +33,21 @@ class ServicesHelper
             "channel" => $slackChannel,
             "text" => sprintf("[%s] [%s] > %s", $repository, $branch, $message),
         ]));
-        if (!curl_exec($curl)) {
-            echo 'Curl error: ' . curl_error($curl);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
+        $response = curl_exec($curl);
+        if (!$response) {
+            TextHelper::messageERROR(curl_error($curl));
         } else {
             $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            echo $responseCode === 200
-                ? "\nMessage sent successfully\n"
-                : "\nError sending message with code $responseCode \n";
+            if ($responseCode === 200) {
+                if (json_decode($response, true)['ok']) {
+                    TextHelper::messageSUCCESS("Message sent successfully | Slack status OK | HTTP code $responseCode");
+                } else {
+                    TextHelper::messageERROR(json_decode($response, true)['error'] . " | Slack status NO | HTTP code $responseCode");
+                }
+            } else {
+                TextHelper::messageERROR("Error sending message | HTTP code $responseCode");
+            }
         }
 
     }

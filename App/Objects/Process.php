@@ -2,9 +2,8 @@
 
 namespace App\Objects;
 
-use SharedLib\Enum\GitHubEnum;
-use SharedLib\Helpers\DotENVHelper;
-use SharedLib\Helpers\TextHelper;
+use App\Enum\GitHubEnum;
+use App\Helpers\TextHelper;
 
 class Process
 {
@@ -112,8 +111,6 @@ class Process
 
     public function execMulti(): Process
     {
-        // load .env
-       $this ->commands = array_merge(DotENVHelper::loadDotENV_SHELLCommand(),$this ->commands);
         //
         if ($this->commands) {
             $resultCode = null;
