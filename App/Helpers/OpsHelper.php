@@ -96,8 +96,8 @@ class OpsHelper
         //
         TextHelper::messageSeparate();
         TextHelper::messageSUCCESS("sync done");
-        TextHelper::message(App::version());
-        }
+        TextHelper::message(App::versionNew());
+    }
 
     /**
      * need to get
