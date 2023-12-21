@@ -75,7 +75,6 @@ class OpsHelper
     public static function sync(string $SHELL_HANDLE_ENV_OPS_DATA_BASE64)
     {
         // load env into PHP
-        $opsEnvAllData = AWSHelper::loadOpsEnvAndHandleMore($SHELL_HANDLE_ENV_OPS_DATA_BASE64);
         self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore($SHELL_HANDLE_ENV_OPS_DATA_BASE64));
         // load caches of this source code
         GitHubHelper::handleCachesAndGit([

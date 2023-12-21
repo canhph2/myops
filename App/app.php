@@ -25,11 +25,11 @@ class App
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**
      * 1.0: multiple files PHP and bash scripts
-     * 2.0: combine 1 lib file
+     * 2.0: combine 1 lib file, sync
      * 2.1: with test lib before ship
      * @var string
      */
-    const APP_VERSION = '2.1';
+    const APP_VERSION = '2.0.56';
 
     const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = '';
 

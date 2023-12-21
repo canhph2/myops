@@ -4,6 +4,7 @@ namespace App\Objects;
 
 use App\App;
 use App\Enum\GitHubEnum;
+use App\Helpers\AppHelper;
 use App\Helpers\DEVHelper;
 use App\Helpers\DirHelper;
 use DateTime;
@@ -26,9 +27,11 @@ class Release
         'App/Helpers/GitHubHelper.php',
         'App/Helpers/ServicesHelper.php',
         'App/Helpers/AWSHelper.php',
+        'App/Helpers/AppHelper.php',
         // === Objects ===
         'App/Objects/Release.php',
         'App/Objects/Process.php',
+        'App/Objects/Version.php',
         // always on bottom
         'App/app.php',
     ];
@@ -69,10 +72,13 @@ class Release
         $this->handleLibrariesClass();
         $this->handleAppClass();
         echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);
+        // increase app version
+        AppHelper::increaseVersion();
+        die(); // todo
         // push new release to GitHub
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
-            sprintf("git commit -m 'release new code of _ops/lib on %s UTC'", (new DateTime())->format('Y-m-d H:i:s')),
+            sprintf("git commit -m 'release version v%s on %s UTC'", App::APP_VERSION , (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
     }
