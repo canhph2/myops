@@ -71,8 +71,11 @@ class OpsHelper
      * - clone 'ops-lib' project at caches folder
      * - copy new lib file into project at _ops/lib
      */
-    public static function sync()
+    public static function sync(string $SHELL_HANDLE_ENV_OPS_DATA_BASE64)
     {
+        // load env into PHP
+        $test = AWSHelper::loadOpsEnvAndHandleMore($SHELL_HANDLE_ENV_OPS_DATA_BASE64);
+        var_dump($test); // die();
         // load caches of this source code
         GitHubHelper::handleCachesAndGit([
             'script path',

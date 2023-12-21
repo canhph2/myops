@@ -29,6 +29,8 @@ Add a list of unused files and directories in other projects here
 - In others projects:
 ```
 _ops/lib    (PHP)
+    usage:
+    sh _ops/lib COMMAND PARAM1
 ```
 - In this project (development and library):
 - [RELEASE] Building project will result ``_ops/lib``
@@ -38,11 +40,7 @@ _ops/lib    (PHP)
 php App/app.php release
 echo " todo php test here"
 ```
-- release and run: 
-```
-php _ops/lib
-```
-- test local project
+- Test local project
 ```shell
 php App/app.php help
 ```
