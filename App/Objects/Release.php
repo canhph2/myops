@@ -84,7 +84,7 @@ class Release
         ]))->execMultiInWorkDir()->printOutput();
         //
         TextHelper::messageSeparate();
-        TextHelper::messageSUCCESS(sprintf("Release successful %s", App::version()));
+        TextHelper::messageSUCCESS(sprintf("Release successful %s", App::versionNew()));
     }
 
     /**
