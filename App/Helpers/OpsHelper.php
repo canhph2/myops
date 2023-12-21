@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Enum\GitHubEnum;
+use App\Objects\Process;
 
 class OpsHelper
 {
@@ -79,5 +80,15 @@ class OpsHelper
             'ops-lib', // param 2, in this case is repository
             'main', // param 3, in this case is branch
         ]);
+        // sync new lib
+        $EngagePlusCachesRepositoryOpsLibDir = sprintf("%s/ops-lib", getenv('ENGAGEPLUS_CACHES_DIR'));
+        (new Process("SYNC OPS LIB", DirHelper::getWorkingDir(), [
+            'rm _ops/lib',
+            sprintf(
+                "cp -f '%s/_ops/lib' '%s/_ops/lib'",
+                $EngagePlusCachesRepositoryOpsLibDir,
+                DirHelper::getWorkingDir()
+            ),
+        ]))->execMultiInWorkDir()->printOutput();
     }
 }
