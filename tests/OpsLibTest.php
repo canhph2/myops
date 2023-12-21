@@ -11,18 +11,20 @@ class OpsLibTest extends BaseTestCase
 
     public function testCommandVersion()
     {
-        $oldVersion = exec("php App/app.php version");
-        $this->customAssertIsStringAndContainsString( "OPS SHARED LIBRARY (PHP)", $oldVersion);
-        print $oldVersion;
-        //
-        exec("php App/app.php release");
-        //
-        $newVersion = exec("php App/app.php version");
-        $this->customAssertIsStringAndContainsString( "OPS SHARED LIBRARY (PHP)", $newVersion);
-        print $newVersion;
-        // compare change
-        $this->assertTrue($oldVersion === $newVersion);
+        $oldVersion = exec("php _ops/lib version");
+        $this->customAssertIsStringAndContainsString("OPS SHARED LIBRARY (PHP)", $oldVersion);
+        $this->customAssertIsStringAndContainsString("v", $oldVersion);
+        $this->customAssertIsStringAndContainsString(".", $oldVersion);
+    }
 
+    public function testLoadOpsEnv()
+    {
+        $output = "";
+        exec("php _ops/lib load-env-ops", $output);
+        $data = join("\n", $output);
+        $this->customAssertIsStringAndContainsString("SLACK_BOT_TOKEN", $data);
+        $this->customAssertIsStringAndContainsString("GITHUB_PERSONAL_ACCESS_TOKEN", $data);
+        $this->customAssertIsStringAndContainsString(" ENGAGEPLUS_CACHES_DIR", $data);
     }
 
 }
