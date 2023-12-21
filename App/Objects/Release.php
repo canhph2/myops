@@ -23,6 +23,7 @@ class Release
         'App/Helpers/TextHelper.php',
         'App/Helpers/GitHubHelper.php',
         'App/Helpers/ServicesHelper.php',
+        'App/Helpers/AWSHelper.php',
         // === Objects ===
         'App/Objects/Release.php',
         'App/Objects/Process.php',
@@ -99,10 +100,18 @@ class Release
     /**
      * @return void
      */
-    private function handleAppClass(): void
+    private
+    function handleAppClass(): void
     {
         $appClassContent = $this->handlePHPClassContent(self::FILES_LIST[count(self::FILES_LIST) - 1]);
         $appClassContentClassOnly = sprintf("class App%s", explode('class App', $appClassContent)[1]);
+        // handle shell data
+        $appClassContentClassOnly = str_replace(
+            "const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = '';",
+sprintf("const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = '%s';", base64_encode(file_get_contents("App/_shell_/handle-env-ops.sh"))),
+            $appClassContentClassOnly
+        );
+        //
         file_put_contents(
             self::RELEASE_PATH,
             sprintf("\n// === Generated app class ===\n\n%s\n\n// === end Generated app class ===\n\n", $appClassContentClassOnly),
@@ -113,7 +122,8 @@ class Release
     /**
      * @return void
      */
-    private function handleLibrariesClass(): void
+    private
+    function handleLibrariesClass(): void
     {
         $librariesClassesContent = "";
         for ($i = 0; $i < count(self::FILES_LIST) - 1; $i++) {

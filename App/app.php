@@ -10,6 +10,7 @@ require_once 'App/Helpers/DirHelper.php';
 use App\Enum\CommandEnum;
 use App\Enum\GitHubEnum;
 use App\Helpers\AppHelper;
+use App\Helpers\AWSHelper;
 use App\Helpers\DirHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OpsHelper;
@@ -25,9 +26,12 @@ class App
     /**
      * 1.0: multiple files PHP and bash scripts
      * 2.0: combine 1 lib file
+     * 2.1: with test lib before ship
      * @var string
      */
-    const APP_VERSION = '2.0';
+    const APP_VERSION = '2.1';
+
+    const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = '';
 
     public function __construct()
     {
@@ -39,6 +43,7 @@ class App
         // === params ===
         $command = $argv[1] ?? null;
         $param1 = $argv[2] ?? null; // to use if needed
+        $param2 = $argv[3] ?? null; // to use if needed
 
         // === validation ===
         if (!$command) {
@@ -64,6 +69,19 @@ class App
             case CommandEnum::VERSION:
                 TextHelper::message(sprintf("%s v%s", self::APP_NAME, self::APP_VERSION));
                 break;
+            // === AWS related ===
+            case CommandEnum::LOAD_ENV_OPS:
+                echo AWSHelper::loadOpsEnvAndHandleMore(self::SHELL_HANDLE_ENV_OPS_DATA_BASE64);
+                break;
+            case CommandEnum::GET_SECRET_ENV:
+                // validate
+                if (!$param1) {
+                    TextHelper::messageERROR("required secret name");
+                    exit(); // END
+                }
+                // handle
+                AWSHelper::getSecretEnv($param1, $param2);
+                break;
             // === ops ===
             case CommandEnum::BRANCH:
                 echo exec(GitHubEnum::GET_BRANCH_COMMAND);
@@ -78,7 +96,7 @@ class App
                 echo DirHelper::getHomeDir();
                 break;
             case  CommandEnum::SCRIPT_DIR:
-               echo DirHelper::getScriptDir();
+                echo DirHelper::getScriptDir();
                 break;
             case CommandEnum::WORKING_DIR:
                 echo DirHelper::getWorkingDir();
