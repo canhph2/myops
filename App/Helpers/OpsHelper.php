@@ -96,7 +96,8 @@ class OpsHelper
         //
         TextHelper::messageSeparate();
         TextHelper::messageSUCCESS("sync done");
-        TextHelper::message(App::versionNew());
+        // show open new session to show right version
+        TextHelper::message(exec('php _obs/lib version'));
     }
 
     /**
