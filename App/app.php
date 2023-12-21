@@ -17,6 +17,7 @@ use App\Helpers\OpsHelper;
 use App\Helpers\ServicesHelper;
 use App\Helpers\TextHelper;
 use App\Objects\Release;
+use App\Objects\Version;
 
 AppHelper::requireOneAllPHPFilesInDir('');
 
@@ -142,6 +143,13 @@ class App
     public static function version(): string
     {
         return sprintf("%s v%s", self::APP_NAME, self::APP_VERSION);
+    }
+
+    // guess a new version
+
+    public static function versionNew(): string
+    {
+        return sprintf("%s v%s", self::APP_NAME, Version::parse(self::APP_VERSION)->bump()->toString());
     }
 }
 
