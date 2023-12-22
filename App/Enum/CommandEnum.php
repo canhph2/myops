@@ -9,9 +9,11 @@ class CommandEnum
     const RELEASE = 'release';
     const VERSION = 'version';
     const SYNC ='sync';
+
     // === SHELL DATA commands
     const LOAD_ENV_OPS = 'load-env-ops';
     const GET_SECRET_ENV = 'get-secret-env';
+
     // === ops commands ===
     const BRANCH = 'branch';
     const REPOSITORY = 'repository';
@@ -23,6 +25,8 @@ class CommandEnum
     const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
     const SLACK = 'slack';
     const TMP = 'tmp';
+    const POST_WORK = 'post-work';
+
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
     const UPDATE_GITHUB_TOKEN_ALL_PROJECT = 'update-github-token-all-project';
@@ -54,7 +58,8 @@ class CommandEnum
         self::WORKING_DIR => 'get root project directory / current working directory',
         self::REPLACE_TEXT_IN_FILE => 'php _ops/lib replace-text-in-file "search text" "replace text" "file path"',
         self::SLACK => "notify a message to Slack",
-        self::TMP => "handle temporary directory (tmp), use 'tmp ADD' to add new tmp dir, use 'tmp REMOVE' to remove tmp dir",
+        self::TMP => "handle temporary directory (tmp), use 'tmp add' to add new tmp dir, use 'tmp remove' to remove tmp dir",
+        self::POST_WORK => "do post works, eg cleanup ...",
 
         "=== private ===" => '',
         self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => '[PRIVATE] get S3 whitelist IPs to add to AWS Policy',

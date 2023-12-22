@@ -118,6 +118,9 @@ class App
             case CommandEnum::TMP:
                 DirHelper::tmp($argv);
                 break;
+            case CommandEnum::POST_WORK:
+                OpsHelper::postWork();
+                break;
             // === private ===
             case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
                 echo OpsHelper::getS3WhiteListIpsDevelopment();

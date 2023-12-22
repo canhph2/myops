@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\App;
 use App\Enum\GitHubEnum;
 use App\Objects\Process;
+use SebastianBergmann\CodeCoverage\Report\Text;
 
 class OpsHelper
 {
@@ -126,5 +127,48 @@ class OpsHelper
         }
         //
         putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DirHelper::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
+    }
+
+    /**
+     * do some post works:
+     * - cleanup
+     * @param array $argv
+     * @return void
+     */
+    public static function postWork(): void
+    {
+        TextHelper::messageTitle("Post works");
+        $isDoNothing = true;
+        // === cleanup ===
+        //    tmp dir (PHP project)
+        if (is_dir(DirHelper::getWorkingDir('tmp'))) {
+            (new Process("Remove tmp dir", DirHelper::getWorkingDir(), [
+                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('tmp'))
+            ]))->execMultiInWorkDir()->printOutput();
+            // validate result
+            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DirHelper::getWorkingDir()));
+            TextHelper::messageCondition(!$checkTmpDir,
+                'remove a tmp dir successfully', 'remove a tmp dir failure');
+            //
+            $isDoNothing = false;
+        }
+        //    dist dir (Angular project)
+        if (is_dir(DirHelper::getWorkingDir('dist'))) {
+            (new Process("Remove tmp dir", DirHelper::getWorkingDir(), [
+                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('dist'))
+            ]))->execMultiInWorkDir()->printOutput();
+            // validate result
+            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DirHelper::getWorkingDir()));
+            TextHelper::messageCondition(!$checkTmpDir,
+                'remove a dist dir successfully', 'remove a dist dir failure');
+            //
+            $isDoNothing = false;
+        }
+        // === end cleanup ===
+        //
+        if ($isDoNothing) {
+            TextHelper::message("do nothing");
+        }
+        TextHelper::messageSeparate();
     }
 }
