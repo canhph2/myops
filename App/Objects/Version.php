@@ -9,6 +9,12 @@ use InvalidArgumentException;
  */
 class Version
 {
+
+    const MAJOR = 'major';
+    const MINOR = 'minor';
+    const PATCH = 'patch';
+    const BUILD = 'build';
+
     /** @var int */
     private $major;
     /** @var int */
@@ -26,31 +32,52 @@ class Version
         $this->build = (int)($build ?: 0);
     }
 
+    public function getMajor(): int
+    {
+        return $this->major;
+    }
+
+    public function setMajor(int $major): void
+    {
+        $this->major = $major;
+    }
+
+    public function getMinor(): int
+    {
+        return $this->minor;
+    }
+
+    public function setMinor(int $minor): void
+    {
+        $this->minor = $minor;
+    }
+
+    public function getPatch(): int
+    {
+        return $this->patch;
+    }
+
+    public function setPatch(int $patch): void
+    {
+        $this->patch = $patch;
+    }
+
+    public function getBuild(): int
+    {
+        return $this->build;
+    }
+
+    public function setBuild(int $build): void
+    {
+        $this->build = $build;
+    }
+
     public static function parse(string $versionStr): Version
     {
         $versionData = explode('.', trim($versionStr));
         return new Version($versionData[0], $versionData[1], $versionData[2]);
     }
 
-    public function getMajor()
-    {
-        return $this->major;
-    }
-
-    public function getMinor()
-    {
-        return $this->minor;
-    }
-
-    public function getPatch()
-    {
-        return $this->patch;
-    }
-
-    public function getBuild()
-    {
-        return $this->build;
-    }
 
     /**
      * return 1.0.0.0  (major.minor.patch.build)
@@ -120,21 +147,30 @@ class Version
         return $this->compare($otherVersion) >= 0;
     }
 
-    public function bump($part = 'patch'): Version
+    public function bump($part = self::PATCH): Version
     {
-        if (!in_array($part, ['major', 'minor', 'patch', 'build'])) {
+        if (!in_array($part, [self::MAJOR, self::MINOR, self::PATCH, self::BUILD])) {
             throw new InvalidArgumentException('Invalid version part');
         }
-        if ($part === 'major') {
+        if ($part === self::MAJOR) {
             $this->major++;
+            // reset minor, patch, build
+            $this->minor = 0;
+            $this->patch = 0;
+            $this->build = 0;
         }
-        if ($part === 'minor') {
+        if ($part === self::MINOR) {
             $this->minor++;
+            // reset patch, build
+            $this->patch = 0;
+            $this->build = 0;
         }
-        if ($part === 'patch') {
+        if ($part === self::PATCH) {
             $this->patch++;
+            // reset build
+            $this->build = 0;
         }
-        if ($part === 'build') {
+        if ($part === self::BUILD) {
             $this->build++;
         }
         return $this;

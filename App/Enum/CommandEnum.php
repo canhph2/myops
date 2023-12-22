@@ -10,7 +10,8 @@ class CommandEnum
     const HELP = 'help';
     const RELEASE = 'release';
     const VERSION = 'version';
-    const SYNC ='sync';
+    const VERSION_MINOR = 'version-minor';
+    const SYNC = 'sync';
 
     // === AWS related DATA commands
     const LOAD_ENV_OPS = 'load-env-ops';
@@ -37,6 +38,7 @@ class CommandEnum
 
     // === validation ===
     const VALIDATE_BRANCH = 'validate-branch';
+    const VALIDATE_DOCKER = 'validate-docker';
 
 
     /**
@@ -47,10 +49,12 @@ class CommandEnum
         self::HELP => 'show list support command and usage',
         self::RELEASE => 'combine all PHP files into \'_ops/lib\'',
         self::VERSION => "show app version",
+        self::VERSION_MINOR => "increase minor of app version, currently use for new feature",
         self::SYNC => "sync new release code to project at _ops/lib",
 
         "=== AWS releated commands ===" => '',
-        self::LOAD_ENV_OPS => "[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:\n\n                         eval \"$(php _ops/lib load-env-ops)\"    \n",
+        self::LOAD_ENV_OPS => "[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:
+                               eval \"$(php _ops/lib load-env-ops)\"   \n",
         self::GET_SECRET_ENV => "[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName",
 
         "=== git ===" => '',
@@ -73,6 +77,11 @@ class CommandEnum
         self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => '[PRIVATE] update token all projects in workspace',
 
         "=== validation ===" => '',
-        self::VALIDATE_BRANCH => 'validate branch to build: only allow develop, staging, master. required: \'set -e\' in bash file'
+        self::VALIDATE_BRANCH => "validate branch to build: only allow develop, staging, master
+                                required: \'set -e\' in bash file
+                                should combine with exit 1:    php _ops/lib validate-branch | exit 1",
+        self::VALIDATE_DOCKER => "validate docker should is running
+                                required: \'set -e\' in bash file
+                                should combine with exit 1:    php _ops/lib validate-docker | exit 1",
     ];
 }

@@ -174,6 +174,8 @@ class OpsHelper
 
     /**
      * allow branches: develop, staging, master
+     * should combine with exit 1 in shell:
+     *     php _ops/lib validate-branch || exit 1
      * @return void
      */
     public static function validateBranch()
@@ -181,7 +183,23 @@ class OpsHelper
         if (in_array(getenv('BRANCH'), ['develop', 'staging', 'master'])) {
             TextHelper::messageSUCCESS('validation branch got OK result');
         } else {
-            TextHelper::messageERROR(sprintf("validation branch got ERROR result | branch = %s", getenv('BRANCH')));
+            TextHelper::messageERROR(sprintf("Invalid branch to build | current branch is '%s'", getenv('BRANCH')));
+            exit(1); // END app
+        }
+    }
+
+    /**
+     * Docker should is running
+     * should combine with exit 1 in shell:
+     *      php _ops/lib validate-docker || exit 1
+     */
+    public static function validateDocker()
+    {
+        $dockerServer = exec("docker version | grep 'Server:'");
+        if (trim($dockerServer)) {
+            TextHelper::messageSUCCESS("Docker is running: $dockerServer");
+        } else {
+            TextHelper::messageERROR("Docker isn't running. Please start Docker app.");
             exit(1); // END app
         }
     }

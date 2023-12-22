@@ -31,7 +31,7 @@ class App
      * 2.X: with test lib before ship, add some new commands
      * @var string
      */
-    const APP_VERSION = '2.6.0';
+    const APP_VERSION = '2.6.35';
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -77,6 +77,11 @@ class App
                 break;
             case CommandEnum::VERSION:
                 TextHelper::message(App::version());
+                break;
+            case CommandEnum::VERSION_MINOR:
+                AppHelper::increaseVersion(Version::MINOR);
+                // also release new version
+                (new Release())->handle();
                 break;
             case CommandEnum::SYNC:
                 OpsHelper::sync();
@@ -136,11 +141,14 @@ class App
             case CommandEnum::UPDATE_GITHUB_TOKEN_ALL_PROJECT:
                 OpsHelper::updateGitHubTokenAllProjects();
                 break;
-                // === validation ===
+            // === validation ===
             case CommandEnum::VALIDATE_BRANCH:
                 OpsHelper::validateBranch();
                 break;
-                // === other ===
+            case CommandEnum::VALIDATE_DOCKER:
+                OpsHelper::validateDocker();
+                break;
+            // === other ===
             default:
                 echo "[ERROR] Unknown error";
                 break;

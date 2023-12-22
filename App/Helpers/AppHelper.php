@@ -33,20 +33,31 @@ class AppHelper
      * this will push new code to GitHub
      * @return void
      */
-    public static function increaseVersion()
+    public static function increaseVersion(string $part = Version::PATCH)
     {
-        // App class
+        // handle version
+        switch ($part) {
+            case Version::MINOR:
+                $newVersion = Version::parse(App::APP_VERSION)->bump(Version::MINOR);
+                break;
+            case Version::PATCH:
+            default:
+                $newVersion = Version::parse(App::APP_VERSION)->bump($part);
+                break;
+        }
+        // update data
+        //    App class
         $appClassPath = Release::FILES_LIST[count(Release::FILES_LIST) - 1];
         file_put_contents($appClassPath, preg_replace(
             '/APP_VERSION\s*=\s*\'(\d+\.\d+\.\d+)\'/',
-            sprintf("APP_VERSION = '%s'", Version::parse(App::APP_VERSION)->bump()->toString()),
+            sprintf("APP_VERSION = '%s'", $newVersion->toString()),
             file_get_contents($appClassPath)
         ));
-        // README.MD
+        //    README.MD
         $readmePath = "README.MD";
         file_put_contents($readmePath, preg_replace(
             '/ops-lib v(\d+\.\d+\.\d+)/',
-            sprintf("ops-lib v%s", Version::parse(App::APP_VERSION)->bump()->toString()),
+            sprintf("ops-lib v%s", $newVersion->toString()),
             file_get_contents($readmePath)
         ));
     }
