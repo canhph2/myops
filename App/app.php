@@ -31,7 +31,7 @@ class App
      * 2.X: with test lib before ship, add some new commands
      * @var string
      */
-    const APP_VERSION = '2.7.2';
+    const APP_VERSION = '2.7.3';
 
     const SHELL_DATA_BASE_64 = '';
 
