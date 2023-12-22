@@ -79,19 +79,19 @@ class Release
         $newVersion = AppHelper::increaseVersion($part);
         //    generate files
         echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
-        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", $newVersion->toString())); // init file
+        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", App::version($newVersion))); // init file
         $this->handleLibrariesClass();
         $this->handleAppClass();
         echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);
         //    push new release to GitHub
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
-            sprintf("git commit -m 'release %s on %s UTC'", $newVersion->toString(), (new DateTime())->format('Y-m-d H:i:s')),
+            sprintf("git commit -m 'release %s on %s UTC'", App::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
         //
         TextHelper::messageSeparate();
-        TextHelper::messageSUCCESS(sprintf("Release successful %s", $newVersion->toString()));
+        TextHelper::messageSUCCESS(sprintf("Release successful %s", App::version($newVersion)));
     }
 
     /**

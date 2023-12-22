@@ -31,7 +31,7 @@ class App
      * 2.X: with test lib before ship, add some new commands
      * @var string
      */
-    const APP_VERSION = '2.7.4';
+    const APP_VERSION = '2.7.5';
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -163,9 +163,13 @@ class App
         echo "\n===\n\n";
     }
 
-    public static function version(): string
+    public static function version(Version $newVersion = null): string
     {
-        return sprintf("%s v%s", self::APP_NAME, self::APP_VERSION);
+        return sprintf(
+            "%s v%s",
+            self::APP_NAME,
+            $newVersion ? $newVersion->toString() : self::APP_VERSION
+        );
     }
 }
 
