@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-// === OPS SHARED LIBRARY (PHP) v2.6.38 ===
+// === 2.7.1 ===
 
 // === Generated libraries classes ===
 
@@ -16,7 +16,6 @@ class CommandEnum
     const HELP = 'help';
     const RELEASE = 'release';
     const VERSION = 'version';
-    const VERSION_MINOR = 'version-minor';
     const SYNC = 'sync';
 
     // === AWS related DATA commands
@@ -53,9 +52,10 @@ class CommandEnum
      */
     const SUPPORT_COMMANDS = [
         self::HELP => 'show list support command and usage',
-        self::RELEASE => 'combine all PHP files into \'_ops/lib\'',
+        self::RELEASE => "combine all PHP files into '_ops/lib'
+                        default version increasing is 'patch'
+                        feature should be 'minor'",
         self::VERSION => "show app version",
-        self::VERSION_MINOR => "increase minor of app version, currently use for new feature",
         self::SYNC => "sync new release code to project at _ops/lib",
 
         "=== AWS releated commands ===" => '',
@@ -814,9 +814,11 @@ class AppHelper
     /**
      * this will increase App:APP_VERSION
      * this will push new code to GitHub
-     * @return void
+     *
+     * @param string $part
+     * @return Version
      */
-    public static function increaseVersion(string $part = Version::PATCH)
+    public static function increaseVersion(string $part = Version::PATCH): Version
     {
         // handle version
         switch ($part) {
@@ -843,6 +845,8 @@ class AppHelper
             sprintf("ops-lib v%s", $newVersion->toString()),
             file_get_contents($readmePath)
         ));
+        //
+        return $newVersion;
     }
 }
 
@@ -907,25 +911,32 @@ class Release
         }
     }
 
-    public function handle(): void
+    public function handle(array $argv): void
     {
-        if ($this->validate()) {
+        // validate
+        if ($this->validate($argv)) {
             echo DEVHelper::message($this->validate(), __CLASS__, __FUNCTION__);
+            return; // END
+        }
+        //    validate version part
+        $part = $argv[2] ?? Version::PATCH; // default, empty = patch
+        if (!in_array($part, Version::PARTS)) {
+            TextHelper::messageERROR(sprintf("invalid part of version, should be: %s", join(', ', Version::PARTS)));
             return; // END
         }
         // handle
         //    increase app version
-        AppHelper::increaseVersion();
+        $newVersion = AppHelper::increaseVersion($part);
         //    generate files
         echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
-        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n\n// === %s ===\n", App::versionNew())); // init file
+        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n\n// === %s ===\n", $newVersion->toString())); // init file
         $this->handleLibrariesClass();
         $this->handleAppClass();
         echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);
         //    push new release to GitHub
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
-            sprintf("git commit -m 'release %s on %s UTC'", App::versionNew(), (new DateTime())->format('Y-m-d H:i:s')),
+            sprintf("git commit -m 'release %s on %s UTC'", $newVersion->toString(), (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
         //
@@ -1206,6 +1217,8 @@ class Version
     const PATCH = 'patch';
     const BUILD = 'build';
 
+    const PARTS = [self::MAJOR, self::MINOR, self::PATCH, self::BUILD];
+
     /** @var int */
     private $major;
     /** @var int */
@@ -1340,7 +1353,7 @@ class Version
 
     public function bump($part = self::PATCH): Version
     {
-        if (!in_array($part, [self::MAJOR, self::MINOR, self::PATCH, self::BUILD])) {
+        if (!in_array($part, self::PARTS)) {
             throw new InvalidArgumentException('Invalid version part');
         }
         if ($part === self::MAJOR) {
@@ -1382,7 +1395,7 @@ class App
      * 2.X: with test lib before ship, add some new commands
      * @var string
      */
-    const APP_VERSION = '2.6.38';
+    const APP_VERSION = '2.7.1';
 
     const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKHBocCBfb3BzL2xpYiBicmFuY2gpCmV4cG9ydCBSRVBPU0lUT1JZPSQocGhwIF9vcHMvbGliIHJlcG9zaXRvcnkpCmV4cG9ydCBIRUFEX0NPTU1JVF9JRD0kKHBocCBfb3BzL2xpYiBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBlbmdhZ2UtYXBpLWRlcGxveSB2YXJzID09PQppZiBbICIke0JSQU5DSH0iID0gImRldmVsb3AiIF07IHRoZW4KICBleHBvcnQgRU5WPWRldgogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1kZXZlbG9wLW11bHRpLWNvbnRhaW5lcgogIGV4cG9ydCBFQl9FTlZJUk9OTUVOVF9OQU1FPSJkZXZlbG9wLW11bHRpLWNvbnRhaW5lciIKICBleHBvcnQgRU5WX1VSTF9QUkVGSVg9IiR7QlJBTkNIfS0iCiAgIwogIGV4cG9ydCBDT01QT1NFUl9JTlNUQUxMPSIke0NPTVBPU0VSX0lOU1RBTExfREVWRUxPUH0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBRz0iJHtET0NLRVJfQkFTRV9UQUdfREVWRUxPUH0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBR19BUEk9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCmZpCmlmIFsgIiR7QlJBTkNIfSIgPSAic3RhZ2luZyIgXTsgdGhlbgogIGV4cG9ydCBFTlY9c3RnCiAgZXhwb3J0IEFQSV9ERVBMT1lfQlJBTkNIPXN0YWdpbmctbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9InN0YWdpbmctbXVsdGktY29udGFpbmVyIgogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iJHtCUkFOQ0h9LSIKICAjCiAgZXhwb3J0IENPTVBPU0VSX0lOU1RBTEw9IiR7Q09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OfSIKICBleHBvcnQgRE9DS0VSX0JBU0VfVEFHPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIKICBleHBvcnQgRE9DS0VSX0JBU0VfVEFHX0FQST0iJHtET0NLRVJfQkFTRV9UQUdfREVWRUxPUH0iICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIiCiAgIwogIGV4cG9ydCBDT01QT1NFUl9JTlNUQUxMPSIke0NPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTn0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBRz0iJHtET0NLRVJfQkFTRV9UQUdfUFJPRFVDVElPTn0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBR19BUEk9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCmZpCiMgPT09IEVORCA9PT0KCiMgPT09IEFXUyBBY2NvdW50IGNvbmZpZ3VyYXRpb24gPT09CmV4cG9ydCBBV1NfQUNDT1VOVF9JRD0iOTgyMDgwNjcyOTgzIgpleHBvcnQgUkVHSU9OPSJhcC1lYXN0LTEiCiMgICAgRUNSIGNvbmZpZ3VyYXRpb24KIyAgICAgICAgYmFzZSBhbmQgY2FjaGVzIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRV9CQVNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtYmFzZS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgICAgIG5vcm1hbCByZXBvc2l0b3JpZXMKZXhwb3J0IEVDUl9SRVBPX0FQST0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1hcGktcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX1BBWU1FTlRfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1wYXltZW50LXNlcnZpY2UtcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0lOVk9JQ0VfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1pbnZvaWNlLXNlcnZpY2UtcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0lOVEVHUkFUSU9OX0FQST0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1pbnRlZ3JhdGlvbi1hcGktcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0VNQUlMX1NFUlZJQ0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy0ke0VOVn0tZW1haWwtc2VydmljZS1yZXBvc2l0b3J5IgojICAgIEVsYXN0aWMgQmVhbnN0YWxrIGNvbmZpZ3VyYXRpb24KZXhwb3J0IFMzX0VCX0FQUF9WRVJTSU9OX0JVQ0tFVF9OQU1FPSJlbGFzdGljYmVhbnN0YWxrLSR7UkVHSU9OfS0ke0FXU19BQ0NPVU5UX0lEfSIKZXhwb3J0IEVCX0FQUF9WRVJTSU9OX0ZPTERFUl9OQU1FPSJlbmdhZ2VwbHVzIgpleHBvcnQgRUJfQVBQX05BTUU9ImVuZ2FnZXBsdXMiCiMgPT09IEVORCA9PT0KCiMgPT09IEVuZ2FnZVBsdXMgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEVOR0FHRVBMVVNfQ0FDSEVTX0ZPTERFUj0iLmNhY2hlc19lbmdhZ2VwbHVzIgpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRElSPSIkKHBocCBfb3BzL2xpYiBob21lLWRpcikvJHtFTkdBR0VQTFVTX0NBQ0hFU19GT0xERVJ9IgpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfUkVQT1NJVE9SWV9ESVI9IiR7RU5HQUdFUExVU19DQUNIRVNfRElSfS8ke1JFUE9TSVRPUll9IgojID09PSBFTkQgPT09CgojID09PSBnZXQgREVWSUNFIGZyb20gcGFyYW0gMSA9PT0KZXhwb3J0IERFVklDRT0iJDEiCiMgPT09IEVORCA9PT0K';
 
@@ -1424,15 +1437,10 @@ class App
                 $this->help();
                 break;
             case CommandEnum::RELEASE:
-                (new Release())->handle();
+                (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
                 TextHelper::message(App::version());
-                break;
-            case CommandEnum::VERSION_MINOR:
-                AppHelper::increaseVersion(Version::MINOR);
-                // also release new version
-                (new Release())->handle();
                 break;
             case CommandEnum::SYNC:
                 OpsHelper::sync();
@@ -1522,13 +1530,6 @@ class App
     public static function version(): string
     {
         return sprintf("%s v%s", self::APP_NAME, self::APP_VERSION);
-    }
-
-    // guess a new version
-
-    public static function versionNew(): string
-    {
-        return sprintf("%s v%s", self::APP_NAME, Version::parse(self::APP_VERSION)->bump()->toString());
     }
 }
 

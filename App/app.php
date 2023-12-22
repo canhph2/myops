@@ -31,7 +31,7 @@ class App
      * 2.X: with test lib before ship, add some new commands
      * @var string
      */
-    const APP_VERSION = '2.6.38';
+    const APP_VERSION = '2.7.1';
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -73,15 +73,10 @@ class App
                 $this->help();
                 break;
             case CommandEnum::RELEASE:
-                (new Release())->handle();
+                (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
                 TextHelper::message(App::version());
-                break;
-            case CommandEnum::VERSION_MINOR:
-                AppHelper::increaseVersion(Version::MINOR);
-                // also release new version
-                (new Release())->handle();
                 break;
             case CommandEnum::SYNC:
                 OpsHelper::sync();
@@ -171,13 +166,6 @@ class App
     public static function version(): string
     {
         return sprintf("%s v%s", self::APP_NAME, self::APP_VERSION);
-    }
-
-    // guess a new version
-
-    public static function versionNew(): string
-    {
-        return sprintf("%s v%s", self::APP_NAME, Version::parse(self::APP_VERSION)->bump()->toString());
     }
 }
 

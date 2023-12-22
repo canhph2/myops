@@ -15,6 +15,8 @@ class Version
     const PATCH = 'patch';
     const BUILD = 'build';
 
+    const PARTS = [self::MAJOR, self::MINOR, self::PATCH, self::BUILD];
+
     /** @var int */
     private $major;
     /** @var int */
@@ -149,7 +151,7 @@ class Version
 
     public function bump($part = self::PATCH): Version
     {
-        if (!in_array($part, [self::MAJOR, self::MINOR, self::PATCH, self::BUILD])) {
+        if (!in_array($part, self::PARTS)) {
             throw new InvalidArgumentException('Invalid version part');
         }
         if ($part === self::MAJOR) {

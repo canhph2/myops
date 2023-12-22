@@ -61,25 +61,32 @@ class Release
         }
     }
 
-    public function handle(): void
+    public function handle(array $argv): void
     {
-        if ($this->validate()) {
+        // validate
+        if ($this->validate($argv)) {
             echo DEVHelper::message($this->validate(), __CLASS__, __FUNCTION__);
+            return; // END
+        }
+        //    validate version part
+        $part = $argv[2] ?? Version::PATCH; // default, empty = patch
+        if (!in_array($part, Version::PARTS)) {
+            TextHelper::messageERROR(sprintf("invalid part of version, should be: %s", join(', ', Version::PARTS)));
             return; // END
         }
         // handle
         //    increase app version
-        AppHelper::increaseVersion();
+        $newVersion = AppHelper::increaseVersion($part);
         //    generate files
         echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
-        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", App::versionNew())); // init file
+        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", $newVersion->toString())); // init file
         $this->handleLibrariesClass();
         $this->handleAppClass();
         echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);
         //    push new release to GitHub
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
-            sprintf("git commit -m 'release %s on %s UTC'", App::versionNew(), (new DateTime())->format('Y-m-d H:i:s')),
+            sprintf("git commit -m 'release %s on %s UTC'", $newVersion->toString(), (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
         //

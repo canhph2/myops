@@ -10,7 +10,6 @@ class CommandEnum
     const HELP = 'help';
     const RELEASE = 'release';
     const VERSION = 'version';
-    const VERSION_MINOR = 'version-minor';
     const SYNC = 'sync';
 
     // === AWS related DATA commands
@@ -47,9 +46,10 @@ class CommandEnum
      */
     const SUPPORT_COMMANDS = [
         self::HELP => 'show list support command and usage',
-        self::RELEASE => 'combine all PHP files into \'_ops/lib\'',
+        self::RELEASE => "combine all PHP files into '_ops/lib'
+                        default version increasing is 'patch'
+                        feature should be 'minor'",
         self::VERSION => "show app version",
-        self::VERSION_MINOR => "increase minor of app version, currently use for new feature",
         self::SYNC => "sync new release code to project at _ops/lib",
 
         "=== AWS releated commands ===" => '',

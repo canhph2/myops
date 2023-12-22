@@ -31,9 +31,11 @@ class AppHelper
     /**
      * this will increase App:APP_VERSION
      * this will push new code to GitHub
-     * @return void
+     *
+     * @param string $part
+     * @return Version
      */
-    public static function increaseVersion(string $part = Version::PATCH)
+    public static function increaseVersion(string $part = Version::PATCH): Version
     {
         // handle version
         switch ($part) {
@@ -60,5 +62,7 @@ class AppHelper
             sprintf("ops-lib v%s", $newVersion->toString()),
             file_get_contents($readmePath)
         ));
+        //
+        return $newVersion;
     }
 }
