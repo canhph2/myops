@@ -47,8 +47,13 @@ class OpsLibTest extends BaseTestCase
     }
 
     public function testReplaceTextInFile(){
-        // todo write test case here
-        $this->assertIsString(" ok ok");
+        exec('php _ops/lib tmp add');
+        // create a test file
+        $contentOrigin = "line 1 with AA BB CC";
+        file_put_contents("tmp/test.txt", $contentOrigin);
+        exec("php _ops/lib replace-text-in-file 'BB' 'NEW TEST OK' 'tmp/test.txt'");
+        $contentNew = exec("cat tmp/test.txt");
+        self::assertTrue($contentOrigin !== $contentNew);
     }
 
 }
