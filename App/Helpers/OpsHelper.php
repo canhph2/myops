@@ -154,7 +154,7 @@ class OpsHelper
         }
         //    dist dir (Angular project)
         if (is_dir(DirHelper::getWorkingDir('dist'))) {
-            (new Process("Remove tmp dir", DirHelper::getWorkingDir(), [
+            (new Process("Remove dist dir", DirHelper::getWorkingDir(), [
                 sprintf("rm -rf '%s'", DirHelper::getWorkingDir('dist'))
             ]))->execMultiInWorkDir()->printOutput();
             // validate result
