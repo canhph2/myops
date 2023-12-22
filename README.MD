@@ -1,4 +1,4 @@
-# ops-lib v2.8.1
+# ops-lib v2.8.2
 *DevOps | CICD | DevOps Shared Library*
 
 ---
@@ -22,16 +22,10 @@ php _ops/lib sync
    - Handle with version
 3. Deploy to other project, should be ``_ops/lib``
 
-### Note 2 | .syncignore | sync ignore list
-Add a list of unused files and directories in other projects here
-
-### Note 3 | Project structure
-- In others projects:
-```
-_ops/lib    (PHP)
-    usage:
-    sh _ops/lib COMMAND PARAM1
-```
+### Note 2 | Project structure
+- In others projects: ``_ops/lib    (PHP)``
+  - Usage: ``sh _ops/lib COMMAND PARAM1``
+---
 - In this project (development and library):
 - [RELEASE] Building project will result ``_ops/lib``
   - add new files to FILES_LIST in Release class 
