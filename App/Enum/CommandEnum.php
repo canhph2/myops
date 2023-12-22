@@ -78,6 +78,7 @@ class CommandEnum
                     supports:
                     - branch  : to only allow develop, staging, master
                     - docker  : docker should is running
+                    - device: should pass env var: DEVICE in your first command
                     ",
     ];
 }
