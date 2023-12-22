@@ -125,8 +125,8 @@ class Release
         $appClassContentClassOnly = sprintf("class App%s", explode('class App', $appClassContent)[1]);
         // handle shell data
         $appClassContentClassOnly = str_replace(
-            "const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = '';",
-            sprintf("const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = '%s';", base64_encode(file_get_contents("App/_shell_/handle-env-ops.sh"))),
+            "const SHELL_DATA_BASE_64 = '';",
+            sprintf("const SHELL_DATA_BASE_64 = '%s';", base64_encode(file_get_contents("App/_shell_/handle-env-ops.sh"))),
             $appClassContentClassOnly
         );
         //

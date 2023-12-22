@@ -30,9 +30,22 @@ class App
      * 2.X: with test lib before ship, add some new commands
      * @var string
      */
-    const APP_VERSION = '2.5.93';
+    const APP_VERSION = '2.5.94';
 
-    const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = ''; // todo handle new
+    const SHELL_DATA_BASE_64 = '';
+
+    public static function getShellData()
+    {
+        if (self::SHELL_DATA_BASE_64) {
+            TextHelper::message("SHELL DATA FROM variable (production)");// todo test
+           return base64_decode(self::SHELL_DATA_BASE_64);
+            //
+            // case development
+        } else {
+            TextHelper::message("SHELL DATA FROM file (develop)");// todo test
+            return  file_get_contents('App/_shell_/handle-env-ops.sh');
+        }
+    }
 
     public function __construct()
     {
@@ -71,11 +84,11 @@ class App
                 TextHelper::message(App::version());
                 break;
             case CommandEnum::SYNC:
-                OpsHelper::sync(self::SHELL_HANDLE_ENV_OPS_DATA_BASE64);
+                OpsHelper::sync();
                 break;
             // === AWS related ===
             case CommandEnum::LOAD_ENV_OPS:
-                echo AWSHelper::loadOpsEnvAndHandleMore(self::SHELL_HANDLE_ENV_OPS_DATA_BASE64);
+                echo AWSHelper::loadOpsEnvAndHandleMore();
                 break;
             case CommandEnum::GET_SECRET_ENV:
                 // validate
