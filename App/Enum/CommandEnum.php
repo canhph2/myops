@@ -76,10 +76,10 @@ class CommandEnum
 
         "=== validation ===" => '',
         self::VALIDATE_BRANCH => "validate branch to build: only allow develop, staging, master
-                                required: \'set -e\' in bash file
+                                required: 'set -e' in bash file
                                 should combine with exit 1:    php _ops/lib validate-branch | exit 1",
         self::VALIDATE_DOCKER => "validate docker should is running
-                                required: \'set -e\' in bash file
+                                required: 'set -e' in bash file
                                 should combine with exit 1:    php _ops/lib validate-docker | exit 1",
     ];
 }
