@@ -171,4 +171,18 @@ class OpsHelper
         }
         TextHelper::messageSeparate();
     }
+
+    /**
+     * allow branches: develop, staging, master
+     * @return void
+     */
+    public static function validateBranch()
+    {
+        if (in_array(getenv('BRANCH'), ['develop', 'staging', 'master'])) {
+            TextHelper::messageSUCCESS('validation branch got OK result');
+        } else {
+            TextHelper::messageERROR(sprintf("validation branch got ERROR result | branch = %s", getenv('BRANCH')));
+            exit(1); // END app
+        }
+    }
 }

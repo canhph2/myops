@@ -2,6 +2,8 @@
 
 namespace App\Enum;
 
+use phpDocumentor\Reflection\Types\Self_;
+
 class CommandEnum
 {
     // === this app commands ===
@@ -10,19 +12,21 @@ class CommandEnum
     const VERSION = 'version';
     const SYNC ='sync';
 
-    // === SHELL DATA commands
+    // === AWS related DATA commands
     const LOAD_ENV_OPS = 'load-env-ops';
     const GET_SECRET_ENV = 'get-secret-env';
 
-    // === ops commands ===
+    // === git ===
     const BRANCH = 'branch';
     const REPOSITORY = 'repository';
     const HEAD_COMMIT_ID = 'head-commit-id';
+    const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
+
+    // === utils ===
     const HOME_DIR = 'home-dir';
     const SCRIPT_DIR = 'script-dir';
     const WORKING_DIR = 'working-dir';
     const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
-    const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
     const SLACK = 'slack';
     const TMP = 'tmp';
     const POST_WORK = 'post-work';
@@ -30,6 +34,9 @@ class CommandEnum
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
     const UPDATE_GITHUB_TOKEN_ALL_PROJECT = 'update-github-token-all-project';
+
+    // === validation ===
+    const VALIDATE_BRANCH = 'validate-branch';
 
 
     /**
@@ -64,5 +71,8 @@ class CommandEnum
         "=== private ===" => '',
         self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => '[PRIVATE] get S3 whitelist IPs to add to AWS Policy',
         self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => '[PRIVATE] update token all projects in workspace',
+
+        "=== validation ===" => '',
+        self::VALIDATE_BRANCH => 'validate branch to build: only allow develop, staging, master. required: \'set -e\' in bash file'
     ];
 }
