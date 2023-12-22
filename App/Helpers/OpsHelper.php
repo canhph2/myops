@@ -172,16 +172,35 @@ class OpsHelper
         TextHelper::messageSeparate();
     }
 
+    public static function validate(array $argv)
+    {
+        switch ($argv[2] ?? null) {
+            case 'branch':
+                self::validateBranch();
+                break;
+            case 'docker':
+                self::validateDocker();
+                break;
+            case 'device':
+                self::validateDevice();
+                break;
+            default:
+                TextHelper::messageERROR("invalid action, current support:  branch, docker, device");
+                TextHelper::message("should be like eg:   php _ops/lib validate branch");
+                break;
+        }
+    }
+
     /**
      * allow branches: develop, staging, master
      * should combine with exit 1 in shell:
-     *     php _ops/lib validate-branch || exit 1
+     *     php _ops/lib validate branch || exit 1
      * @return void
      */
-    public static function validateBranch()
+    private static function validateBranch()
     {
         if (in_array(getenv('BRANCH'), ['develop', 'staging', 'master'])) {
-            TextHelper::messageSUCCESS('validation branch got OK result');
+            TextHelper::messageSUCCESS('validation branch got OK result: ' . getenv('BRANCH'));
         } else {
             TextHelper::messageERROR(sprintf("Invalid branch to build | current branch is '%s'", getenv('BRANCH')));
             exit(1); // END app
@@ -191,15 +210,30 @@ class OpsHelper
     /**
      * Docker should is running
      * should combine with exit 1 in shell:
-     *      php _ops/lib validate-docker || exit 1
+     *      php _ops/lib validate docker || exit 1
      */
-    public static function validateDocker()
+    private static function validateDocker()
     {
         $dockerServer = exec("docker version | grep 'Server:'");
         if (trim($dockerServer)) {
             TextHelper::messageSUCCESS("Docker is running: $dockerServer");
         } else {
             TextHelper::messageERROR("Docker isn't running. Please start Docker app.");
+            exit(1); // END app
+        }
+    }
+
+    /**
+     * should have env var: BRANCH
+     *     php _ops/lib validate device || exit 1
+     * @return void
+     */
+    private static function validateDevice()
+    {
+        if (getenv('DEVICE')) {
+            TextHelper::messageSUCCESS('validation device got OK result: ' . getenv('DEVICE'));
+        } else {
+            TextHelper::messageERROR("Invalid device | should pass in your command");
             exit(1); // END app
         }
     }

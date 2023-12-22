@@ -34,9 +34,7 @@ class CommandEnum
     const UPDATE_GITHUB_TOKEN_ALL_PROJECT = 'update-github-token-all-project';
 
     // === validation ===
-    const VALIDATE_BRANCH = 'validate-branch';
-    const VALIDATE_DOCKER = 'validate-docker';
-
+    const VALIDATE = 'validate';
 
     /**
      * @var array
@@ -75,11 +73,11 @@ class CommandEnum
         self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => '[PRIVATE] update token all projects in workspace',
 
         "=== validation ===" => '',
-        self::VALIDATE_BRANCH => "validate branch to build: only allow develop, staging, master
-                                required: 'set -e' in bash file
-                                should combine with exit 1:    php _ops/lib validate-branch | exit 1",
-        self::VALIDATE_DOCKER => "validate docker should is running
-                                required: 'set -e' in bash file
-                                should combine with exit 1:    php _ops/lib validate-docker | exit 1",
+        self::VALIDATE => "required: 'set -e' in bash file
+                    should combine with exit 1, eg:   php _ops/lib validate TYPE | exit 1
+                    supports:
+                    - branch  : to only allow develop, staging, master
+                    - docker  : docker should is running
+                    ",
     ];
 }

@@ -137,11 +137,8 @@ class App
                 OpsHelper::updateGitHubTokenAllProjects();
                 break;
             // === validation ===
-            case CommandEnum::VALIDATE_BRANCH:
-                OpsHelper::validateBranch();
-                break;
-            case CommandEnum::VALIDATE_DOCKER:
-                OpsHelper::validateDocker();
+            case CommandEnum::VALIDATE:
+                OpsHelper::validate($argv);
                 break;
             // === other ===
             default:
