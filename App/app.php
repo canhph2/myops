@@ -16,6 +16,7 @@ use App\Helpers\GitHubHelper;
 use App\Helpers\OpsHelper;
 use App\Helpers\ServicesHelper;
 use App\Helpers\TextHelper;
+use App\Objects\Process;
 use App\Objects\Release;
 use App\Objects\Version;
 
@@ -36,7 +37,9 @@ class App
 
     public static function getShellData()
     {
-        return self::SHELL_DATA_BASE_64 ? base64_decode(self::SHELL_DATA_BASE_64) : file_get_contents('App/_shell_/handle-env-ops.sh');
+        return self::SHELL_DATA_BASE_64
+            ? base64_decode(self::SHELL_DATA_BASE_64)
+            : file_get_contents('App/_shell_/handle-env-ops.sh');
     }
 
     public function __construct()

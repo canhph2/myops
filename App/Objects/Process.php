@@ -3,6 +3,7 @@
 namespace App\Objects;
 
 use App\Enum\GitHubEnum;
+use App\Helpers\DirHelper;
 use App\Helpers\TextHelper;
 
 class Process
@@ -98,6 +99,14 @@ class Process
     }
 
     /**
+     * @return string
+     */
+    public function getOutputStrAll(): string
+    {
+        return join(PHP_EOL, $this->output);
+    }
+
+    /**
      * @param array|null $output
      * @return Process
      */
@@ -111,7 +120,31 @@ class Process
 
     public function execMulti(): Process
     {
-        //
+        // === validate ===
+        //    dangerous command
+        foreach ($this->commands as $command) {
+            $command = trim($command);
+            if (in_array(str_replace("  ", " ", trim($command)), [
+                "rm -rf",
+                "rm -rf ''",
+                "rm -rf ' '",
+                "rm -rf \"\"",
+                "rm -rf \" \"",
+                "rm -rf /",
+                "rm -rf '/'",
+                "rm -rf \"/\"",
+                sprintf("rm -rf %s", DirHelper::getHomeDir()),
+                sprintf("rm -rf '%s'", DirHelper::getHomeDir()),
+                sprintf("rm -rf \"%s\"", DirHelper::getHomeDir()),
+                sprintf("rm -rf %s/", DirHelper::getHomeDir()),
+                sprintf("rm -rf '%s/'", DirHelper::getHomeDir()),
+                sprintf("rm -rf \"%s/\"", DirHelper::getHomeDir()),
+            ])) {
+                TextHelper::messageERROR("detect dangerous command: $command  , exit app");
+                exit(1); // END
+            }
+        }
+        // === handle ===
         if ($this->commands) {
             $resultCode = null;
             exec(join(';', $this->commands), $this->output, $resultCode);
@@ -151,6 +184,7 @@ class Process
         //
         return $this;
     }
+
 
     // === END UTILS ZONE ===
 
