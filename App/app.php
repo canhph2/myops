@@ -27,10 +27,10 @@ class App
     /**
      * 1.0: multiple files PHP and bash scripts
      * 2.0: combine 1 lib file, sync
-     * 2.1: with test lib before ship
+     * 2.X: with test lib before ship, add some new commands
      * @var string
      */
-    const APP_VERSION = '2.0.90';
+    const APP_VERSION = '2.5.90';
 
     const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = ''; // todo handle new
 
