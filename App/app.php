@@ -30,7 +30,7 @@ class App
      * 2.X: with test lib before ship, add some new commands
      * @var string
      */
-    const APP_VERSION = '2.5.92';
+    const APP_VERSION = '2.5.93';
 
     const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = ''; // todo handle new
 

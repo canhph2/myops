@@ -45,8 +45,8 @@ class AppHelper
         // README.MD
         $readmePath = "README.MD";
         file_put_contents($readmePath, preg_replace(
-            '/ops-lib\s*v\'(\d+\.\d+\.\d+)\'/',
-            sprintf("ops-lib v'%s'", Version::parse(App::APP_VERSION)->bump()->toString()),
+            '/ops-lib v(\d+\.\d+\.\d+)/',
+            sprintf("ops-lib v%s", Version::parse(App::APP_VERSION)->bump()->toString()),
             file_get_contents($readmePath)
         ));
     }
