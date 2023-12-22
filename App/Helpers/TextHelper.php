@@ -67,6 +67,17 @@ class TextHelper
     }
 
     /**
+     * @param bool $condition
+     * @param string $messageSuccess
+     * @param string $messageError
+     * @return void
+     */
+    public static function messageCondition(bool $condition, string $messageSuccess, string $messageError)
+    {
+        $condition ? self::messageSUCCESS($messageSuccess) : self::messageERROR($messageError);
+    }
+
+    /**
      *  php _ops/lib replace-text-in-file "search text" "replace text" "file path"
      * required
      * - "search text"  (param 2)

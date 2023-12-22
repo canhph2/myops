@@ -32,7 +32,7 @@ class App
      */
     const APP_VERSION = '2.0.90';
 
-    const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = '';
+    const SHELL_HANDLE_ENV_OPS_DATA_BASE64 = ''; // todo handle new
 
     public function __construct()
     {
@@ -48,7 +48,7 @@ class App
 
         // === validation ===
         if (!$command) {
-            echo "[ERROR] missing command, should be 'php _ops/LIB COMMAND'\n";
+            echo "[ERROR] missing command, should be 'php _ops/lib COMMAND'\n";
             $this->help();
             exit(); // END
         }
@@ -86,7 +86,7 @@ class App
                 // handle
                 AWSHelper::getSecretEnv($param1, $param2);
                 break;
-            // === ops ===
+            // === git ===
             case CommandEnum::BRANCH:
                 echo exec(GitHubEnum::GET_BRANCH_COMMAND);
                 break;
@@ -96,6 +96,10 @@ class App
             case CommandEnum::HEAD_COMMIT_ID:
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
                 break;
+            case CommandEnum::HANDLE_CACHES_AND_GIT:
+                GitHubHelper::handleCachesAndGit($argv);
+                break;
+            // === utils ===
             case CommandEnum::HOME_DIR:
                 echo DirHelper::getHomeDir();
                 break;
@@ -108,11 +112,11 @@ class App
             case CommandEnum::REPLACE_TEXT_IN_FILE:
                 TextHelper::replaceTextInFile($argv);
                 break;
-            case CommandEnum::HANDLE_CACHES_AND_GIT:
-                GitHubHelper::handleCachesAndGit($argv);
-                break;
             case CommandEnum::SLACK:
                 ServicesHelper::SlackMessage($argv);
+                break;
+            case CommandEnum::TMP:
+                DirHelper::tmp($argv);
                 break;
             // === private ===
             case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:

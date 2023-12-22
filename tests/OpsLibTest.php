@@ -24,7 +24,11 @@ class OpsLibTest extends BaseTestCase
         $data = join("\n", $output);
         $this->customAssertIsStringAndContainsString("SLACK_BOT_TOKEN", $data);
         $this->customAssertIsStringAndContainsString("GITHUB_PERSONAL_ACCESS_TOKEN", $data);
-        $this->customAssertIsStringAndContainsString(" ENGAGEPLUS_CACHES_DIR", $data);
+        $this->customAssertIsStringAndContainsString("ENGAGEPLUS_CACHES_DIR", $data);
+    }
+
+    public function testReplaceTextInFile(){
+        // todo write test case here
     }
 
 }

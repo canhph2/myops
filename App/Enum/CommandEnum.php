@@ -22,6 +22,7 @@ class CommandEnum
     const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
     const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
     const SLACK = 'slack';
+    const TMP = 'tmp';
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
     const UPDATE_GITHUB_TOKEN_ALL_PROJECT = 'update-github-token-all-project';
@@ -36,20 +37,26 @@ class CommandEnum
         self::RELEASE => 'combine all PHP files into \'_ops/lib\'',
         self::VERSION => "show app version",
         self::SYNC => "sync new release code to project at _ops/lib",
-        // AWS releated commands
+
+        "=== AWS releated commands ===" => '',
         self::LOAD_ENV_OPS => "[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:\n\n                         eval \"$(php _ops/lib load-env-ops)\"    \n",
-        self::GET_SECRET_ENV => "[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName\n",
-        //
+        self::GET_SECRET_ENV => "[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName",
+
+        "=== git ===" => '',
         self::BRANCH => 'get git branch / GitHub branch',
         self::REPOSITORY => 'get GitHub repository name',
         self::HEAD_COMMIT_ID => 'get head commit id of branch',
+        self::HANDLE_CACHES_AND_GIT => 'handle GitHub repository in caches directory',
+
+        "=== utils ===" => '',
         self::HOME_DIR => 'return home directory of machine / server',
         self::SCRIPT_DIR => 'return directory of script',
         self::WORKING_DIR => 'get root project directory / current working directory',
         self::REPLACE_TEXT_IN_FILE => 'php _ops/lib replace-text-in-file "search text" "replace text" "file path"',
-        self::HANDLE_CACHES_AND_GIT => 'handle GitHub repository in caches directory',
-        self::SLACK => "notify a message to Slack\n",
-        // private
+        self::SLACK => "notify a message to Slack",
+        self::TMP => "handle temporary directory (tmp), use 'tmp ADD' to add new tmp dir, use 'tmp REMOVE' to remove tmp dir",
+
+        "=== private ===" => '',
         self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => '[PRIVATE] get S3 whitelist IPs to add to AWS Policy',
         self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => '[PRIVATE] update token all projects in workspace',
     ];
