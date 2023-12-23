@@ -29,6 +29,7 @@ class Release
         'App/Helpers/ServicesHelper.php',
         'App/Helpers/AWSHelper.php',
         'App/Helpers/AppHelper.php',
+        'App/Helpers/STR.php',
         // === Objects ===
         'App/Objects/Release.php',
         'App/Objects/Process.php',
