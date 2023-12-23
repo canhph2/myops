@@ -126,8 +126,7 @@ class Release
     /**
      * @return void
      */
-    private
-    function handleAppClass(): void
+    private function handleAppClass(): void
     {
         $appClassContent = $this->handlePHPClassContent(self::FILES_LIST[count(self::FILES_LIST) - 1]);
         $appClassContentClassOnly = sprintf("class App%s", explode('class App', $appClassContent)[1]);
@@ -148,8 +147,7 @@ class Release
     /**
      * @return void
      */
-    private
-    function handleLibrariesClass(): void
+    private function handleLibrariesClass(): void
     {
         $librariesClassesContent = "";
         for ($i = 0; $i < count(self::FILES_LIST) - 1; $i++) {
