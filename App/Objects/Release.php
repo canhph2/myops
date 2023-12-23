@@ -35,7 +35,7 @@ class Release
         'App/Objects/Process.php',
         'App/Objects/Version.php',
         // always on bottom
-        'App/app.php',
+        'App/App.php',
     ];
 
     const RELEASE_PATH = '_ops/lib';

@@ -1,4 +1,4 @@
-# ops-lib v2.9.1
+# ops-lib v2.9.2
 *DevOps | CICD | DevOps Shared Library*
 
 ---
@@ -31,12 +31,12 @@ php _ops/lib sync
   - add new files to FILES_LIST in Release class 
   - combine and release
 ```shell
-php App/app.php release
+php App/App.php release
 php vendor/phpunit/phpunit/phpunit tests
 ```
 - Test local project
 ```shell
-php App/app.php help
+php App/App.php help
 ```
 
 
