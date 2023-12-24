@@ -7,6 +7,8 @@ use app\Objects\Process;
 
 class OpsHelper
 {
+    const COMPOSER_CONFIG_GITHUB_AUTH_FILE = 'auth.json';
+
     public static function getS3WhiteListIpsDevelopment(): string
     {
 
@@ -161,6 +163,24 @@ class OpsHelper
                 'remove a dist dir successfully', 'remove a dist dir failure');
             //
             $isDoNothing = false;
+        }
+        //    composer config file: auth.json
+        if (is_file(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))) {
+            $authJsonContent = file_get_contents(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
+            if (STR::contains($authJsonContent, "github-oauth") && STR::contains($authJsonContent, "github.com")) {
+                (new Process("Remove composer config file", DirHelper::getWorkingDir(), [
+                    sprintf("rm -f '%s'", DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
+                ]))->execMultiInWorkDir()->printOutput();
+                // validate result
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DirHelper::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
+                TextHelper::messageCondition(
+                    !$checkTmpDir,
+                    sprintf("remove file '%s' successfully", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE),
+                    sprintf("remove file '%s' failed", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE)
+                );
+                //
+                $isDoNothing = false;
+            }
         }
         // === end cleanup ===
         //
