@@ -71,7 +71,7 @@ class AppHelper
             $VersionMDPath = "VERSION.MD";
             file_put_contents($VersionMDPath, str_replace(
                 "## === v2 ===",
-                sprintf("## === v2 ===\n- %s | TODO ADD SOME CHANGE LOGS\n", $newVersion->toString()),
+                sprintf("## === v2 ===\n- %s | TODO ADD SOME CHANGE LOGS", $newVersion->toString()),
                 file_get_contents($VersionMDPath)
             ));
         }
