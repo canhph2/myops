@@ -4,6 +4,7 @@ namespace app\Objects;
 
 use app\Enum\GitHubEnum;
 use app\Helpers\DirHelper;
+use app\Helpers\GitHubHelper;
 use app\Helpers\TextHelper;
 
 class Process
@@ -148,7 +149,7 @@ class Process
         if ($this->commands) {
             $resultCode = null;
             exec(join(';', $this->commands), $this->output, $exitCode);
-            if($exitCode){
+            if ($exitCode) {
                 $this->printOutput();
                 TextHelper::messageERROR("detect execute shell command failed, exit app | exit code = $exitCode");
                 exit($exitCode); // END app
@@ -163,7 +164,11 @@ class Process
         // dir commands
         $arrDirCommands[] = sprintf("cd '%s'", $this->workDir); // cd
         if (!$skipCheckDir) {
-            $arrDirCommands[] = GitHubEnum::REPOSITORY_DIR_COMMAND; // check dir
+            if (!GitHubHelper::isGit(DirHelper::getWorkingDir())) {
+                TextHelper::messageERROR("detect no .git in this directory, init a fake repository");
+                $arrDirCommands[] = GitHubEnum::INIT_REPOSITORY_COMMAND;
+            }
+            $arrDirCommands[] = GitHubEnum::GET_REPOSITORY_DIR_COMMAND; // check dir
         }
         $this->commands = array_merge($arrDirCommands, $this->commands);
         $this->execMulti();

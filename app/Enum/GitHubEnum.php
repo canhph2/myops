@@ -4,7 +4,7 @@ namespace app\Enum;
 
 class GitHubEnum
 {
-    public const REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
+    public const INIT_REPOSITORY_COMMAND = 'git init';
     public const RESET_BRANCH_COMMAND = 'git reset --hard HEAD'; // rollback all changing
     public const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
     public const PULL_COMMAND = 'git pull'; // get the newest code
