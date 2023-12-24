@@ -161,13 +161,17 @@ class Process
 
     public function execMultiInWorkDir(bool $skipCheckDir = false): Process
     {
-        // dir commands
-        $arrDirCommands[] = sprintf("cd '%s'", $this->workDir); // cd
+        // case not .git and want to use git commands
         if (!$skipCheckDir) {
             if (!GitHubHelper::isGit(DirHelper::getWorkingDir())) {
                 TextHelper::messageERROR("detect no .git in this directory, init a fake repository");
+                $arrDirCommands[] = sprintf("cd '%s'", DirHelper::getWorkingDir()); // cd to work dir
                 $arrDirCommands[] = GitHubEnum::INIT_REPOSITORY_COMMAND;
             }
+        }
+        // dir commands
+        $arrDirCommands[] = sprintf("cd '%s'", $this->workDir); // cd
+        if (!$skipCheckDir) {
             $arrDirCommands[] = GitHubEnum::GET_REPOSITORY_DIR_COMMAND; // check dir
         }
         $this->commands = array_merge($arrDirCommands, $this->commands);
