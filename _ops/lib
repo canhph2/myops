@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-// === OPS SHARED LIBRARY (PHP) v2.9.7 ===
+// === OPS SHARED LIBRARY (PHP) v2.9.8 ===
 
 // === Generated libraries classes ===
 
@@ -426,7 +426,7 @@ class OpsHelper
     {
         $envVarsMissing = [];
         foreach ($envVars as $envVar) {
-            if (!getenv($envVar)) $envVarsMissing[] = $envVar;
+            if (is_null(getenv($envVar))) $envVarsMissing[] = $envVar;
         }
         if (count($envVarsMissing) > 0) {
             TextHelper::messageERROR(sprintf("[ENV] missing %s", join(" or ", $envVarsMissing)));
@@ -802,7 +802,8 @@ class ServicesHelper
 
 // [REMOVED] use app\app;
 // [REMOVED] use app\Objects\Process;
-// [REMOVED] use phpDocumentor\Reflection\Types\Self_;
+// [REMOVED] use DateTime;
+// [REMOVED] use Exception;
 
 class AWSHelper
 {
@@ -810,6 +811,8 @@ class AWSHelper
     const ELB_EBEXTENSIONS_DIR = ".ebextensions"; // should place at inside elb version dir
     const ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME = "blockdevice-xvdcz.config";
     const ELB_DOCKERRUN_FILE_NAME = "Dockerrun.aws.json";
+    const ELB_LOG_UPDATE_SUCCESSFULLY = "Environment update completed successfully.";
+    const ELB_LOG_UPDATE_FAILED = "Failed to deploy application.";
 
     /**
      * save to .env file or custom name
@@ -854,35 +857,174 @@ class AWSHelper
      */
     public static function ELBUpdateVersion()
     {
-        TextHelper::messageTitle("Hanle ELB version - ELASTIC BEANSTALK");
-        // === validate ===
-        if (!OpsHelper::validateEnvVars([
-            'ENV', 'ECR_REPO_API', 'S3_EB_APP_VERSION_BUCKET_NAME',
-            'EB_APP_VERSION_FOLDER_NAME', 'EB_ENVIRONMENT_NAME'
-        ])) {
-            exit(1); // END
+        try {
+            TextHelper::messageTitle(sprintf("[%s] [%s] Handle ELB version - ELASTIC BEANSTALK", getenv('REPOSITORY'), getenv('BRANCH')));
+            // === validate ===
+            if (!OpsHelper::validateEnvVars([
+                'ENV', 'ECR_REPO_API', 'S3_EB_APP_VERSION_BUCKET_NAME',
+                'EB_APP_VERSION_FOLDER_NAME', 'EB_ENVIRONMENT_NAME',
+                'EB_2ND_DISK_SIZE',
+                'EB_MAIL_CATCHER_PORT', // maybe remove after email-serivce
+            ])) {
+                exit(1); // END
+            }
+            // === handle ===
+            //    vars
+            $ENV = getenv('ENV');
+            //    handle ELB version dir
+            if (is_dir(DirHelper::getWorkingDir(self::ELB_TEMP_DIR))) {
+                $commands[] = sprintf("rm -rf '%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR));
+            }
+            $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
+            (new Process("handle ELB version directory", DirHelper::getWorkingDir(), $commands))
+                ->execMultiInWorkDir()->printOutput();
+            //   handle SSM and get image tag values
+            //        SSM tag names
+            $SSM_ENV_TAG_API_NAME = "/$ENV/TAG_API_NAME";
+            $SSM_ENV_TAG_INVOICE_SERVICE_NAME = "/$ENV/TAG_INVOICE_SERVICE_NAME";
+            $SSM_ENV_TAG_PAYMENT_SERVICE_NAME = "/$ENV/TAG_PAYMENT_SERVICE_NAME";
+            $SSM_ENV_TAG_INTEGRATION_API_NAME = "/$ENV/TAG_INTEGRATION_API_NAME";
+            $imageTagValues = (new Process("get image tag value from AWS SSM", DirHelper::getWorkingDir(), [
+                "aws ssm get-parameters --names '$SSM_ENV_TAG_API_NAME' '$SSM_ENV_TAG_INVOICE_SERVICE_NAME' '$SSM_ENV_TAG_PAYMENT_SERVICE_NAME' '$SSM_ENV_TAG_INTEGRATION_API_NAME' --output json"
+            ]))->execMulti()->getOutputStrAll();
+            foreach (json_decode($imageTagValues, true)['Parameters'] as $paramObj) {
+                switch ($paramObj['Name']) {
+                    case $SSM_ENV_TAG_API_NAME:
+                        $TAG_API_NAME = $paramObj['Value'];
+                        break;
+                    case $SSM_ENV_TAG_INVOICE_SERVICE_NAME:
+                        $TAG_INVOICE_SERVICE_NAME = $paramObj['Value'];
+                        break;
+                    case $SSM_ENV_TAG_PAYMENT_SERVICE_NAME:
+                        $TAG_PAYMENT_SERVICE_NAME = $paramObj['Value'];
+                        break;
+                    case $SSM_ENV_TAG_INTEGRATION_API_NAME:
+                        $TAG_INTEGRATION_API_NAME = $paramObj['Value'];
+                        break;
+                    default:
+                        // do nothing
+                        break;
+                }
+            }
+            //   handle Dockerrun.aws.json content
+            $DockerrunContent = str_replace(
+                [
+                    "_MAIL_CATCHER_PORT_",
+                    "ECR_REPO_IMAGE_URI_API", "ECR_REPO_IMAGE_URI_INVOICE_SERVICE",
+                    "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE", "ECR_REPO_IMAGE_URI_INTEGRATION_API"
+                ],
+                [
+                    getenv('EB_MAIL_CATCHER_PORT'),
+                    sprintf("%s:%s", getenv('ECR_REPO_API'), $TAG_API_NAME),
+                    sprintf("%s:%s", getenv('ECR_REPO_INVOICE_SERVICE'), $TAG_INVOICE_SERVICE_NAME),
+                    sprintf("%s:%s", getenv('ECR_REPO_PAYMENT_SERVICE'), $TAG_PAYMENT_SERVICE_NAME),
+                    sprintf("%s:%s", getenv('ECR_REPO_INTEGRATION_API'), $TAG_INTEGRATION_API_NAME)
+                ],
+                app::getELBTemplate()["DockerrunTemplate"]
+            );
+            //    write files
+            file_put_contents(
+                sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME),
+                str_replace("_2ND_DISK_SIZE_", getenv('EB_2ND_DISK_SIZE'), app::getELBTemplate()["blockdeviceTemplate"])
+            );
+            file_put_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME), $DockerrunContent);
+            //    validate configs files again
+            //        .ebextensions/blockdevice-xvdcz.config
+            $blockdeviceConfigContent = file_get_contents(sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME));
+            TextHelper::message(".ebextensions/blockdevice-xvdcz.config");
+            TextHelper::message($blockdeviceConfigContent);
+            if (!STR::contains($blockdeviceConfigContent, getenv('EB_2ND_DISK_SIZE'))) {
+                TextHelper::messageERROR(".ebextensions/blockdevice-xvdcz.config got an error");
+                exit(1); // END
+            }
+            //        Dockerrun.aws.json
+            $DockerrunContentToCheckAgain = file_get_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME));
+            TextHelper::message("Dockerrun.aws.json");
+            TextHelper::message($DockerrunContentToCheckAgain);
+            if (!STR::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_API'))
+                || !STR::contains($DockerrunContentToCheckAgain, $TAG_API_NAME)
+                || !STR::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INVOICE_SERVICE'))
+                || !STR::contains($DockerrunContentToCheckAgain, $TAG_INVOICE_SERVICE_NAME)
+                || !STR::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_PAYMENT_SERVICE'))
+                || !STR::contains($DockerrunContentToCheckAgain, $TAG_PAYMENT_SERVICE_NAME)
+                || !STR::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INTEGRATION_API'))
+                || !STR::contains($DockerrunContentToCheckAgain, $TAG_INTEGRATION_API_NAME)
+            ) {
+                TextHelper::messageERROR("Dockerrun.aws.json got an error");
+                exit(1); // END
+            }
+            //    create ELB version and update
+            $EB_APP_VERSION_LABEL = sprintf("$ENV-$TAG_API_NAME-$TAG_INVOICE_SERVICE_NAME-$TAG_PAYMENT_SERVICE_NAME-$TAG_INTEGRATION_API_NAME-%sZ", (new DateTime())->format('Ymd-His'));
+            (new Process("zip ELB version", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), [
+                //    create .zip file
+                sprintf("zip -r %s.zip Dockerrun.aws.json .ebextensions", $EB_APP_VERSION_LABEL),
+                //    Copy to s3 and create eb application version | required to run in elb-version directory
+                sprintf("aws s3 cp %s.zip s3://%s/%s/%s.zip || exit 1",
+                    $EB_APP_VERSION_LABEL,
+                    getenv('S3_EB_APP_VERSION_BUCKET_NAME'),
+                    getenv('EB_APP_VERSION_FOLDER_NAME'),
+                    $EB_APP_VERSION_LABEL
+                ),
+                //    create ELB application version
+                sprintf("aws elasticbeanstalk create-application-version --application-name %s --version-label %s --source-bundle S3Bucket=%s,S3Key=%s/%s.zip > /dev/null || exit 1",
+                    getenv('EB_APP_NAME'),
+                    $EB_APP_VERSION_LABEL,
+                    getenv('S3_EB_APP_VERSION_BUCKET_NAME'),
+                    getenv('EB_APP_VERSION_FOLDER_NAME'),
+                    $EB_APP_VERSION_LABEL
+                ), // > /dev/null : disabled output
+                //    update EB environment
+                sprintf("aws elasticbeanstalk update-environment --environment-name %s --version-label %s > /dev/null",
+                    getenv('EB_ENVIRONMENT_NAME'),
+                    $EB_APP_VERSION_LABEL
+                ), // > /dev/null : disabled output
+            ]))->execMultiInWorkDir()->printOutput();
+            //    Check new service healthy every X seconds | timeout = 20 minutes
+            //        08/28/2023: Elastic Beanstalk environment update about 4 - 7 minutes
+            for ($minute = 3; $minute >= 1; $minute--) {
+                TextHelper::message("Wait $minute minutes for the ELB environment does the update, and add some lines of logs...");
+                sleep(60);
+            }
+            //        do check | ELB logs
+            for ($i = 1; $i <= 40; $i++) {
+                TextHelper::message("Healthcheck the $i time");
+                $lastELBLogs = (new Process("get last ELB logs", DirHelper::getWorkingDir(), [
+                    sprintf("aws elasticbeanstalk describe-events --application-name %s --environment-name %s --query 'Events[].Message' --output json --max-items 5",
+                        getenv('EB_APP_NAME'),
+                        getenv('EB_ENVIRONMENT_NAME')
+                    ),
+                ]))->execMulti()->getOutputStrAll();
+                if (in_array(self::ELB_LOG_UPDATE_SUCCESSFULLY, json_decode($lastELBLogs))) {
+                    TextHelper::messageSUCCESS(self::ELB_LOG_UPDATE_SUCCESSFULLY);
+                    ServicesHelper::SlackMessage(['script path', 'slack', sprintf(
+                        "[FINISH] [SUCCESS] %s just finished building and deploying the project %s",
+                        getenv('DEVICE'), getenv('REPOSITORY')
+                    )]);
+                    exit(0); // END | successful
+                } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
+                    TextHelper::messageERROR(self::ELB_LOG_UPDATE_FAILED);
+                    ServicesHelper::SlackMessage(['script path', 'slack', sprintf(
+                        "[FINISH] [FAILURE 1 | Deploy failed] %s just finished building and deploying the project %s",
+                        getenv('DEVICE'), getenv('REPOSITORY')
+                    )]);
+                    exit(1); // END | failed
+                } else {
+                    TextHelper::message("Environment is still not healthy");
+                    // check again after X seconds
+                    sleep(30);
+                }
+            }
+            //             case timeout
+            TextHelper::messageERROR("Deployment got a timeout result");
+            ServicesHelper::SlackMessage(['script path', 'slack', sprintf(
+                "[FINISH] [FAILURE 2 | Timeout] %s just finished building and deploying the project %s",
+                getenv('DEVICE'), getenv('REPOSITORY')
+            )]);
+            exit(1); // END | failed
+        } catch (Exception $ex) {
+            TextHelper::messageERROR($ex->getMessage());
+            exit(1); // END | exception error
         }
-        // === handle ===
-        //    handle ELB version dir
-        if (is_dir(DirHelper::getWorkingDir(self::ELB_TEMP_DIR))) {
-            $commands[] = sprintf("rm -rf '%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR));
-        }
-        $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
-        (new Process("handle ELB version directory", DirHelper::getWorkingDir(), $commands))
-            ->execMultiInWorkDir()->printOutput();
-        //    write files
-        file_put_contents(
-            sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME),
-            app::getELBTemplate()["blockdeviceTemplate"]
-        );
-        file_put_contents(
-            sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME),
-            app::getELBTemplate()["DockerrunTemplate"]
-        );
-        //    create .zip file
-        (new Process("zip ELB version", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), [
-            sprintf("zip -r %s.zip Dockerrun.aws.json .ebextensions", "todo-elb-label")
-        ]))->execMultiInWorkDir()->printOutput();
     }
 }
 
@@ -1001,10 +1143,12 @@ class STR
 // [REMOVED] namespace app\Objects;
 
 // [REMOVED] use app\app;
+// [REMOVED] use app\Enum\GitHubEnum;
 // [REMOVED] use app\Helpers\AppHelper;
 // [REMOVED] use app\Helpers\DEVHelper;
 // [REMOVED] use app\Helpers\DirHelper;
 // [REMOVED] use app\Helpers\TextHelper;
+// [REMOVED] use DateTime;
 
 class Release
 {
@@ -1081,12 +1225,11 @@ class Release
         $this->handleAppClass();
         echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);
         //    push new release to GitHub
-        // todo test
-//        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
-//            GitHubEnum::ADD_ALL_FILES_COMMAND,
-//            sprintf("git commit -m 'release %s on %s UTC'", app::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
-//            GitHubEnum::PUSH_COMMAND,
-//        ]))->execMultiInWorkDir()->printOutput();
+        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
+            GitHubEnum::ADD_ALL_FILES_COMMAND,
+            sprintf("git commit -m 'release %s on %s UTC'", app::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
+            GitHubEnum::PUSH_COMMAND,
+        ]))->execMultiInWorkDir()->printOutput();
         //
         TextHelper::messageSeparate();
         TextHelper::messageSUCCESS(sprintf("Release successful %s", app::version($newVersion)));
@@ -1312,7 +1455,12 @@ class Process
         // === handle ===
         if ($this->commands) {
             $resultCode = null;
-            exec(join(';', $this->commands), $this->output, $resultCode);
+            exec(join(';', $this->commands), $this->output, $exitCode);
+            if($exitCode){
+                $this->printOutput();
+                TextHelper::messageERROR("detect execute shell command failed, exit app | exit code = $exitCode");
+                exit($exitCode); // END app
+            }
         }
         //
         return $this;
@@ -1548,9 +1696,9 @@ class app
      * 2.X: with test lib before ship, add some new commands
      * @var string
      */
-    const APP_VERSION = '2.9.7';
+    const APP_VERSION = '2.9.8';
 
-    const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKHBocCBfb3BzL2xpYiBicmFuY2gpCmV4cG9ydCBSRVBPU0lUT1JZPSQocGhwIF9vcHMvbGliIHJlcG9zaXRvcnkpCmV4cG9ydCBIRUFEX0NPTU1JVF9JRD0kKHBocCBfb3BzL2xpYiBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBlbmdhZ2UtYXBpLWRlcGxveSB2YXJzID09PQppZiBbICIke0JSQU5DSH0iID0gImRldmVsb3AiIF07IHRoZW4KICBleHBvcnQgRU5WPWRldgogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1kZXZlbG9wLW11bHRpLWNvbnRhaW5lcgogIGV4cG9ydCBFQl9FTlZJUk9OTUVOVF9OQU1FPSJkZXZlbG9wLW11bHRpLWNvbnRhaW5lciIKICBleHBvcnQgRU5WX1VSTF9QUkVGSVg9IiR7QlJBTkNIfS0iCiAgIwogIGV4cG9ydCBDT01QT1NFUl9JTlNUQUxMPSIke0NPTVBPU0VSX0lOU1RBTExfREVWRUxPUH0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBRz0iJHtET0NLRVJfQkFTRV9UQUdfREVWRUxPUH0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBR19BUEk9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCmZpCmlmIFsgIiR7QlJBTkNIfSIgPSAic3RhZ2luZyIgXTsgdGhlbgogIGV4cG9ydCBFTlY9c3RnCiAgZXhwb3J0IEFQSV9ERVBMT1lfQlJBTkNIPXN0YWdpbmctbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9InN0YWdpbmctbXVsdGktY29udGFpbmVyIgogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iJHtCUkFOQ0h9LSIKICAjCiAgZXhwb3J0IENPTVBPU0VSX0lOU1RBTEw9IiR7Q09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OfSIKICBleHBvcnQgRE9DS0VSX0JBU0VfVEFHPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIKICBleHBvcnQgRE9DS0VSX0JBU0VfVEFHX0FQST0iJHtET0NLRVJfQkFTRV9UQUdfREVWRUxPUH0iICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIiCiAgIwogIGV4cG9ydCBDT01QT1NFUl9JTlNUQUxMPSIke0NPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTn0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBRz0iJHtET0NLRVJfQkFTRV9UQUdfUFJPRFVDVElPTn0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBR19BUEk9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCmZpCiMgPT09IEVORCA9PT0KCiMgPT09IEFXUyBBY2NvdW50IGNvbmZpZ3VyYXRpb24gPT09CmV4cG9ydCBBV1NfQUNDT1VOVF9JRD0iOTgyMDgwNjcyOTgzIgpleHBvcnQgUkVHSU9OPSJhcC1lYXN0LTEiCiMgICAgRUNSIGNvbmZpZ3VyYXRpb24KIyAgICAgICAgYmFzZSBhbmQgY2FjaGVzIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRV9CQVNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtYmFzZS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgICAgIG5vcm1hbCByZXBvc2l0b3JpZXMKZXhwb3J0IEVDUl9SRVBPX0FQST0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1hcGktcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX1BBWU1FTlRfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1wYXltZW50LXNlcnZpY2UtcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0lOVk9JQ0VfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1pbnZvaWNlLXNlcnZpY2UtcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0lOVEVHUkFUSU9OX0FQST0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1pbnRlZ3JhdGlvbi1hcGktcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0VNQUlMX1NFUlZJQ0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy0ke0VOVn0tZW1haWwtc2VydmljZS1yZXBvc2l0b3J5IgojICAgIEVsYXN0aWMgQmVhbnN0YWxrIGNvbmZpZ3VyYXRpb24KZXhwb3J0IFMzX0VCX0FQUF9WRVJTSU9OX0JVQ0tFVF9OQU1FPSJlbGFzdGljYmVhbnN0YWxrLSR7UkVHSU9OfS0ke0FXU19BQ0NPVU5UX0lEfSIKZXhwb3J0IEVCX0FQUF9WRVJTSU9OX0ZPTERFUl9OQU1FPSJlbmdhZ2VwbHVzIgpleHBvcnQgRUJfQVBQX05BTUU9ImVuZ2FnZXBsdXMiCiMgPT09IEVORCA9PT0KCiMgPT09IEVuZ2FnZVBsdXMgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEVOR0FHRVBMVVNfQ0FDSEVTX0ZPTERFUj0iLmNhY2hlc19lbmdhZ2VwbHVzIgpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRElSPSIkKHBocCBfb3BzL2xpYiBob21lLWRpcikvJHtFTkdBR0VQTFVTX0NBQ0hFU19GT0xERVJ9IgpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfUkVQT1NJVE9SWV9ESVI9IiR7RU5HQUdFUExVU19DQUNIRVNfRElSfS8ke1JFUE9TSVRPUll9IgojID09PSBFTkQgPT09CgojID09PSBnZXQgREVWSUNFIGZyb20gcGFyYW0gMSA9PT0KZXhwb3J0IERFVklDRT0iJDEiCiMgPT09IEVORCA9PT0K';
+    const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKHBocCBfb3BzL2xpYiBicmFuY2gpCmV4cG9ydCBSRVBPU0lUT1JZPSQocGhwIF9vcHMvbGliIHJlcG9zaXRvcnkpCmV4cG9ydCBIRUFEX0NPTU1JVF9JRD0kKHBocCBfb3BzL2xpYiBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBlbmdhZ2UtYXBpLWRlcGxveSB2YXJzID09PQppZiBbICIke0JSQU5DSH0iID0gImRldmVsb3AiIF07IHRoZW4KICBleHBvcnQgRU5WPWRldgogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1kZXZlbG9wLW11bHRpLWNvbnRhaW5lcgogIGV4cG9ydCBFQl9FTlZJUk9OTUVOVF9OQU1FPSJkZXZlbG9wLW11bHRpLWNvbnRhaW5lciIKICBleHBvcnQgRUJfMk5EX0RJU0tfU0laRT0iMjAiCiAgZXhwb3J0IEVCX01BSUxfQ0FUQ0hFUl9QT1JUPSIseyBcImhvc3RQb3J0XCI6IDEwMjUsIFwiY29udGFpbmVyUG9ydFwiOiAxMDI1IH0iICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UKICBleHBvcnQgRU5WX1VSTF9QUkVGSVg9IiR7QlJBTkNIfS0iCiAgIwogIGV4cG9ydCBDT01QT1NFUl9JTlNUQUxMPSIke0NPTVBPU0VSX0lOU1RBTExfREVWRUxPUH0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBRz0iJHtET0NLRVJfQkFTRV9UQUdfREVWRUxPUH0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBR19BUEk9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCmZpCmlmIFsgIiR7QlJBTkNIfSIgPSAic3RhZ2luZyIgXTsgdGhlbgogIGV4cG9ydCBFTlY9c3RnCiAgZXhwb3J0IEFQSV9ERVBMT1lfQlJBTkNIPXN0YWdpbmctbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9InN0YWdpbmctbXVsdGktY29udGFpbmVyIgogIGV4cG9ydCBFQl8yTkRfRElTS19TSVpFPSIyMCIKICBleHBvcnQgRUJfTUFJTF9DQVRDSEVSX1BPUlQ9Iix7IFwiaG9zdFBvcnRcIjogMTAyNSwgXCJjb250YWluZXJQb3J0XCI6IDEwMjUgfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iJHtCUkFOQ0h9LSIKICAjCiAgZXhwb3J0IENPTVBPU0VSX0lOU1RBTEw9IiR7Q09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OfSIKICBleHBvcnQgRE9DS0VSX0JBU0VfVEFHPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIKICBleHBvcnQgRE9DS0VSX0JBU0VfVEFHX0FQST0iJHtET0NLRVJfQkFTRV9UQUdfREVWRUxPUH0iICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjEwMCIKICBleHBvcnQgRUJfTUFJTF9DQVRDSEVSX1BPUlQ9IiIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQpmaQojID09PSBFTkQgPT09CgojID09PSBBV1MgQWNjb3VudCBjb25maWd1cmF0aW9uID09PQpleHBvcnQgQVdTX0FDQ09VTlRfSUQ9Ijk4MjA4MDY3Mjk4MyIKZXhwb3J0IFJFR0lPTj0iYXAtZWFzdC0xIgojICAgIEVDUiBjb25maWd1cmF0aW9uCiMgICAgICAgIGJhc2UgYW5kIGNhY2hlcyByZXBvc2l0b3JpZXMKZXhwb3J0IEVDUl9SRVBPX0FQSV9CQVNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtYmFzZS1hcGktcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX1BBWU1FTlRfU0VSVklDRV9CQVNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtYmFzZS1wYXltZW50LXNlcnZpY2UtcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0lOVk9JQ0VfU0VSVklDRV9CQVNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtYmFzZS1pbnZvaWNlLXNlcnZpY2UtcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0lOVEVHUkFUSU9OX0FQSV9CQVNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtYmFzZS1pbnRlZ3JhdGlvbi1hcGktcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0VNQUlMX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtZW1haWwtc2VydmljZS1yZXBvc2l0b3J5IgojICAgICAgICBub3JtYWwgcmVwb3NpdG9yaWVzCmV4cG9ydCBFQ1JfUkVQT19BUEk9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy0ke0VOVn0tYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19QQVlNRU5UX1NFUlZJQ0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy0ke0VOVn0tcGF5bWVudC1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlZPSUNFX1NFUlZJQ0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy0ke0VOVn0taW52b2ljZS1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlRFR1JBVElPTl9BUEk9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy0ke0VOVn0taW50ZWdyYXRpb24tYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19FTUFJTF9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWVtYWlsLXNlcnZpY2UtcmVwb3NpdG9yeSIKIyAgICBFbGFzdGljIEJlYW5zdGFsayBjb25maWd1cmF0aW9uCmV4cG9ydCBTM19FQl9BUFBfVkVSU0lPTl9CVUNLRVRfTkFNRT0iZWxhc3RpY2JlYW5zdGFsay0ke1JFR0lPTn0tJHtBV1NfQUNDT1VOVF9JRH0iCmV4cG9ydCBFQl9BUFBfVkVSU0lPTl9GT0xERVJfTkFNRT0iZW5nYWdlcGx1cyIKZXhwb3J0IEVCX0FQUF9OQU1FPSJlbmdhZ2VwbHVzIgojID09PSBFTkQgPT09CgojID09PSBFbmdhZ2VQbHVzIGNvbmZpZ3VyYXRpb24gPT09CmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19GT0xERVI9Ii5jYWNoZXNfZW5nYWdlcGx1cyIKZXhwb3J0IEVOR0FHRVBMVVNfQ0FDSEVTX0RJUj0iJChwaHAgX29wcy9saWIgaG9tZS1kaXIpLyR7RU5HQUdFUExVU19DQUNIRVNfRk9MREVSfSIKZXhwb3J0IEVOR0FHRVBMVVNfQ0FDSEVTX1JFUE9TSVRPUllfRElSPSIke0VOR0FHRVBMVVNfQ0FDSEVTX0RJUn0vJHtSRVBPU0lUT1JZfSIKIyA9PT0gRU5EID09PQoKIyA9PT0gZ2V0IERFVklDRSBmcm9tIHBhcmFtIDEgPT09CmV4cG9ydCBERVZJQ0U9IiQxIgojID09PSBFTkQgPT09Cg==';
 
     public static function getShellData()
     {
@@ -1559,7 +1707,7 @@ class app
             : file_get_contents('app/_shell_/handle-env-ops.sh');
     }
 
-    const ELB_TEMPLATE_BASE_64 = 'eyJibG9ja2RldmljZVRlbXBsYXRlIjoib3B0aW9uX3NldHRpbmdzOlxuICBhd3M6YXV0b3NjYWxpbmc6bGF1bmNoY29uZmlndXJhdGlvbjpcbiAgICBCbG9ja0RldmljZU1hcHBpbmdzOiBcL2RldlwveHZkY3o9Ol8yTkRfRElTS19TSVpFXzp0cnVlOmdwMlxuIiwiRG9ja2VycnVuVGVtcGxhdGUiOiJ7XG4gIFwiQVdTRUJEb2NrZXJydW5WZXJzaW9uXCI6IDIsXG4gIFwiY29udGFpbmVyRGVmaW5pdGlvbnNcIjogW1xuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9BUElcIixcbiAgICAgIFwiZXNzZW50aWFsXCI6IHRydWUsXG4gICAgICBcIm1lbW9yeVJlc2VydmF0aW9uXCI6IDI1NixcbiAgICAgIFwicG9ydE1hcHBpbmdzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiaG9zdFBvcnRcIjogODAsXG4gICAgICAgICAgXCJjb250YWluZXJQb3J0XCI6IDgwODBcbiAgICAgICAgfVxuICAgICAgICBfTUFJTF9DQUNIRVJfUE9SVF9cbiAgICAgIF0sXG4gICAgICBcImxpbmtzXCI6IFtcbiAgICAgICAgXCJwYXltZW50LXNlcnZpY2VcIixcbiAgICAgICAgXCJpbnZvaWNlLXNlcnZpY2VcIixcbiAgICAgICAgXCJpbnRlZ3JhdGlvbi1hcGlcIlxuICAgICAgXVxuICAgIH0sXG4gICAge1xuICAgICAgXCJuYW1lXCI6IFwiaW52b2ljZS1zZXJ2aWNlXCIsXG4gICAgICBcImltYWdlXCI6IFwiRUNSX1JFUE9fSU1BR0VfVVJJX0lOVk9JQ0VfU0VSVklDRVwiLFxuICAgICAgXCJtZW1vcnlSZXNlcnZhdGlvblwiOiAyNTYsXG4gICAgICBcImVzc2VudGlhbFwiOiBmYWxzZVxuICAgIH0sXG4gICAge1xuICAgICAgXCJuYW1lXCI6IFwicGF5bWVudC1zZXJ2aWNlXCIsXG4gICAgICBcImltYWdlXCI6IFwiRUNSX1JFUE9fSU1BR0VfVVJJX1BBWU1FTlRfU0VSVklDRVwiLFxuICAgICAgXCJtZW1vcnlSZXNlcnZhdGlvblwiOiAyNTYsXG4gICAgICBcImVzc2VudGlhbFwiOiBmYWxzZVxuICAgIH0sXG4gICAge1xuICAgICAgXCJuYW1lXCI6IFwiaW50ZWdyYXRpb24tYXBpXCIsXG4gICAgICBcImltYWdlXCI6IFwiRUNSX1JFUE9fSU1BR0VfVVJJX0lOVEVHUkFUSU9OX0FQSVwiLFxuICAgICAgXCJtZW1vcnlSZXNlcnZhdGlvblwiOiAyNTYsXG4gICAgICBcImVzc2VudGlhbFwiOiBmYWxzZVxuICAgIH1cbiAgXVxufVxuIn0=';
+    const ELB_TEMPLATE_BASE_64 = 'eyJibG9ja2RldmljZVRlbXBsYXRlIjoib3B0aW9uX3NldHRpbmdzOlxuICBhd3M6YXV0b3NjYWxpbmc6bGF1bmNoY29uZmlndXJhdGlvbjpcbiAgICBCbG9ja0RldmljZU1hcHBpbmdzOiBcL2RldlwveHZkY3o9Ol8yTkRfRElTS19TSVpFXzp0cnVlOmdwMlxuIiwiRG9ja2VycnVuVGVtcGxhdGUiOiJ7XG4gIFwiQVdTRUJEb2NrZXJydW5WZXJzaW9uXCI6IDIsXG4gIFwiY29udGFpbmVyRGVmaW5pdGlvbnNcIjogW1xuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9BUElcIixcbiAgICAgIFwiZXNzZW50aWFsXCI6IHRydWUsXG4gICAgICBcIm1lbW9yeVJlc2VydmF0aW9uXCI6IDI1NixcbiAgICAgIFwicG9ydE1hcHBpbmdzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiaG9zdFBvcnRcIjogODAsXG4gICAgICAgICAgXCJjb250YWluZXJQb3J0XCI6IDgwODBcbiAgICAgICAgfVxuICAgICAgICBfTUFJTF9DQVRDSEVSX1BPUlRfXG4gICAgICBdLFxuICAgICAgXCJsaW5rc1wiOiBbXG4gICAgICAgIFwicGF5bWVudC1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW52b2ljZS1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW50ZWdyYXRpb24tYXBpXCJcbiAgICAgIF1cbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludm9pY2Utc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlZPSUNFX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcInBheW1lbnQtc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9QQVlNRU5UX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludGVncmF0aW9uLWFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlRFR1JBVElPTl9BUElcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9XG4gIF1cbn1cbiJ9';
 
     public static function getELBTemplate()
     {
