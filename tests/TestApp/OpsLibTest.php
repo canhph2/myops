@@ -64,4 +64,9 @@ class OpsLibTest extends BaseTestCase
         self::assertTrue($contentOrigin !== $contentNew);
     }
 
+    public function testELBUpdateVersion()
+    {
+        $this->customAssertIsStringAndContainsString("[ENV] missing ", exec("php _ops/lib elb-update-version"));
+    }
+
 }
