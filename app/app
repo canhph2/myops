@@ -46,7 +46,7 @@ class app
     public static function getELBTemplate()
     {
         return self::ELB_TEMPLATE_BASE_64
-            ? json_decode(base64_decode(self::ELB_TEMPLATE_BASE_64))
+            ? json_decode(base64_decode(self::ELB_TEMPLATE_BASE_64), true)
             : [
                 'blockdeviceTemplate' => file_get_contents('app/_AWS_/ELB-template/.ebextensions/blockdevice-xvdcz.config.TEMPLATE'),
                 'DockerrunTemplate' => file_get_contents('app/_AWS_/ELB-template/Dockerrun.aws.json.TEMPLATE'),
