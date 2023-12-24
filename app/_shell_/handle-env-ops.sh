@@ -47,7 +47,7 @@ if [ "${BRANCH}" = "master" ]; then
   export API_DEPLOY_BRANCH=master-multi-container
   export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container"
   export EB_2ND_DISK_SIZE="100"
-  export EB_MAIL_CATCHER_PORT="" # maybe remove after email-service
+  export EB_MAIL_CATCHER_PORT="    " # maybe remove after email-service | 4 spaces to pass empty string
   export ENV_URL_PREFIX=""
   #
   export COMPOSER_INSTALL="${COMPOSER_INSTALL_PRODUCTION}"

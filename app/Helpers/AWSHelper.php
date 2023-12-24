@@ -60,9 +60,9 @@ class AWSHelper
     public static function ELBUpdateVersion()
     {
         try {
-            TextHelper::messageTitle(sprintf("[%s] [%s] Handle ELB version - ELASTIC BEANSTALK", getenv('REPOSITORY'), getenv('BRANCH')));
             // === validate ===
             if (!OpsHelper::validateEnvVars([
+                'BRANCH', "REPOSITORY",
                 'ENV', 'ECR_REPO_API', 'S3_EB_APP_VERSION_BUCKET_NAME',
                 'EB_APP_VERSION_FOLDER_NAME', 'EB_ENVIRONMENT_NAME',
                 'EB_2ND_DISK_SIZE',
@@ -71,6 +71,7 @@ class AWSHelper
                 exit(1); // END
             }
             // === handle ===
+            TextHelper::messageTitle(sprintf("[%s] [%s] Handle ELB version - ELASTIC BEANSTALK", getenv('REPOSITORY'), getenv('BRANCH')));
             //    vars
             $ENV = getenv('ENV');
             //    handle ELB version dir

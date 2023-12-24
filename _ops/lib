@@ -5,7 +5,6 @@
 // === Generated libraries classes ===
 
 
-
 // [REMOVED] namespace app\Enum;
 
 class CommandEnum
@@ -194,7 +193,7 @@ class DirHelper
      */
     public static function getScriptDir(): string
     {
-        $scriptDir= substr($_SERVER['SCRIPT_FILENAME'], 0, strlen($_SERVER['SCRIPT_FILENAME']) - strlen(basename($_SERVER['SCRIPT_FILENAME'])) - 1);
+        $scriptDir = substr($_SERVER['SCRIPT_FILENAME'], 0, strlen($_SERVER['SCRIPT_FILENAME']) - strlen(basename($_SERVER['SCRIPT_FILENAME'])) - 1);
         return self::getWorkingDir($scriptDir);
     }
 
@@ -858,9 +857,9 @@ class AWSHelper
     public static function ELBUpdateVersion()
     {
         try {
-            TextHelper::messageTitle(sprintf("[%s] [%s] Handle ELB version - ELASTIC BEANSTALK", getenv('REPOSITORY'), getenv('BRANCH')));
             // === validate ===
             if (!OpsHelper::validateEnvVars([
+                'BRANCH', "REPOSITORY",
                 'ENV', 'ECR_REPO_API', 'S3_EB_APP_VERSION_BUCKET_NAME',
                 'EB_APP_VERSION_FOLDER_NAME', 'EB_ENVIRONMENT_NAME',
                 'EB_2ND_DISK_SIZE',
@@ -868,7 +867,10 @@ class AWSHelper
             ])) {
                 exit(1); // END
             }
+            echo 1234;
+            die(); // todo test
             // === handle ===
+            TextHelper::messageTitle(sprintf("[%s] [%s] Handle ELB version - ELASTIC BEANSTALK", getenv('REPOSITORY'), getenv('BRANCH')));
             //    vars
             $ENV = getenv('ENV');
             //    handle ELB version dir
@@ -1056,8 +1058,6 @@ class AppHelper
     }
 
 
-
-
     /**
      * this will increase app:APP_VERSION
      * this will push new code to GitHub
@@ -1236,7 +1236,7 @@ class Release
     }
 
     /**
-     * remove tab 
+     * remove tab
      * remove namespace
      * remove some unused elements
      * @param string $classPath
@@ -1456,7 +1456,7 @@ class Process
         if ($this->commands) {
             $resultCode = null;
             exec(join(';', $this->commands), $this->output, $exitCode);
-            if($exitCode){
+            if ($exitCode) {
                 $this->printOutput();
                 TextHelper::messageERROR("detect execute shell command failed, exit app | exit code = $exitCode");
                 exit($exitCode); // END app
