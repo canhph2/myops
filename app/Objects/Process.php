@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Objects;
+namespace app\Objects;
 
-use App\Enum\GitHubEnum;
-use App\Helpers\DirHelper;
-use App\Helpers\TextHelper;
+use app\Enum\GitHubEnum;
+use app\Helpers\DirHelper;
+use app\Helpers\TextHelper;
 
 class Process
 {

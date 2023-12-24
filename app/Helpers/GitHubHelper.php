@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Helpers;
+namespace app\Helpers;
 
-use App\Enum\GitHubEnum;
-use App\Objects\Process;
+use app\Enum\GitHubEnum;
+use app\Objects\Process;
 
 class GitHubHelper
 {

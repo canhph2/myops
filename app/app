@@ -1,28 +1,27 @@
+#!/usr/bin/env php
 <?php
 
-namespace App;
+namespace app;
 
-
-require_once 'App/Helpers/AppHelper.php';
-require_once 'App/Helpers/DirHelper.php';
+require_once 'app/Helpers/AppHelper.php';
+require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
-use App\Enum\CommandEnum;
-use App\Enum\GitHubEnum;
-use App\Helpers\AppHelper;
-use App\Helpers\AWSHelper;
-use App\Helpers\DirHelper;
-use App\Helpers\GitHubHelper;
-use App\Helpers\OpsHelper;
-use App\Helpers\ServicesHelper;
-use App\Helpers\TextHelper;
-use App\Objects\Process;
-use App\Objects\Release;
-use App\Objects\Version;
+use app\Enum\CommandEnum;
+use app\Enum\GitHubEnum;
+use app\Helpers\AppHelper;
+use app\Helpers\AWSHelper;
+use app\Helpers\DirHelper;
+use app\Helpers\GitHubHelper;
+use app\Helpers\OpsHelper;
+use app\Helpers\ServicesHelper;
+use app\Helpers\TextHelper;
+use app\Objects\Release;
+use app\Objects\Version;
 
-AppHelper::requireOneAllPHPFilesInDir('');
+AppHelper::requireOneAllPHPFilesInDir(DirHelper::getWorkingDir('app'));
 
-class App
+class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**
@@ -39,7 +38,19 @@ class App
     {
         return self::SHELL_DATA_BASE_64
             ? base64_decode(self::SHELL_DATA_BASE_64)
-            : file_get_contents('App/_shell_/handle-env-ops.sh');
+            : file_get_contents('app/_shell_/handle-env-ops.sh');
+    }
+
+    const ELB_TEMPLATE_BASE_64 = '';
+
+    public static function getELBTemplate()
+    {
+        return self::ELB_TEMPLATE_BASE_64
+            ? json_decode(base64_decode(self::ELB_TEMPLATE_BASE_64))
+            : [
+                'blockdeviceTemplate' => file_get_contents('app/_AWS_/ELB-template/.ebextensions/blockdevice-xvdcz.config.TEMPLATE'),
+                'DockerrunTemplate' => file_get_contents('app/_AWS_/ELB-template/Dockerrun.aws.json.TEMPLATE'),
+            ];
     }
 
     public function __construct()
@@ -76,7 +87,7 @@ class App
                 (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
-                TextHelper::message(App::version());
+                TextHelper::message(app::version());
                 break;
             case CommandEnum::SYNC:
                 OpsHelper::sync();
@@ -93,6 +104,9 @@ class App
                 }
                 // handle
                 AWSHelper::getSecretEnv($param1, $param2);
+                break;
+            case CommandEnum::ELB_UPDATE_VERSION:
+                AWSHelper::ELBUpdateVersion();
                 break;
             // === git ===
             case CommandEnum::BRANCH:
@@ -173,5 +187,5 @@ class App
 // === end class zone ====
 
 // === execute zone ===
-(new App())->run($argv);
+(new app())->run($argv);
 // === end execute zone ===

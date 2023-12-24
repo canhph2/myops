@@ -1,11 +1,9 @@
 <?php
 
-namespace App\Helpers;
+namespace app\Helpers;
 
-use App\App;
-use App\Enum\GitHubEnum;
-use App\Objects\Process;
-use SebastianBergmann\CodeCoverage\Report\Text;
+use app\Enum\GitHubEnum;
+use app\Objects\Process;
 
 class OpsHelper
 {
@@ -170,6 +168,25 @@ class OpsHelper
             TextHelper::message("do nothing");
         }
         TextHelper::messageSeparate();
+    }
+
+    /**
+     * also notify an error message,
+     * eg: ['VAR1', 'VAR2']
+     * @param array $envVars
+     * @return bool
+     */
+    public static function validateEnvVars(array $envVars): bool
+    {
+        $envVarsMissing = [];
+        foreach ($envVars as $envVar) {
+            if (!getenv($envVar)) $envVarsMissing[] = $envVar;
+        }
+        if (count($envVarsMissing) > 0) {
+            TextHelper::messageERROR(sprintf("[ENV] missing %s", join(" or ", $envVarsMissing)));
+            return false; // END | case error
+        }
+        return true; // END | case OK
     }
 
     public static function validate(array $argv)

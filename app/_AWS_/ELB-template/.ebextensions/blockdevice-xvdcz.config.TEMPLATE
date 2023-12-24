@@ -1,0 +1,3 @@
+option_settings:
+  aws:autoscaling:launchconfiguration:
+    BlockDeviceMappings: /dev/xvdcz=:_2ND_DISK_SIZE_:true:gp2

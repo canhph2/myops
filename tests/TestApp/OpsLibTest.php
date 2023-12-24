@@ -2,13 +2,15 @@
 
 namespace TestApp;
 
-require_once 'App/Objects/Version.php';
-require_once 'App/Objects/Process.php';
-require_once 'App/Helpers/DirHelper.php';
+require_once 'app/Objects/Version.php';
+require_once 'app/Objects/Process.php';
+require_once 'app/Helpers/DirHelper.php';
+require_once 'tests/TestApp/BaseTestCase.php';
 
-use App\Helpers\DirHelper;
-use App\Objects\Process;
-use App\Objects\Version;
+use app\Helpers\DirHelper;
+use app\Objects\Process;
+use app\Objects\Version;
+
 
 class OpsLibTest extends BaseTestCase
 {
@@ -17,19 +19,20 @@ class OpsLibTest extends BaseTestCase
         $this->assertIsString("OpsLibTest test string");
     }
 
-    public function testVersionObject(){
+    public function testVersionObject()
+    {
         $version = Version::parse("1.0.0.0");
-        $this->customAssertIsStringAndContainsString("1.0.0.0",$version->toStringFull());
+        $this->customAssertIsStringAndContainsString("1.0.0.0", $version->toStringFull());
         $version->bump(); // default
-        $this->customAssertIsStringAndContainsString("1.0.1.0",$version->toStringFull());
+        $this->customAssertIsStringAndContainsString("1.0.1.0", $version->toStringFull());
         $version->bump(Version::BUILD);
-        $this->customAssertIsStringAndContainsString("1.0.1.1",$version->toStringFull());
+        $this->customAssertIsStringAndContainsString("1.0.1.1", $version->toStringFull());
         $version->bump(Version::PATCH);
-        $this->customAssertIsStringAndContainsString("1.0.2.0",$version->toStringFull());
+        $this->customAssertIsStringAndContainsString("1.0.2.0", $version->toStringFull());
         $version->bump(Version::MINOR);
-        $this->customAssertIsStringAndContainsString("1.1.0.0",$version->toStringFull());
+        $this->customAssertIsStringAndContainsString("1.1.0.0", $version->toStringFull());
         $version->bump(Version::MAJOR);
-        $this->customAssertIsStringAndContainsString("2.0.0.0",$version->toStringFull());
+        $this->customAssertIsStringAndContainsString("2.0.0.0", $version->toStringFull());
     }
 
     public function testCommandVersion()
@@ -42,15 +45,16 @@ class OpsLibTest extends BaseTestCase
 
     public function testLoadOpsEnv()
     {
-        $envContent = (new Process(__FUNCTION__,DirHelper::getWorkingDir(),[
+        $envContent = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "php _ops/lib load-env-ops"
-        ] ))->execMulti()->getOutputStrAll();
+        ]))->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("SLACK_BOT_TOKEN", $envContent);
         $this->customAssertIsStringAndContainsString("GITHUB_PERSONAL_ACCESS_TOKEN", $envContent);
         $this->customAssertIsStringAndContainsString("ENGAGEPLUS_CACHES_DIR", $envContent);
     }
 
-    public function testReplaceTextInFile(){
+    public function testReplaceTextInFile()
+    {
         exec('php _ops/lib tmp add');
         // create a test file
         $contentOrigin = "line 1 with AA BB CC";

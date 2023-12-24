@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enum;
+namespace app\Enum;
 
 class GitHubEnum
 {

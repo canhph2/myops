@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Helpers;
+namespace app\Helpers;
 
 /**
  * this is a simple STRing helper for PHP < 8.1

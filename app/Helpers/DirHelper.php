@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Helpers;
+namespace app\Helpers;
 
-use App\Objects\Process;
+use app\Objects\Process;
 
 class DirHelper
 {

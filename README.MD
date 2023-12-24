@@ -31,13 +31,22 @@ php _ops/lib sync
   - add new files to FILES_LIST in Release class 
   - combine and release
 ```shell
-php App/App.php release
+php app/app release
 php vendor/phpunit/phpunit/phpunit tests
 ```
-- Test local project
-```shell
-php App/App.php help
+
+### Note 3 | AWS services
+#### ELB - Elastic Beanstalk
+- ELB application version structure
 ```
+<EB_APP_VERSION directory .zip>    (zip file)
+    .ebextensions    (dir)
+        blockdevice-xvdcz.config    (file)
+    Dockerrun.aws.json    (file)
+```
+- Engage ELB notes:
+  - 2nd disk size - blockdevice-xvdcz.config: ``master = 100 (GB)``, ``staging = 20 (GB)``, ``develop = 20 (GB)``
+  - Mail catcher port - Dockerrun.aws.json: ``staging, develop =  "hostPort": 1025,  "containerPort": 1025``
 
 
 ---

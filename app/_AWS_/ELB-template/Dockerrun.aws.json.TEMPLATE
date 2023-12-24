@@ -1,0 +1,41 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "ECR_REPO_IMAGE_URI_API",
+      "essential": true,
+      "memoryReservation": 256,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 8080
+        }
+        _MAIL_CACHER_PORT_
+      ],
+      "links": [
+        "payment-service",
+        "invoice-service",
+        "integration-api"
+      ]
+    },
+    {
+      "name": "invoice-service",
+      "image": "ECR_REPO_IMAGE_URI_INVOICE_SERVICE",
+      "memoryReservation": 256,
+      "essential": false
+    },
+    {
+      "name": "payment-service",
+      "image": "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE",
+      "memoryReservation": 256,
+      "essential": false
+    },
+    {
+      "name": "integration-api",
+      "image": "ECR_REPO_IMAGE_URI_INTEGRATION_API",
+      "memoryReservation": 256,
+      "essential": false
+    }
+  ]
+}

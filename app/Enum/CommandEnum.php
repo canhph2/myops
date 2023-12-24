@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enum;
+namespace app\Enum;
 
 class CommandEnum
 {
@@ -13,6 +13,7 @@ class CommandEnum
     // === AWS related DATA commands
     const LOAD_ENV_OPS = 'load-env-ops';
     const GET_SECRET_ENV = 'get-secret-env';
+    const ELB_UPDATE_VERSION = 'elb-update-version';
 
     // === git ===
     const BRANCH = 'branch';
@@ -48,10 +49,11 @@ class CommandEnum
         self::VERSION => "show app version",
         self::SYNC => "sync new release code to project at _ops/lib",
 
-        "=== AWS releated commands ===" => '',
+        "=== AWS related commands ===" => '',
         self::LOAD_ENV_OPS => "[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:
                                eval \"$(php _ops/lib load-env-ops)\"   \n",
         self::GET_SECRET_ENV => "[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName",
+        self::ELB_UPDATE_VERSION => "[AWS Elastic Beanstalk] create a new version and update an environment",
 
         "=== git ===" => '',
         self::BRANCH => 'get git branch / GitHub branch',

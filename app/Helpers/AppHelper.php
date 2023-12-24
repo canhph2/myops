@@ -1,35 +1,37 @@
 <?php
 
-namespace App\Helpers;
+namespace app\Helpers;
 
-use App\App;
-use App\Objects\Release;
-use App\Objects\Version;
+use app\app;
+use app\Objects\Release;
+use app\Objects\Version;
 
 class AppHelper
 {
     /**
-     * @param string $dirName
+     * @param string $fullDirPath
      * @return void
      */
-    public static function requireOneAllPHPFilesInDir(string $dirName): void
+    public static function requireOneAllPHPFilesInDir(string $fullDirPath): void
     {
-        $fullDirToScan = sprintf("%s/%s", DirHelper::getScriptDir(), $dirName);
-        foreach (scandir($fullDirToScan) as $subDirName) {
-            $fullSubDirToCheck = sprintf("%s/%s/%s", DirHelper::getScriptDir(), $dirName, $subDirName);
+        foreach (scandir($fullDirPath) as $subDirName) {
+            $fullSubDirToCheck = sprintf("%s/%s", $fullDirPath, $subDirName);
             if ($subDirName != '.' && $subDirName != '..' && is_dir($fullSubDirToCheck)) {
                 $PHPFiles = glob("$fullSubDirToCheck/*.php");
                 foreach ($PHPFiles as $PHPFile) {
                     require_once $PHPFile;
                 }
                 // check next
-                AppHelper::requireOneAllPHPFilesInDir("$dirName/$subDirName");
+                AppHelper::requireOneAllPHPFilesInDir($fullSubDirToCheck);
             }
         }
     }
 
+
+
+
     /**
-     * this will increase App:APP_VERSION
+     * this will increase app:APP_VERSION
      * this will push new code to GitHub
      *
      * @param string $part
@@ -40,15 +42,15 @@ class AppHelper
         // handle version
         switch ($part) {
             case Version::MINOR:
-                $newVersion = Version::parse(App::APP_VERSION)->bump(Version::MINOR);
+                $newVersion = Version::parse(app::APP_VERSION)->bump(Version::MINOR);
                 break;
             case Version::PATCH:
             default:
-                $newVersion = Version::parse(App::APP_VERSION)->bump($part);
+                $newVersion = Version::parse(app::APP_VERSION)->bump($part);
                 break;
         }
         // update data
-        //    App class
+        //    app class
         $appClassPath = Release::FILES_LIST[count(Release::FILES_LIST) - 1];
         file_put_contents($appClassPath, preg_replace(
             '/APP_VERSION\s*=\s*\'(\d+\.\d+\.\d+)\'/',
