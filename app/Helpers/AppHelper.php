@@ -40,9 +40,11 @@ class AppHelper
     public static function increaseVersion(string $part = Version::PATCH): Version
     {
         // handle version
+        $isAddToVersionMD = false;
         switch ($part) {
             case Version::MINOR:
                 $newVersion = Version::parse(app::APP_VERSION)->bump(Version::MINOR);
+                $isAddToVersionMD = true;
                 break;
             case Version::PATCH:
             default:
@@ -64,6 +66,15 @@ class AppHelper
             sprintf("ops-lib v%s", $newVersion->toString()),
             file_get_contents($readmePath)
         ));
+        //    VERSION.MD
+        if($isAddToVersionMD){
+            $VersionMDPath = "VERSION.MD";
+            file_put_contents($readmePath, str_replace(
+                "# ops-lib versions\n---\n",
+                sprintf("# ops-lib versions\n---\n%s | TODO ADD SOME CHANGE LOGS\n", $newVersion->toString()),
+                file_get_contents($VersionMDPath)
+            ));
+        }
         //
         return $newVersion;
     }
