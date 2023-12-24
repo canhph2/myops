@@ -28,8 +28,6 @@ class AppHelper
     }
 
 
-
-
     /**
      * this will increase app:APP_VERSION
      * this will push new code to GitHub
@@ -67,11 +65,11 @@ class AppHelper
             file_get_contents($readmePath)
         ));
         //    VERSION.MD
-        if($isAddToVersionMD){
+        if ($isAddToVersionMD) {
             $VersionMDPath = "VERSION.MD";
             file_put_contents($VersionMDPath, str_replace(
-                "## === v2 ===",
-                sprintf("## === v2 ===\n- %s | TODO ADD SOME CHANGE LOGS", $newVersion->toString()),
+                sprintf("## === v%s ===", $newVersion->getMajor()),
+                sprintf("## === v%s ===\n- %s | TODO ADD SOME CHANGE LOGS", $newVersion->getMajor(), $newVersion->toString()),
                 file_get_contents($VersionMDPath)
             ));
         }
