@@ -71,6 +71,7 @@ class AWSHelper
                 exit(1); // END
             }
             // === handle ===
+            TextHelper::messageSeparate();
             TextHelper::messageTitle(sprintf("[%s] [%s] Handle ELB version - ELASTIC BEANSTALK", getenv('REPOSITORY'), getenv('BRANCH')));
             //    vars
             $ENV = getenv('ENV');
