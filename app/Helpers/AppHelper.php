@@ -70,8 +70,8 @@ class AppHelper
         if($isAddToVersionMD){
             $VersionMDPath = "VERSION.MD";
             file_put_contents($readmePath, str_replace(
-                "# ops-lib versions\n---\n",
-                sprintf("# ops-lib versions\n---\n%s | TODO ADD SOME CHANGE LOGS\n", $newVersion->toString()),
+                "# === v2 ===",
+                sprintf("# === v2 ===\n%s | TODO ADD SOME CHANGE LOGS\n", $newVersion->toString()),
                 file_get_contents($VersionMDPath)
             ));
         }
