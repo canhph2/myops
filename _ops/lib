@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-// === OPS SHARED LIBRARY (PHP) v2.9.5 ===
+// === OPS SHARED LIBRARY (PHP) v2.9.7 ===
 
 // === Generated libraries classes ===
 
@@ -19,6 +19,7 @@ class CommandEnum
     // === AWS related DATA commands
     const LOAD_ENV_OPS = 'load-env-ops';
     const GET_SECRET_ENV = 'get-secret-env';
+    const ELB_UPDATE_VERSION = 'elb-update-version';
 
     // === git ===
     const BRANCH = 'branch';
@@ -54,10 +55,11 @@ class CommandEnum
         self::VERSION => "show app version",
         self::SYNC => "sync new release code to project at _ops/lib",
 
-        "=== AWS releated commands ===" => '',
+        "=== AWS related commands ===" => '',
         self::LOAD_ENV_OPS => "[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:
                                eval \"$(php _ops/lib load-env-ops)\"   \n",
         self::GET_SECRET_ENV => "[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName",
+        self::ELB_UPDATE_VERSION => "[AWS Elastic Beanstalk] create a new version and update an environment",
 
         "=== git ===" => '',
         self::BRANCH => 'get git branch / GitHub branch',
@@ -192,11 +194,8 @@ class DirHelper
      */
     public static function getScriptDir(): string
     {
-        return str_replace(
-            '/' . basename($_SERVER['SCRIPT_FILENAME']),
-            '',
-            self::getWorkingDir($_SERVER['SCRIPT_FILENAME'])
-        );
+        $scriptDir= substr($_SERVER['SCRIPT_FILENAME'], 0, strlen($_SERVER['SCRIPT_FILENAME']) - strlen(basename($_SERVER['SCRIPT_FILENAME'])) - 1);
+        return self::getWorkingDir($scriptDir);
     }
 
     // backup code
@@ -249,10 +248,8 @@ class DirHelper
 
 // [REMOVED] namespace app\Helpers;
 
-// [REMOVED] use app\app;
 // [REMOVED] use app\Enum\GitHubEnum;
 // [REMOVED] use app\Objects\Process;
-// [REMOVED] use SebastianBergmann\CodeCoverage\Report\Text;
 
 class OpsHelper
 {
@@ -417,6 +414,25 @@ class OpsHelper
             TextHelper::message("do nothing");
         }
         TextHelper::messageSeparate();
+    }
+
+    /**
+     * also notify an error message,
+     * eg: ['VAR1', 'VAR2']
+     * @param array $envVars
+     * @return bool
+     */
+    public static function validateEnvVars(array $envVars): bool
+    {
+        $envVarsMissing = [];
+        foreach ($envVars as $envVar) {
+            if (!getenv($envVar)) $envVarsMissing[] = $envVar;
+        }
+        if (count($envVarsMissing) > 0) {
+            TextHelper::messageERROR(sprintf("[ENV] missing %s", join(" or ", $envVarsMissing)));
+            return false; // END | case error
+        }
+        return true; // END | case OK
     }
 
     public static function validate(array $argv)
@@ -786,9 +802,15 @@ class ServicesHelper
 
 // [REMOVED] use app\app;
 // [REMOVED] use app\Objects\Process;
+// [REMOVED] use phpDocumentor\Reflection\Types\Self_;
 
 class AWSHelper
 {
+    const ELB_TEMP_DIR = "tmp/elb-version";
+    const ELB_EBEXTENSIONS_DIR = ".ebextensions"; // should place at inside elb version dir
+    const ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME = "blockdevice-xvdcz.config";
+    const ELB_DOCKERRUN_FILE_NAME = "Dockerrun.aws.json";
+
     /**
      * save to .env file or custom name
      * @return void
@@ -821,6 +843,48 @@ class AWSHelper
         //
         return sprintf("#!/bin/bash\n%s\n%s", $opsEnvData, app::getShellData());
     }
+
+    /**
+     * works:
+     * - get tags name from SSM
+     * - build a version file (.zip)
+     * - upload a version file to S3 bucket
+     * - update ELB environment with new version
+     * @return void
+     */
+    public static function ELBUpdateVersion()
+    {
+        var_dump(app::getELBTemplate()); // todo test
+        TextHelper::messageTitle("Hanle ELB version - ELASTIC BEANSTALK");
+        // === validate ===
+        if (!OpsHelper::validateEnvVars([
+            'ENV', 'ECR_REPO_API', 'S3_EB_APP_VERSION_BUCKET_NAME',
+            'EB_APP_VERSION_FOLDER_NAME', 'EB_ENVIRONMENT_NAME'
+        ])) {
+            exit(1); // END
+        }
+        // === handle ===
+        //    handle ELB version dir
+        if (is_dir(DirHelper::getWorkingDir(self::ELB_TEMP_DIR))) {
+            $commands[] = sprintf("rm -rf '%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR));
+        }
+        $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
+        (new Process("handle ELB version directory", DirHelper::getWorkingDir(), $commands))
+            ->execMultiInWorkDir()->printOutput();
+        //    write files
+        file_put_contents(
+            sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME),
+            app::getELBTemplate()["blockdeviceTemplate"]
+        );
+        file_put_contents(
+            sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME),
+            app::getELBTemplate()["DockerrunTemplate"]
+        );
+        //    create .zip file
+        (new Process("zip ELB version", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), [
+            sprintf("zip -r %s.zip Dockerrun.aws.json .ebextensions", "todo-elb-label")
+        ]))->execMultiInWorkDir()->printOutput();
+    }
 }
 
 // [REMOVED] namespace app\Helpers;
@@ -832,24 +896,26 @@ class AWSHelper
 class AppHelper
 {
     /**
-     * @param string $dirName
+     * @param string $fullDirPath
      * @return void
      */
-    public static function requireOneAllPHPFilesInDir(string $dirName): void
+    public static function requireOneAllPHPFilesInDir(string $fullDirPath): void
     {
-        $fullDirToScan = sprintf("%s/%s", DirHelper::getScriptDir(), $dirName);
-        foreach (scandir($fullDirToScan) as $subDirName) {
-            $fullSubDirToCheck = sprintf("%s/%s/%s", DirHelper::getScriptDir(), $dirName, $subDirName);
+        foreach (scandir($fullDirPath) as $subDirName) {
+            $fullSubDirToCheck = sprintf("%s/%s", $fullDirPath, $subDirName);
             if ($subDirName != '.' && $subDirName != '..' && is_dir($fullSubDirToCheck)) {
                 $PHPFiles = glob("$fullSubDirToCheck/*.php");
                 foreach ($PHPFiles as $PHPFile) {
                     require_once $PHPFile;
                 }
                 // check next
-                AppHelper::requireOneAllPHPFilesInDir("$dirName/$subDirName");
+                AppHelper::requireOneAllPHPFilesInDir($fullSubDirToCheck);
             }
         }
     }
+
+
+
 
     /**
      * this will increase app:APP_VERSION
@@ -936,12 +1002,10 @@ class STR
 // [REMOVED] namespace app\Objects;
 
 // [REMOVED] use app\app;
-// [REMOVED] use app\Enum\GitHubEnum;
 // [REMOVED] use app\Helpers\AppHelper;
 // [REMOVED] use app\Helpers\DEVHelper;
 // [REMOVED] use app\Helpers\DirHelper;
 // [REMOVED] use app\Helpers\TextHelper;
-// [REMOVED] use DateTime;
 
 class Release
 {
@@ -998,7 +1062,7 @@ class Release
     public function handle(array $argv): void
     {
         // validate
-        if ($this->validate($argv)) {
+        if ($this->validate()) {
             echo DEVHelper::message($this->validate(), __CLASS__, __FUNCTION__);
             return; // END
         }
@@ -1013,16 +1077,17 @@ class Release
         $newVersion = AppHelper::increaseVersion($part);
         //    generate files
         echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
-        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n\n// === %s ===\n", app::version($newVersion))); // init file
+        file_put_contents(self::RELEASE_PATH, sprintf("\n\n// === %s ===\n", app::version($newVersion))); // init file
         $this->handleLibrariesClass();
         $this->handleAppClass();
         echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);
         //    push new release to GitHub
-        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
-            GitHubEnum::ADD_ALL_FILES_COMMAND,
-            sprintf("git commit -m 'release %s on %s UTC'", app::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
-            GitHubEnum::PUSH_COMMAND,
-        ]))->execMultiInWorkDir()->printOutput();
+        // todo test
+//        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
+//            GitHubEnum::ADD_ALL_FILES_COMMAND,
+//            sprintf("git commit -m 'release %s on %s UTC'", app::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
+//            GitHubEnum::PUSH_COMMAND,
+//        ]))->execMultiInWorkDir()->printOutput();
         //
         TextHelper::messageSeparate();
         TextHelper::messageSUCCESS(sprintf("Release successful %s", app::version($newVersion)));
@@ -1039,6 +1104,7 @@ class Release
     {
         // remove php tag
         $classContent = str_replace('', '', trim(file_get_contents($classPath)));
+        $classContent = str_replace('', '', $classContent);
         // remove unused elements
         $lines = explode("\n", $classContent);
         $modifiedLines = [];
@@ -1066,7 +1132,13 @@ class Release
         // handle shell data
         $appClassContentClassOnly = str_replace(
             "const SHELL_DATA_BASE_64 = '';",
-            sprintf("const SHELL_DATA_BASE_64 = '%s';", base64_encode(file_get_contents("app/_shell_/handle-env-ops.sh"))),
+            sprintf("const SHELL_DATA_BASE_64 = '%s';", base64_encode(app::getShellData())),
+            $appClassContentClassOnly
+        );
+        // handle ELB template
+        $appClassContentClassOnly = str_replace(
+            "const ELB_TEMPLATE_BASE_64 = '';",
+            sprintf("const ELB_TEMPLATE_BASE_64 = '%s';", base64_encode(json_encode(app::getELBTemplate()))),
             $appClassContentClassOnly
         );
         //
@@ -1468,7 +1540,7 @@ class Version
 
 // === Generated app class ===
 
-class App
+class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**
@@ -1477,7 +1549,7 @@ class App
      * 2.X: with test lib before ship, add some new commands
      * @var string
      */
-    const APP_VERSION = '2.9.5';
+    const APP_VERSION = '2.9.7';
 
     const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKHBocCBfb3BzL2xpYiBicmFuY2gpCmV4cG9ydCBSRVBPU0lUT1JZPSQocGhwIF9vcHMvbGliIHJlcG9zaXRvcnkpCmV4cG9ydCBIRUFEX0NPTU1JVF9JRD0kKHBocCBfb3BzL2xpYiBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBlbmdhZ2UtYXBpLWRlcGxveSB2YXJzID09PQppZiBbICIke0JSQU5DSH0iID0gImRldmVsb3AiIF07IHRoZW4KICBleHBvcnQgRU5WPWRldgogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1kZXZlbG9wLW11bHRpLWNvbnRhaW5lcgogIGV4cG9ydCBFQl9FTlZJUk9OTUVOVF9OQU1FPSJkZXZlbG9wLW11bHRpLWNvbnRhaW5lciIKICBleHBvcnQgRU5WX1VSTF9QUkVGSVg9IiR7QlJBTkNIfS0iCiAgIwogIGV4cG9ydCBDT01QT1NFUl9JTlNUQUxMPSIke0NPTVBPU0VSX0lOU1RBTExfREVWRUxPUH0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBRz0iJHtET0NLRVJfQkFTRV9UQUdfREVWRUxPUH0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBR19BUEk9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCmZpCmlmIFsgIiR7QlJBTkNIfSIgPSAic3RhZ2luZyIgXTsgdGhlbgogIGV4cG9ydCBFTlY9c3RnCiAgZXhwb3J0IEFQSV9ERVBMT1lfQlJBTkNIPXN0YWdpbmctbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9InN0YWdpbmctbXVsdGktY29udGFpbmVyIgogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iJHtCUkFOQ0h9LSIKICAjCiAgZXhwb3J0IENPTVBPU0VSX0lOU1RBTEw9IiR7Q09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OfSIKICBleHBvcnQgRE9DS0VSX0JBU0VfVEFHPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIKICBleHBvcnQgRE9DS0VSX0JBU0VfVEFHX0FQST0iJHtET0NLRVJfQkFTRV9UQUdfREVWRUxPUH0iICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIiCiAgIwogIGV4cG9ydCBDT01QT1NFUl9JTlNUQUxMPSIke0NPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTn0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBRz0iJHtET0NLRVJfQkFTRV9UQUdfUFJPRFVDVElPTn0iCiAgZXhwb3J0IERPQ0tFUl9CQVNFX1RBR19BUEk9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCmZpCiMgPT09IEVORCA9PT0KCiMgPT09IEFXUyBBY2NvdW50IGNvbmZpZ3VyYXRpb24gPT09CmV4cG9ydCBBV1NfQUNDT1VOVF9JRD0iOTgyMDgwNjcyOTgzIgpleHBvcnQgUkVHSU9OPSJhcC1lYXN0LTEiCiMgICAgRUNSIGNvbmZpZ3VyYXRpb24KIyAgICAgICAgYmFzZSBhbmQgY2FjaGVzIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRV9CQVNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtYmFzZS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgICAgIG5vcm1hbCByZXBvc2l0b3JpZXMKZXhwb3J0IEVDUl9SRVBPX0FQST0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1hcGktcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX1BBWU1FTlRfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1wYXltZW50LXNlcnZpY2UtcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0lOVk9JQ0VfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1pbnZvaWNlLXNlcnZpY2UtcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0lOVEVHUkFUSU9OX0FQST0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1pbnRlZ3JhdGlvbi1hcGktcmVwb3NpdG9yeSIKZXhwb3J0IEVDUl9SRVBPX0VNQUlMX1NFUlZJQ0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy0ke0VOVn0tZW1haWwtc2VydmljZS1yZXBvc2l0b3J5IgojICAgIEVsYXN0aWMgQmVhbnN0YWxrIGNvbmZpZ3VyYXRpb24KZXhwb3J0IFMzX0VCX0FQUF9WRVJTSU9OX0JVQ0tFVF9OQU1FPSJlbGFzdGljYmVhbnN0YWxrLSR7UkVHSU9OfS0ke0FXU19BQ0NPVU5UX0lEfSIKZXhwb3J0IEVCX0FQUF9WRVJTSU9OX0ZPTERFUl9OQU1FPSJlbmdhZ2VwbHVzIgpleHBvcnQgRUJfQVBQX05BTUU9ImVuZ2FnZXBsdXMiCiMgPT09IEVORCA9PT0KCiMgPT09IEVuZ2FnZVBsdXMgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEVOR0FHRVBMVVNfQ0FDSEVTX0ZPTERFUj0iLmNhY2hlc19lbmdhZ2VwbHVzIgpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRElSPSIkKHBocCBfb3BzL2xpYiBob21lLWRpcikvJHtFTkdBR0VQTFVTX0NBQ0hFU19GT0xERVJ9IgpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfUkVQT1NJVE9SWV9ESVI9IiR7RU5HQUdFUExVU19DQUNIRVNfRElSfS8ke1JFUE9TSVRPUll9IgojID09PSBFTkQgPT09CgojID09PSBnZXQgREVWSUNFIGZyb20gcGFyYW0gMSA9PT0KZXhwb3J0IERFVklDRT0iJDEiCiMgPT09IEVORCA9PT0K';
 
@@ -1486,6 +1558,18 @@ class App
         return self::SHELL_DATA_BASE_64
             ? base64_decode(self::SHELL_DATA_BASE_64)
             : file_get_contents('app/_shell_/handle-env-ops.sh');
+    }
+
+    const ELB_TEMPLATE_BASE_64 = 'eyJibG9ja2RldmljZVRlbXBsYXRlIjoib3B0aW9uX3NldHRpbmdzOlxuICBhd3M6YXV0b3NjYWxpbmc6bGF1bmNoY29uZmlndXJhdGlvbjpcbiAgICBCbG9ja0RldmljZU1hcHBpbmdzOiBcL2RldlwveHZkY3o9Ol8yTkRfRElTS19TSVpFXzp0cnVlOmdwMlxuIiwiRG9ja2VycnVuVGVtcGxhdGUiOiJ7XG4gIFwiQVdTRUJEb2NrZXJydW5WZXJzaW9uXCI6IDIsXG4gIFwiY29udGFpbmVyRGVmaW5pdGlvbnNcIjogW1xuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9BUElcIixcbiAgICAgIFwiZXNzZW50aWFsXCI6IHRydWUsXG4gICAgICBcIm1lbW9yeVJlc2VydmF0aW9uXCI6IDI1NixcbiAgICAgIFwicG9ydE1hcHBpbmdzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiaG9zdFBvcnRcIjogODAsXG4gICAgICAgICAgXCJjb250YWluZXJQb3J0XCI6IDgwODBcbiAgICAgICAgfVxuICAgICAgICBfTUFJTF9DQUNIRVJfUE9SVF9cbiAgICAgIF0sXG4gICAgICBcImxpbmtzXCI6IFtcbiAgICAgICAgXCJwYXltZW50LXNlcnZpY2VcIixcbiAgICAgICAgXCJpbnZvaWNlLXNlcnZpY2VcIixcbiAgICAgICAgXCJpbnRlZ3JhdGlvbi1hcGlcIlxuICAgICAgXVxuICAgIH0sXG4gICAge1xuICAgICAgXCJuYW1lXCI6IFwiaW52b2ljZS1zZXJ2aWNlXCIsXG4gICAgICBcImltYWdlXCI6IFwiRUNSX1JFUE9fSU1BR0VfVVJJX0lOVk9JQ0VfU0VSVklDRVwiLFxuICAgICAgXCJtZW1vcnlSZXNlcnZhdGlvblwiOiAyNTYsXG4gICAgICBcImVzc2VudGlhbFwiOiBmYWxzZVxuICAgIH0sXG4gICAge1xuICAgICAgXCJuYW1lXCI6IFwicGF5bWVudC1zZXJ2aWNlXCIsXG4gICAgICBcImltYWdlXCI6IFwiRUNSX1JFUE9fSU1BR0VfVVJJX1BBWU1FTlRfU0VSVklDRVwiLFxuICAgICAgXCJtZW1vcnlSZXNlcnZhdGlvblwiOiAyNTYsXG4gICAgICBcImVzc2VudGlhbFwiOiBmYWxzZVxuICAgIH0sXG4gICAge1xuICAgICAgXCJuYW1lXCI6IFwiaW50ZWdyYXRpb24tYXBpXCIsXG4gICAgICBcImltYWdlXCI6IFwiRUNSX1JFUE9fSU1BR0VfVVJJX0lOVEVHUkFUSU9OX0FQSVwiLFxuICAgICAgXCJtZW1vcnlSZXNlcnZhdGlvblwiOiAyNTYsXG4gICAgICBcImVzc2VudGlhbFwiOiBmYWxzZVxuICAgIH1cbiAgXVxufVxuIn0=';
+
+    public static function getELBTemplate()
+    {
+        return self::ELB_TEMPLATE_BASE_64
+            ? json_decode(base64_decode(self::ELB_TEMPLATE_BASE_64))
+            : [
+                'blockdeviceTemplate' => file_get_contents('app/_AWS_/ELB-template/.ebextensions/blockdevice-xvdcz.config.TEMPLATE'),
+                'DockerrunTemplate' => file_get_contents('app/_AWS_/ELB-template/Dockerrun.aws.json.TEMPLATE'),
+            ];
     }
 
     public function __construct()
@@ -1539,6 +1623,9 @@ class App
                 }
                 // handle
                 AWSHelper::getSecretEnv($param1, $param2);
+                break;
+            case CommandEnum::ELB_UPDATE_VERSION:
+                AWSHelper::ELBUpdateVersion();
                 break;
             // === git ===
             case CommandEnum::BRANCH:
@@ -1619,7 +1706,7 @@ class App
 // === end class zone ====
 
 // === execute zone ===
-(new App())->run($argv);
+(new app())->run($argv);
 // === end execute zone ===
 
 // === end Generated app class ===

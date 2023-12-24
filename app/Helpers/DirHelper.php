@@ -36,11 +36,8 @@ class DirHelper
      */
     public static function getScriptDir(): string
     {
-        return str_replace(
-            '/' . basename($_SERVER['SCRIPT_FILENAME']),
-            '',
-            self::getWorkingDir($_SERVER['SCRIPT_FILENAME'])
-        );
+        $scriptDir= substr($_SERVER['SCRIPT_FILENAME'], 0, strlen($_SERVER['SCRIPT_FILENAME']) - strlen(basename($_SERVER['SCRIPT_FILENAME'])) - 1);
+        return self::getWorkingDir($scriptDir);
     }
 
     // backup code
