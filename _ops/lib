@@ -854,7 +854,6 @@ class AWSHelper
      */
     public static function ELBUpdateVersion()
     {
-        var_dump(app::getELBTemplate()); // todo test
         TextHelper::messageTitle("Hanle ELB version - ELASTIC BEANSTALK");
         // === validate ===
         if (!OpsHelper::validateEnvVars([

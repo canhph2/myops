@@ -180,7 +180,7 @@ class OpsHelper
     {
         $envVarsMissing = [];
         foreach ($envVars as $envVar) {
-            if (!getenv($envVar)) $envVarsMissing[] = $envVar;
+            if (is_null(getenv($envVar))) $envVarsMissing[] = $envVar;
         }
         if (count($envVarsMissing) > 0) {
             TextHelper::messageERROR(sprintf("[ENV] missing %s", join(" or ", $envVarsMissing)));

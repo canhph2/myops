@@ -147,7 +147,12 @@ class Process
         // === handle ===
         if ($this->commands) {
             $resultCode = null;
-            exec(join(';', $this->commands), $this->output, $resultCode);
+            exec(join(';', $this->commands), $this->output, $exitCode);
+            if($exitCode){
+                $this->printOutput();
+                TextHelper::messageERROR("detect execute shell command failed, exit app | exit code = $exitCode");
+                exit($exitCode); // END app
+            }
         }
         //
         return $this;

@@ -22,6 +22,8 @@ if [ "${BRANCH}" = "develop" ]; then
   export ENV=dev
   export API_DEPLOY_BRANCH=develop-multi-container
   export EB_ENVIRONMENT_NAME="develop-multi-container"
+  export EB_2ND_DISK_SIZE="20"
+  export EB_MAIL_CATCHER_PORT=",{ \"hostPort\": 1025, \"containerPort\": 1025 }" # maybe remove after email-service
   export ENV_URL_PREFIX="${BRANCH}-"
   #
   export COMPOSER_INSTALL="${COMPOSER_INSTALL_DEVELOP}"
@@ -32,6 +34,8 @@ if [ "${BRANCH}" = "staging" ]; then
   export ENV=stg
   export API_DEPLOY_BRANCH=staging-multi-container
   export EB_ENVIRONMENT_NAME="staging-multi-container"
+  export EB_2ND_DISK_SIZE="20"
+  export EB_MAIL_CATCHER_PORT=",{ \"hostPort\": 1025, \"containerPort\": 1025 }" # maybe remove after email-service
   export ENV_URL_PREFIX="${BRANCH}-"
   #
   export COMPOSER_INSTALL="${COMPOSER_INSTALL_PRODUCTION}"
@@ -42,6 +46,8 @@ if [ "${BRANCH}" = "master" ]; then
   export ENV=prd
   export API_DEPLOY_BRANCH=master-multi-container
   export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container"
+  export EB_2ND_DISK_SIZE="100"
+  export EB_MAIL_CATCHER_PORT="" # maybe remove after email-service
   export ENV_URL_PREFIX=""
   #
   export COMPOSER_INSTALL="${COMPOSER_INSTALL_PRODUCTION}"

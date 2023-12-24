@@ -11,7 +11,7 @@
           "hostPort": 80,
           "containerPort": 8080
         }
-        _MAIL_CACHER_PORT_
+        _MAIL_CATCHER_PORT_
       ],
       "links": [
         "payment-service",
