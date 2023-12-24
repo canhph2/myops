@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\App;
+use App\Objects\Process;
 
 class AWSHelper
 {
@@ -13,6 +14,14 @@ class AWSHelper
     public static function getSecretEnv(string $secretName, string $customENVName = null)
     {
         $ENVName = $customENVName ?? '.env'; // default
+        // remove old file
+        if (is_file(DirHelper::getWorkingDir($ENVName))) {
+            (new Process("Delete old env file", DirHelper::getWorkingDir(), [
+                sprintf("rm -f %s", DirHelper::getWorkingDir($ENVName)),
+            ]))
+                ->execMultiInWorkDir()->printOutput();
+        }
+        // get
         exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output text  > %s", $secretName, $ENVName));
         TextHelper::messageSUCCESS("get secret '$secretName' success and save at '$ENVName'");
     }

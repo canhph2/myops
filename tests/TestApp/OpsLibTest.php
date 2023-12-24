@@ -3,7 +3,11 @@
 namespace TestApp;
 
 require_once 'App/Objects/Version.php';
+require_once 'App/Objects/Process.php';
+require_once 'App/Helpers/DirHelper.php';
 
+use App\Helpers\DirHelper;
+use App\Objects\Process;
 use App\Objects\Version;
 
 class OpsLibTest extends BaseTestCase
@@ -38,12 +42,12 @@ class OpsLibTest extends BaseTestCase
 
     public function testLoadOpsEnv()
     {
-        $output = "";
-        exec("php _ops/lib load-env-ops", $output);
-        $data = join("\n", $output);
-        $this->customAssertIsStringAndContainsString("SLACK_BOT_TOKEN", $data);
-        $this->customAssertIsStringAndContainsString("GITHUB_PERSONAL_ACCESS_TOKEN", $data);
-        $this->customAssertIsStringAndContainsString("ENGAGEPLUS_CACHES_DIR", $data);
+        $envContent = (new Process(__FUNCTION__,DirHelper::getWorkingDir(),[
+            "php _ops/lib load-env-ops"
+        ] ))->execMulti()->getOutputStrAll();
+        $this->customAssertIsStringAndContainsString("SLACK_BOT_TOKEN", $envContent);
+        $this->customAssertIsStringAndContainsString("GITHUB_PERSONAL_ACCESS_TOKEN", $envContent);
+        $this->customAssertIsStringAndContainsString("ENGAGEPLUS_CACHES_DIR", $envContent);
     }
 
     public function testReplaceTextInFile(){
