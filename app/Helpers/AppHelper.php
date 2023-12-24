@@ -69,9 +69,9 @@ class AppHelper
         //    VERSION.MD
         if($isAddToVersionMD){
             $VersionMDPath = "VERSION.MD";
-            file_put_contents($readmePath, str_replace(
-                "# === v2 ===",
-                sprintf("# === v2 ===\n%s | TODO ADD SOME CHANGE LOGS\n", $newVersion->toString()),
+            file_put_contents($VersionMDPath, str_replace(
+                "## === v2 ===",
+                sprintf("## === v2 ===\n- %s | TODO ADD SOME CHANGE LOGS\n", $newVersion->toString()),
                 file_get_contents($VersionMDPath)
             ));
         }
