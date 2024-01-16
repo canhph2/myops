@@ -17,7 +17,7 @@ export COMPOSER_INSTALL_DEVELOP_TO_BUILD_CACHES="composer install --no-autoloade
 export COMPOSER_INSTALL_PRODUCTION="composer install --no-dev --optimize-autoloader"
 export COMPOSER_INSTALL_PRODUCTION_TO_BUILD_CACHES="composer install --no-dev --no-autoloader --no-scripts --no-plugins"
 
-# === engage-api-deploy vars ===
+# === handle branches vars ===
 if [ "${BRANCH}" = "develop" ]; then
   export ENV=dev
   export API_DEPLOY_BRANCH=develop-multi-container
@@ -29,6 +29,9 @@ if [ "${BRANCH}" = "develop" ]; then
   export COMPOSER_INSTALL="${COMPOSER_INSTALL_DEVELOP}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_DEVELOP}"
   export DOCKER_BASE_TAG_API="${DOCKER_BASE_TAG_DEVELOP}" # maybe remove after email-service
+  #
+  export EMAIL_SERVICE_EXTERNAL_PORT=10000
+  export EMAIL_SERVICE_CONTAINER_PORT=80
 fi
 if [ "${BRANCH}" = "staging" ]; then
   export ENV=stg
@@ -41,6 +44,9 @@ if [ "${BRANCH}" = "staging" ]; then
   export COMPOSER_INSTALL="${COMPOSER_INSTALL_PRODUCTION}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
   export DOCKER_BASE_TAG_API="${DOCKER_BASE_TAG_DEVELOP}" # maybe remove after email-service
+  #
+  export EMAIL_SERVICE_EXTERNAL_PORT=10001
+  export EMAIL_SERVICE_CONTAINER_PORT=80
 fi
 if [ "${BRANCH}" = "master" ]; then
   export ENV=prd
@@ -53,6 +59,9 @@ if [ "${BRANCH}" = "master" ]; then
   export COMPOSER_INSTALL="${COMPOSER_INSTALL_PRODUCTION}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_PRODUCTION}"
   export DOCKER_BASE_TAG_API="${DOCKER_BASE_TAG_PRODUCTION}" # maybe remove after email-service
+  #
+  export EMAIL_SERVICE_EXTERNAL_PORT=10002
+  export EMAIL_SERVICE_CONTAINER_PORT=80
 fi
 # === END ===
 
