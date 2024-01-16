@@ -14,12 +14,30 @@ class TextHelper
     }
 
     /**
-     * print a separate line
+     * @param string|null $text
+     * @return void
+     */
+    public static function messageItem(string $text = null): void
+    {
+        echo sprintf("    %s\n", $text);
+    }
+
+    /**
+     * print a separate line with =
      * @return void
      */
     public static function messageSeparate(): void
     {
         self::message('===');
+    }
+
+    /**
+     * print a separate line with -
+     * @return void
+     */
+    public static function messageSeparateItem(): void
+    {
+        self::message('    ---');
     }
 
     /**

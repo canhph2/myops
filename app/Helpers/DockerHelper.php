@@ -40,13 +40,14 @@ class DockerHelper
         }
         /** @var DockerImage $image */
         foreach (self::getListImages() as $image) {
+            TextHelper::messageSeparateItem();
             // case: to check image
             if ($image->getRepository() === $imageRepository) {
                 if ($image->getTag() === $imageTag) {
-                    TextHelper::message(sprintf("✔ Keep image '%s:%s'", $image->getRepository(), $image->getTag()));
+                    TextHelper::messageItem(sprintf("✔ Keep image '%s:%s'", $image->getRepository(), $image->getTag()));
                     // do nothing | skip this image
                 } else {
-                    TextHelper::message(sprintf("X Delete image '%s:%s'", $image->getRepository(), $image->getTag()));
+                    TextHelper::messageItem(sprintf("X Delete image '%s:%s'", $image->getRepository(), $image->getTag()));
                     (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
                     ]))->execMultiInWorkDir(true)->printOutput();
@@ -54,7 +55,7 @@ class DockerHelper
                 //
                 // case: other images
             } else {
-                TextHelper::message(sprintf("✔ Keep other image '%s:%s'", $image->getRepository(), $image->getTag()));
+                TextHelper::messageItem(sprintf("✔ Keep other image '%s:%s'", $image->getRepository(), $image->getTag()));
             }
         }
         //
