@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-// === OPS SHARED LIBRARY (PHP) v2.10.8 ===
+// === OPS SHARED LIBRARY (PHP) v2.11.0 ===
 
 // === Generated libraries classes ===
 
@@ -26,6 +26,9 @@ class CommandEnum
     const REPOSITORY = 'repository';
     const HEAD_COMMIT_ID = 'head-commit-id';
     const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
+
+    // === Docker ===
+    const DOCKER_KEEP_IMAGE_BY = 'docker-keep-image-by';
 
     // === utils ===
     const HOME_DIR = 'home-dir';
@@ -66,6 +69,9 @@ class CommandEnum
         self::REPOSITORY => 'get GitHub repository name',
         self::HEAD_COMMIT_ID => 'get head commit id of branch',
         self::HANDLE_CACHES_AND_GIT => 'handle GitHub repository in caches directory',
+
+        "=== Docker ===" => '',
+        self::DOCKER_KEEP_IMAGE_BY => 'Keep image by repository and tag, use for keep latest image. Required:  imageRepository imageTag',
 
         "=== utils ===" => '',
         self::HOME_DIR => 'return home directory of machine / server',
@@ -428,6 +434,15 @@ class OpsHelper
                 $isDoNothing = false;
             }
         }
+        //    dangling Docker images / <none> Docker images
+        if (DockerHelper::isDockerInstalled()) {
+            if (DockerHelper::isDanglingImages()) {
+                DockerHelper::removeDanglingImages();
+                //
+                $isDoNothing = false;
+            }
+        }
+
         // === end cleanup ===
         //
         if ($isDoNothing) {
@@ -1128,6 +1143,123 @@ class AppHelper
     }
 }
 
+// [REMOVED] namespace app\Helpers;
+
+
+// [REMOVED] use app\Objects\DockerImage;
+// [REMOVED] use app\Objects\Process;
+
+class DockerHelper
+{
+    public static function isDockerInstalled(): bool
+    {
+        $dockerPath = trim(exec("which docker"));
+        return !(!$dockerPath || STR::contains($dockerPath, 'not found'));
+    }
+
+    /**
+     * keep image by repository name with specific tag, use for keep latest image
+     *
+     * @param array $argv
+     * @return void
+     */
+    public static function keepImageBy(array $argv): void
+    {
+        // === param ===
+        $imageRepository = $argv[2] ?? null;
+        $imageTag = $argv[3] ?? null;
+        // === validate ===
+        if (!$imageRepository || !$imageTag) {
+            TextHelper::messageERROR("[PARAMS] missing a 'imageRepository' 'imageTag'");
+            exit(); // END
+        }
+        // === handle ===
+        TextHelper::messageTitle("Keep latest Docker image by repository");
+        $listImage = self::getListImages();
+        if (count($listImage) === 0) {
+            TextHelper::message("Empty images. Do nothing.");
+            TextHelper::messageSeparate();
+            return; // END
+        }
+        /** @var DockerImage $image */
+        foreach (self::getListImages() as $image) {
+            // case: to check image
+            if ($image->getRepository() === $imageRepository) {
+                if ($image->getTag() === $imageTag) {
+                    TextHelper::message(sprintf("✔ Keep image '%s:%s'", $image->getRepository(), $image->getTag()));
+                    // do nothing | skip this image
+                } else {
+                    TextHelper::message(sprintf("X Delete image '%s:%s'", $image->getRepository(), $image->getTag()));
+                    (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
+                        sprintf("docker rmi -f %s", $image->getId())
+                    ]))->execMultiInWorkDir(true)->printOutput();
+                }
+                //
+                // case: other images
+            } else {
+                TextHelper::message(sprintf("✔ Keep other image '%s:%s'", $image->getRepository(), $image->getTag()));
+            }
+        }
+        //
+        TextHelper::messageSeparate();
+    }
+
+    private static function getListImages(): array
+    {
+        $list = [];
+        $dockerImagesDataArr = (new Process("Get Docker Images Data", DirHelper::getWorkingDir(), [
+            "docker images --format \"{{json .}}\""
+        ]))->execMultiInWorkDir(true)->getOutput();
+        foreach ($dockerImagesDataArr as $imageDataJson) {
+            $imageData = json_decode($imageDataJson, true);
+            $list[] = new DockerImage(
+                $imageData['Repository'], $imageData['Tag'], $imageData['ID'],
+                $imageData['CreatedAt'], $imageData['Size']
+            );
+        }
+        return $list;
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isDanglingImages():bool
+    {
+        /** @var DockerImage $image */
+        foreach (self::getListImages() as $image) {
+            if ($image->isDanglingImage()) return true;
+        }
+        return false;
+    }
+
+    /**
+     * remove dangling image / <none> image
+     * @return void
+     */
+    public static function removeDanglingImages(): void
+    {
+        // === handle ===
+        TextHelper::messageTitle("[Docker] Remove dangling images / <none> images");
+        $listImage = self::getListImages();
+        if (count($listImage) === 0) {
+            TextHelper::message("Empty images. Do nothing.");
+            TextHelper::messageSeparate();
+            return; // END
+        }
+        /** @var DockerImage $image */
+        foreach (self::getListImages() as $image) {
+            if ($image->isDanglingImage()) {
+                TextHelper::message(sprintf("X Delete dangling image '%s:%s'", $image->getRepository(), $image->getTag()));
+                (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
+                    sprintf("docker rmi -f %s", $image->getId())
+                ]))->execMultiInWorkDir(true)->printOutput();
+            }
+        }
+        //
+        TextHelper::messageSeparate();
+    }
+}
+
 
 // [REMOVED] namespace app\Helpers;
 
@@ -1200,11 +1332,13 @@ class Release
         'app/Helpers/ServicesHelper.php',
         'app/Helpers/AWSHelper.php',
         'app/Helpers/AppHelper.php',
+        'app/Helpers/DockerHelper.php',
         'app/Helpers/STR.php',
         // === Objects ===
         'app/Objects/Release.php',
         'app/Objects/Process.php',
         'app/Objects/Version.php',
+        'app/Objects/DockerImage.php',
         // always on bottom
         'app/app',
     ];
@@ -1722,6 +1856,145 @@ class Version
     }
 }
 
+// [REMOVED] namespace app\Objects;
+
+class DockerImage
+{
+    public const NONE = '<none>';
+
+    /** @var string|null */
+    private $repository;
+
+    /** @var string|null */
+    private $tag;
+
+    /** @var string|null */
+    private $id;
+
+    /** @var string|null */
+    private $createdAt;
+
+    /** @var string|null */
+    private $size;
+
+    /**
+     * @param string|null $repository
+     * @param string|null $tag
+     * @param string|null $id
+     * @param string|null $createdAt
+     * @param string|null $size
+     */
+    public function __construct(?string $repository, ?string $tag, ?string $id, ?string $createdAt, ?string $size)
+    {
+        $this->repository = $repository;
+        $this->tag = $tag;
+        $this->id = $id;
+        $this->createdAt = $createdAt;
+        $this->size = $size;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRepository(): ?string
+    {
+        return $this->repository;
+    }
+
+    /**
+     * @param string|null $repository
+     * @return DockerImage
+     */
+    public function setRepository(?string $repository): DockerImage
+    {
+        $this->repository = $repository;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTag(): ?string
+    {
+        return $this->tag;
+    }
+
+    /**
+     * @param string|null $tag
+     * @return DockerImage
+     */
+    public function setTag(?string $tag): DockerImage
+    {
+        $this->tag = $tag;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param string|null $id
+     * @return DockerImage
+     */
+    public function setId(?string $id): DockerImage
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCreatedAt(): ?string
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * @param string|null $createdAt
+     * @return DockerImage
+     */
+    public function setCreatedAt(?string $createdAt): DockerImage
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSize(): ?string
+    {
+        return $this->size;
+    }
+
+    /**
+     * @param string|null $size
+     * @return DockerImage
+     */
+    public function setSize(?string $size): DockerImage
+    {
+        $this->size = $size;
+        return $this;
+    }
+
+    // === others function ===
+
+    /**
+     * dangling image / <none> image
+     * @return bool
+     */
+    public function isDanglingImage(): bool
+    {
+        return $this->repository === self::NONE || $this->tag === self::NONE;
+    }
+}
+
 // === end Generated libraries classes ===
 
 
@@ -1731,7 +2004,7 @@ class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.10.8';
+    const APP_VERSION = '2.11.0';
 
     const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKHBocCBfb3BzL2xpYiBicmFuY2gpCmV4cG9ydCBSRVBPU0lUT1JZPSQocGhwIF9vcHMvbGliIHJlcG9zaXRvcnkpCmV4cG9ydCBIRUFEX0NPTU1JVF9JRD0kKHBocCBfb3BzL2xpYiBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBoYW5kbGUgYnJhbmNoZXMgdmFycyA9PT0KaWYgWyAiJHtCUkFOQ0h9IiA9ICJkZXZlbG9wIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1kZXYKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9ZGV2ZWxvcC1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0iZGV2ZWxvcC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAwCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJzdGFnaW5nIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1zdGcKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9c3RhZ2luZy1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0ic3RhZ2luZy1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAxCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjEwMCIKICBleHBvcnQgRUJfTUFJTF9DQVRDSEVSX1BPUlQ9IiAgICAiICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UgfCA0IHNwYWNlcyB0byBwYXNzIGVtcHR5IHN0cmluZwogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAyCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKIyA9PT0gRU5EID09PQoKIyA9PT0gQVdTIEFjY291bnQgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEFXU19BQ0NPVU5UX0lEPSI5ODIwODA2NzI5ODMiCmV4cG9ydCBSRUdJT049ImFwLWVhc3QtMSIKIyAgICBFQ1IgY29uZmlndXJhdGlvbgojICAgICAgICBiYXNlIGFuZCBjYWNoZXMgcmVwb3NpdG9yaWVzCmV4cG9ydCBFQ1JfUkVQT19BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19QQVlNRU5UX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtcGF5bWVudC1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlZPSUNFX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW52b2ljZS1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlRFR1JBVElPTl9BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW50ZWdyYXRpb24tYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19FTUFJTF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWVtYWlsLXNlcnZpY2UtcmVwb3NpdG9yeSIKIyAgICAgICAgbm9ybWFsIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgRWxhc3RpYyBCZWFuc3RhbGsgY29uZmlndXJhdGlvbgpleHBvcnQgUzNfRUJfQVBQX1ZFUlNJT05fQlVDS0VUX05BTUU9ImVsYXN0aWNiZWFuc3RhbGstJHtSRUdJT059LSR7QVdTX0FDQ09VTlRfSUR9IgpleHBvcnQgRUJfQVBQX1ZFUlNJT05fRk9MREVSX05BTUU9ImVuZ2FnZXBsdXMiCmV4cG9ydCBFQl9BUFBfTkFNRT0iZW5nYWdlcGx1cyIKIyA9PT0gRU5EID09PQoKIyA9PT0gRW5nYWdlUGx1cyBjb25maWd1cmF0aW9uID09PQpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRk9MREVSPSIuY2FjaGVzX2VuZ2FnZXBsdXMiCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19ESVI9IiQocGhwIF9vcHMvbGliIGhvbWUtZGlyKS8ke0VOR0FHRVBMVVNfQ0FDSEVTX0ZPTERFUn0iCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19SRVBPU0lUT1JZX0RJUj0iJHtFTkdBR0VQTFVTX0NBQ0hFU19ESVJ9LyR7UkVQT1NJVE9SWX0iCiMgPT09IEVORCA9PT0KCiMgPT09IGdldCBERVZJQ0UgZnJvbSBwYXJhbSAxID09PQpleHBvcnQgREVWSUNFPSIkMSIKIyA9PT0gRU5EID09PQo=';
 
@@ -1821,6 +2094,10 @@ class app
                 break;
             case CommandEnum::HANDLE_CACHES_AND_GIT:
                 GitHubHelper::handleCachesAndGit($argv);
+                break;
+            // === Docker ===
+            case CommandEnum::DOCKER_KEEP_IMAGE_BY:
+                DockerHelper::keepImageBy($argv);
                 break;
             // === utils ===
             case CommandEnum::HOME_DIR:
