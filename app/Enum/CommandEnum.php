@@ -21,6 +21,9 @@ class CommandEnum
     const HEAD_COMMIT_ID = 'head-commit-id';
     const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
 
+    // === Docker ===
+    const DOCKER_KEEP_IMAGE_BY = 'docker-keep-image-by';
+
     // === utils ===
     const HOME_DIR = 'home-dir';
     const SCRIPT_DIR = 'script-dir';
@@ -60,6 +63,9 @@ class CommandEnum
         self::REPOSITORY => 'get GitHub repository name',
         self::HEAD_COMMIT_ID => 'get head commit id of branch',
         self::HANDLE_CACHES_AND_GIT => 'handle GitHub repository in caches directory',
+
+        "=== Docker ===" => '',
+        self::DOCKER_KEEP_IMAGE_BY => 'Keep image by repository and tag, use for keep latest image. Required:  imageRepository imageTag',
 
         "=== utils ===" => '',
         self::HOME_DIR => 'return home directory of machine / server',

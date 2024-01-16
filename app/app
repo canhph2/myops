@@ -12,6 +12,7 @@ use app\Enum\GitHubEnum;
 use app\Helpers\AppHelper;
 use app\Helpers\AWSHelper;
 use app\Helpers\DirHelper;
+use app\Helpers\DockerHelper;
 use app\Helpers\GitHubHelper;
 use app\Helpers\OpsHelper;
 use app\Helpers\ServicesHelper;
@@ -115,6 +116,10 @@ class app
                 break;
             case CommandEnum::HANDLE_CACHES_AND_GIT:
                 GitHubHelper::handleCachesAndGit($argv);
+                break;
+            // === Docker ===
+            case CommandEnum::DOCKER_KEEP_IMAGE_BY:
+                DockerHelper::keepImageBy($argv);
                 break;
             // === utils ===
             case CommandEnum::HOME_DIR:

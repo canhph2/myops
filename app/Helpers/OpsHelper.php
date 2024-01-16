@@ -182,6 +182,15 @@ class OpsHelper
                 $isDoNothing = false;
             }
         }
+        //    dangling Docker images / <none> Docker images
+        if (DockerHelper::isDockerInstalled()) {
+            if (DockerHelper::isDanglingImages()) {
+                DockerHelper::removeDanglingImages();
+                //
+                $isDoNothing = false;
+            }
+        }
+
         // === end cleanup ===
         //
         if ($isDoNothing) {

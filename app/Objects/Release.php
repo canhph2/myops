@@ -29,11 +29,13 @@ class Release
         'app/Helpers/ServicesHelper.php',
         'app/Helpers/AWSHelper.php',
         'app/Helpers/AppHelper.php',
+        'app/Helpers/DockerHelper.php',
         'app/Helpers/STR.php',
         // === Objects ===
         'app/Objects/Release.php',
         'app/Objects/Process.php',
         'app/Objects/Version.php',
+        'app/Objects/DockerImage.php',
         // always on bottom
         'app/app',
     ];
