@@ -25,7 +25,7 @@ class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.10.7';
+    const APP_VERSION = '2.10.8';
 
     const SHELL_DATA_BASE_64 = '';
 
