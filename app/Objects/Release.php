@@ -20,6 +20,7 @@ class Release
         // === Enum ===
         'app/Enum/CommandEnum.php',
         'app/Enum/GitHubEnum.php',
+        'app/Enum/IndentLevelEnum.php',
         // === Helper ===
         'app/Helpers/DEVHelper.php',
         'app/Helpers/DirHelper.php',

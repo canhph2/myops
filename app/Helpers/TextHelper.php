@@ -2,42 +2,32 @@
 
 namespace app\Helpers;
 
+use app\Enum\IndentLevelEnum;
+
 class TextHelper
 {
     /**
      * @param string|null $text
+     * @param int $indentLevel
      * @return void
      */
-    public static function message(string $text = null): void
+    public static function message(string $text = null, int $indentLevel = IndentLevelEnum::MAIN_LINE): void
     {
-        echo sprintf("%s\n", $text);
-    }
-
-    /**
-     * @param string|null $text
-     * @return void
-     */
-    public static function messageItem(string $text = null): void
-    {
-        echo sprintf("    %s\n", $text);
+        echo sprintf(
+            "%s%s\n",
+            str_repeat(" ", $indentLevel * IndentLevelEnum::AMOUNT_SPACES),
+            $text
+        );
     }
 
     /**
      * print a separate line with =
+     * @param int $indentLevel
      * @return void
      */
-    public static function messageSeparate(): void
+    public static function messageSeparate(int $indentLevel = IndentLevelEnum::MAIN_LINE): void
     {
-        self::message('===');
-    }
-
-    /**
-     * print a separate line with -
-     * @return void
-     */
-    public static function messageSeparateItem(): void
-    {
-        self::message('    ---');
+        self::message($indentLevel === IndentLevelEnum::MAIN_LINE ?  '===' : '---', $indentLevel);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace app\Helpers;
 
 
+use app\Enum\IndentLevelEnum;
 use app\Objects\DockerImage;
 use app\Objects\Process;
 
@@ -40,14 +41,14 @@ class DockerHelper
         }
         /** @var DockerImage $image */
         foreach (self::getListImages() as $image) {
-            TextHelper::messageSeparateItem();
+            TextHelper::messageSeparate(IndentLevelEnum::ITEM_LINE);
             // case: to check image
             if ($image->getRepository() === $imageRepository) {
                 if ($image->getTag() === $imageTag) {
-                    TextHelper::messageItem(sprintf("✔ Keep image '%s:%s'", $image->getRepository(), $image->getTag()));
+                    TextHelper::message(sprintf("✔ Keep image '%s:%s'", $image->getRepository(), $image->getTag()), IndentLevelEnum::ITEM_LINE);
                     // do nothing | skip this image
                 } else {
-                    TextHelper::messageItem(sprintf("X Delete image '%s:%s'", $image->getRepository(), $image->getTag()));
+                    TextHelper::message(sprintf("X Delete image '%s:%s'", $image->getRepository(), $image->getTag()), IndentLevelEnum::ITEM_LINE);
                     (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
                     ]))->execMultiInWorkDir(true)->printOutput();
@@ -55,7 +56,7 @@ class DockerHelper
                 //
                 // case: other images
             } else {
-                TextHelper::messageItem(sprintf("✔ Keep other image '%s:%s'", $image->getRepository(), $image->getTag()));
+                TextHelper::message(sprintf("✔ Keep other image '%s:%s'", $image->getRepository(), $image->getTag()), IndentLevelEnum::ITEM_LINE);
             }
         }
         //
