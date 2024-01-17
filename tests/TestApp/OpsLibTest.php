@@ -4,7 +4,7 @@ namespace TestApp;
 
 require_once 'app/Objects/Version.php';
 require_once 'app/Objects/Process.php';
-require_once 'app/Helpers/DirHelper.php';
+require_once 'app/Helpers/DIR.php';
 require_once 'tests/TestApp/BaseTestCase.php';
 
 use app\Enum\TagEnum;
