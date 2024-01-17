@@ -85,11 +85,11 @@ class Release
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
         //    generate files
-        TEXT::tagMultiple([basename(__CLASS__), __FUNCTION__])->message("init ops/lib file");
+        TEXT::tagMultiple([__CLASS__, __FUNCTION__])->message("init ops/lib file");
         file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", app::version($newVersion))); // init file
         $this->handleLibrariesClass();
         $this->handleAppClass();
-        TEXT::tagMultiple([basename(__CLASS__), __FUNCTION__])->message("DONE");
+        TEXT::tagMultiple([__CLASS__, __FUNCTION__])->message("DONE");
         //    push new release to GitHub
         (new Process("PUSH NEW RELEASE TO GITHUB", DIR::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
