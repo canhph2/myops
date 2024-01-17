@@ -217,6 +217,8 @@ class Process
         }
         TEXT::indent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Output:");
         if ($this->output) {
+            // todo test
+            var_dump($this->output);
             foreach ($this->output as $outputLine) {
                 TEXT::indent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message($outputLine);
             }

@@ -128,8 +128,6 @@ class TextLine
 
     public function message(string $format, ...$values): TextLine
     {
-        var_dump($format);
-        var_dump($values);
         // set message text
         $this->text = vsprintf($format, $values);
         // print
