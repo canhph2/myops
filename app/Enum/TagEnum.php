@@ -12,6 +12,7 @@ class TagEnum
     const PARAMS = 'PARAMS';
     const ENV = 'ENV';
     const WORK = 'WORK';
+    const GIT = 'GIT / GITHUB';
     const DOCKER = 'DOCKER';
     const SLACK = 'SLACK';
 }

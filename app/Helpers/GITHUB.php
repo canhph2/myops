@@ -100,7 +100,7 @@ class GITHUB
         // === handle ===
         //     var
         $remoteOriginUrl = sprintf("https://%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, GitHubEnum::GITHUB_REPOSITORIES[$repository], $repository);
-        TEXT::new()->messageTitle("Handle Caches and Git");
+        TEXT::tag(TagEnum::GIT)->messageTitle("Handle Caches and Git");
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
             TEXT::new()->message("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
