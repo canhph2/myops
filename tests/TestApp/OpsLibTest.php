@@ -5,6 +5,8 @@ namespace TestApp;
 require_once 'app/Objects/Version.php';
 require_once 'app/Objects/Process.php';
 require_once 'app/Helpers/DIR.php';
+require_once 'app/Enum/IndentLevelEnum.php';
+require_once 'app/Enum/TagEnum.php';
 require_once 'tests/TestApp/BaseTestCase.php';
 
 use app\Enum\TagEnum;
@@ -67,12 +69,12 @@ class OpsLibTest extends BaseTestCase
 
     public function testELBUpdateVersion()
     {
-        $this->customAssertIsStringAndContainsString("[ENV] missing ", exec("php _ops/lib elb-update-version"));
+        $this->customAssertIsStringAndContainsString("missing BRANCH or REPOSITORY or ENV", exec("php _ops/lib elb-update-version"));
     }
 
     public function testAWSGetENV(){
-        $this->customAssertIsStringAndContainsString(TagEnum::SUCCESS, exec("php _ops/lib get-secret-env WRONG-ENVFILE"));
-        $this->customAssertIsStringAndContainsString(TagEnum::ERROR, exec("php _ops/lib get-secret-env env-email-dev"));
+        $this->customAssertIsStringAndContainsString(TagEnum::SUCCESS, exec("php _ops/lib get-secret-env env-email-dev"));
+        $this->customAssertIsStringAndContainsString(TagEnum::ERROR, exec("php _ops/lib get-secret-env WRONG-ENVFILE"));
     }
 
 }
