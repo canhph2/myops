@@ -2,6 +2,7 @@
 
 ---
 ## === v2 ===
+- 2.13.0 | TODO ADD SOME CHANGE LOGS
 - 2.12.0 | TODO ADD SOME CHANGE LOGS
 - 2.11.0 | add Docker commands and support
 - 2.10.0 | add command to update ELB environment
