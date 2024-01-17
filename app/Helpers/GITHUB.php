@@ -126,4 +126,44 @@ class GITHUB
             GitHubEnum::PULL_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
     }
+
+    public static function forceCheckout()
+    {
+        TEXT::new()->messageTitle("Force checkout a GitHub repository with specific branch");
+        // === input ===
+        $GIT_URL_WITH_TOKEN = readline("Please input GIT_URL_WITH_TOKEN? ");
+        if (!$GIT_URL_WITH_TOKEN) {
+            TEXT::tag(TagEnum::ERROR)->message("GitHub repository url with Token should be string");
+            exit(); // END
+        }
+        $BRANCH_TO_FORCE_CHECKOUT = readline("Please input BRANCH_TO_FORCE_CHECKOUT? ");
+        if (!$BRANCH_TO_FORCE_CHECKOUT) {
+            TEXT::tag(TagEnum::ERROR)->message("branch to force checkout should be string");
+            exit(); // END
+        }
+        // === validation ===
+        if (!(STR::contains($GIT_URL_WITH_TOKEN, 'https://')
+            && STR::contains($GIT_URL_WITH_TOKEN, '@github.com')
+            && STR::contains($GIT_URL_WITH_TOKEN, '.git')
+        )) {
+            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::FORMAT])
+                ->message("invalid GitHub repository url with Token format, should be 'https://TOKEN_TOKEN@@github.com/USER_NAME/REPOSITORY.git'");
+            exit(); // END
+        }
+        // === handle ===
+        $setRemoteOriginUrlCommand = exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND)
+            ? sprintf("git remote set-url origin %s", $GIT_URL_WITH_TOKEN)
+            : sprintf("git remote add origin %s", $GIT_URL_WITH_TOKEN);
+        (new Process("Set repository remote url and force checkout branch", DIR::getWorkingDir(), [
+                $setRemoteOriginUrlCommand,
+            GitHubEnum::PULL_COMMAND,
+            GitHubEnum::RESET_BRANCH_COMMAND,
+            sprintf("git checkout -f %s", $BRANCH_TO_FORCE_CHECKOUT),
+            GitHubEnum::PULL_COMMAND,
+        ]))->execMultiInWorkDir()->printOutput();
+        // === validate result ===
+        (new Process("Validate branch", DIR::getWorkingDir(), [
+            GitHubEnum::GET_BRANCH_COMMAND
+        ]))->execMultiInWorkDir()->printOutput();
+    }
 }

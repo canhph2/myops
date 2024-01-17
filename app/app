@@ -121,6 +121,9 @@ class app
             case CommandEnum::HANDLE_CACHES_AND_GIT:
                 GITHUB::handleCachesAndGit($argv);
                 break;
+            case CommandEnum::FORCE_CHECKOUT:
+                GITHUB::forceCheckout();
+                break;
             // === Docker ===
             case CommandEnum::DOCKER_KEEP_IMAGE_BY:
                 DOCKER::keepImageBy($argv);

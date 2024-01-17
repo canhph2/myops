@@ -11,6 +11,7 @@ class TagEnum
     const ERROR = 'ERROR';
     const PARAMS = 'PARAMS';
     const ENV = 'ENV';
+    const FORMAT = 'FORMAT';
     const WORK = 'WORK';
     const GIT = 'GIT/GITHUB';
     const DOCKER = 'DOCKER';
