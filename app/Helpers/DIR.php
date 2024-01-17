@@ -90,7 +90,4 @@ class DIR
                 break;
         }
     }
-
-    // todo
-    private function testChange(){}
 }
