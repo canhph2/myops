@@ -103,8 +103,8 @@ class OPS
         ]))->execMultiInWorkDir()->printOutput();
         //
         TEXT::new()->messageSeparate()
-            ->setTag(TagEnum::SUCCESS)->message("sync done")
-            ->messageSeparate();
+            ->setTag(TagEnum::SUCCESS)->message("sync done");
+        TEXT::new()->messageSeparate();
         // show open new session to show right version
         (new Process("CHECK A NEW VERSION", DIR::getWorkingDir(), [
             'php _ops/lib version'
