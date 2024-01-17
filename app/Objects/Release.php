@@ -55,7 +55,7 @@ class Release
     /**
      *  null: validate OK
      *  string: error message
-     * @return string|null
+     * @return bool
      */
     private function validate(): bool
     {
@@ -75,7 +75,6 @@ class Release
     {
         // validate
         if (!$this->validate()) {
-            echo DEV::message($this->validate(), __CLASS__, __FUNCTION__);
             return; // END
         }
         //    validate version part
