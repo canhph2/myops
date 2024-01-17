@@ -6,7 +6,6 @@ use app\app;
 use app\Enum\GitHubEnum;
 use app\Enum\TagEnum;
 use app\Helpers\AppHelper;
-use app\Helpers\DEV;
 use app\Helpers\DIR;
 use app\Helpers\TEXT;
 use DateTime;
@@ -25,7 +24,6 @@ class Release
         'app/Enum/IconEnum.php',
         'app/Enum/TagEnum.php',
         // === Helper ===
-        'app/Helpers/DEV.php',
         'app/Helpers/DIR.php',
         'app/Helpers/OPS.php',
         'app/Helpers/TEXT.php',
@@ -87,11 +85,11 @@ class Release
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
         //    generate files
-        echo DEV::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
+        TEXT::tagMultiple([basename(__CLASS__), __FUNCTION__])->message("init ops/lib file");
         file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", app::version($newVersion))); // init file
         $this->handleLibrariesClass();
         $this->handleAppClass();
-        echo DEV::message("DONE\n", __CLASS__, __FUNCTION__);
+        TEXT::tagMultiple([basename(__CLASS__), __FUNCTION__])->message("DONE");
         //    push new release to GitHub
         (new Process("PUSH NEW RELEASE TO GITHUB", DIR::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
