@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-// === OPS SHARED LIBRARY (PHP) v2.11.2 ===
+// === OPS SHARED LIBRARY (PHP) v2.12.0 ===
 
 // === Generated libraries classes ===
 
@@ -51,49 +51,60 @@ class CommandEnum
      * key => value | key is command, value is description
      */
     const SUPPORT_COMMANDS = [
-        self::HELP => 'show list support command and usage',
-        self::RELEASE => "combine all PHP files into '_ops/lib'
-                        default version increasing is 'patch'
-                        feature should be 'minor'",
-        self::VERSION => "show app version",
-        self::SYNC => "sync new release code to project at _ops/lib",
-
-        "=== AWS related commands ===" => '',
-        self::LOAD_ENV_OPS => "[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:
-                               eval \"$(php _ops/lib load-env-ops)\"   \n",
-        self::GET_SECRET_ENV => "[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName",
-        self::ELB_UPDATE_VERSION => "[AWS Elastic Beanstalk] create a new version and update an environment",
-
-        "=== git ===" => '',
-        self::BRANCH => 'get git branch / GitHub branch',
-        self::REPOSITORY => 'get GitHub repository name',
-        self::HEAD_COMMIT_ID => 'get head commit id of branch',
-        self::HANDLE_CACHES_AND_GIT => 'handle GitHub repository in caches directory',
-
-        "=== Docker ===" => '',
-        self::DOCKER_KEEP_IMAGE_BY => 'Keep image by repository and tag, use for keep latest image. Required:  imageRepository imageTag',
-
-        "=== utils ===" => '',
-        self::HOME_DIR => 'return home directory of machine / server',
-        self::SCRIPT_DIR => 'return directory of script',
-        self::WORKING_DIR => 'get root project directory / current working directory',
-        self::REPLACE_TEXT_IN_FILE => 'php _ops/lib replace-text-in-file "search text" "replace text" "file path"',
-        self::SLACK => "notify a message to Slack",
-        self::TMP => "handle temporary directory (tmp), use 'tmp add' to add new tmp dir, use 'tmp remove' to remove tmp dir",
-        self::POST_WORK => "do post works, eg cleanup ...",
-
-        "=== private ===" => '',
-        self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => '[PRIVATE] get S3 whitelist IPs to add to AWS Policy',
-        self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => '[PRIVATE] update token all projects in workspace',
-
-        "=== validation ===" => '',
-        self::VALIDATE => "required: 'set -e' in bash file
-                    should combine with exit 1, eg:   php _ops/lib validate TYPE | exit 1
-                    supports:
-                    - branch  : to only allow develop, staging, master
-                    - docker  : docker should is running
-                    - device: should pass env var: DEVICE in your first command
-                    ",
+        // group title
+        "OPS APP" => [],
+        self::HELP => ['show list support command and usage'],
+        self::RELEASE => [
+            "combine all PHP files into '_ops/lib'",
+            "default version increasing is 'patch'",
+            "feature should be 'minor'",
+        ],
+        self::VERSION => ["show app version"],
+        self::SYNC => ["sync new release code to project at _ops/lib"],
+        // group title
+        "AWS Related" => [],
+        self::LOAD_ENV_OPS => [
+            '[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:',
+            '            eval \"$(php _ops/lib load-env-ops)\"    ',
+        ],
+        self::GET_SECRET_ENV => ["[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName"],
+        self::ELB_UPDATE_VERSION => ["[AWS Elastic Beanstalk] create a new version and update an environment"],
+        // group title
+        "GIT / GITHUB" => [],
+        self::BRANCH => ['get git branch / GitHub branch'],
+        self::REPOSITORY => ['get GitHub repository name'],
+        self::HEAD_COMMIT_ID => ['get head commit id of branch'],
+        self::HANDLE_CACHES_AND_GIT => ['handle GitHub repository in caches directory'],
+        // group title
+        "DOCKER" => [],
+        self::DOCKER_KEEP_IMAGE_BY => ['Keep image by repository and tag, use for keep latest image. Required:  imageRepository imageTag'],
+        // group title
+        "UTILS" => [],
+        self::HOME_DIR => ['return home directory of machine / server'],
+        self::SCRIPT_DIR => ['return directory of script'],
+        self::WORKING_DIR => ['get root project directory / current working directory'],
+        self::REPLACE_TEXT_IN_FILE => ['php _ops/lib replace-text-in-file "search text" "replace text" "file path"'],
+        self::SLACK => ["notify a message to Slack"],
+        self::TMP => [
+            'handle temporary directory (tmp)',
+            "use 'tmp add' to add new tmp dir",
+            "use 'tmp remove' to remove tmp dir"
+        ],
+        self::POST_WORK => ["do post works, eg cleanup ..."],
+        // group title
+        "PRIVATE" => [],
+        self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => ['[PRIVATE] get S3 whitelist IPs to add to AWS Policy'],
+        self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => ['[PRIVATE] update token all projects in workspace'],
+        // group title
+        "VALIDATION" => [],
+        self::VALIDATE => [
+            "required: 'set -e' in bash file",
+            '  should combine with exit 1, eg:   php _ops/lib validate TYPE | exit 1',
+            '  support TYPEs:',
+            '    branch  : to only allow develop, staging, master',
+            '    docker  : docker should is running',
+            '    device  : should pass env var: DEVICE in your first command',
+        ],
     ];
 }
 
@@ -132,9 +143,55 @@ class GitHubEnum
     ];
 }
 
+// [REMOVED] namespace app\Enum;
+
+class IndentLevelEnum
+{
+    const AMOUNT_SPACES = 2; // per indent
+
+    const MAIN_LINE = 0; // no indent
+    const ITEM_LINE = 1; // indent with 4 spaces
+    const SUB_ITEM_LINE = 2; // indent with 8 spaces
+    const LEVEL_3 = 3; // indent with 12 spaces
+    const LEVEL_4 = 4; // indent with 16 spaces
+    const LEVEL_5 = 5; // indent with 16 spaces
+}
+
+// [REMOVED] namespace app\Enum;
+
+class IconEnum
+{
+    const X = 'X';
+    const CHECK = '✔';
+    const HYPHEN = '-';
+    const PLUS = '+';
+    const CHEVRON_RIGHT = '>';
+    const DOT = '∘';
+
+}
+
+// [REMOVED] namespace app\Enum;
+
+class TagEnum
+{
+    const NONE ='';
+    const VALIDATION = 'VALIDATION';
+    const INFO ='INFO';
+    const SUCCESS = 'SUCCESS';
+    const ERROR = 'ERROR';
+    const PARAMS = 'PARAMS';
+    const ENV = 'ENV';
+    const WORK = 'WORK';
+    const DOCKER = 'DOCKER';
+    const SLACK = 'SLACK';
+}
+
 // [REMOVED] namespace app\Helpers;
 
-class DEVHelper
+/**
+ * this is a DEV helper
+ */
+class DEV
 {
     /**
      * get class name only, usage   DEVHelper::name(__CLASS__)
@@ -166,9 +223,13 @@ class DEVHelper
 
 // [REMOVED] namespace app\Helpers;
 
+// [REMOVED] use app\Enum\TagEnum;
 // [REMOVED] use app\Objects\Process;
 
-class DirHelper
+/**
+ * this is a DIRectory helper / folder helper
+ */
+class DIR
 {
     /**
      * get home directory / get root directory of user
@@ -200,7 +261,7 @@ class DirHelper
      */
     public static function getScriptDir(): string
     {
-        $scriptDir= substr($_SERVER['SCRIPT_FILENAME'], 0, strlen($_SERVER['SCRIPT_FILENAME']) - strlen(basename($_SERVER['SCRIPT_FILENAME'])) - 1);
+        $scriptDir = substr($_SERVER['SCRIPT_FILENAME'], 0, strlen($_SERVER['SCRIPT_FILENAME']) - strlen(basename($_SERVER['SCRIPT_FILENAME'])) - 1);
         return self::getWorkingDir($scriptDir);
     }
 
@@ -229,7 +290,7 @@ class DirHelper
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
                     ->execMultiInWorkDir()->printOutput();
                 // validate result
-                TextHelper::messageCondition(is_dir(self::getWorkingDir('tmp')),
+                TEXT::new()->messageCondition(is_dir(self::getWorkingDir('tmp')),
                     'create a tmp dir successfully', 'create a tmp dir failure');
                 break;
             case 'remove':
@@ -239,14 +300,14 @@ class DirHelper
                         ->execMultiInWorkDir()->printOutput();
                     // validate result
                     $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", self::getWorkingDir()));
-                    TextHelper::messageCondition(!$checkTmpDir,
+                    TEXT::new()->messageCondition(!$checkTmpDir,
                         'remove a tmp dir successfully', 'remove a tmp dir failure');
                 } else {
-                    TextHelper::message("tmp directory doesn't exist, do nothing");
+                    TEXT::new()->message("tmp directory doesn't exist, do nothing");
                 }
                 break;
             default:
-                TextHelper::messageERROR("missing action, action should be 'add' or 'remove'");
+                TEXT::tag(TagEnum::ERROR)->message("missing action, action should be 'add' or 'remove'");
                 break;
         }
     }
@@ -255,9 +316,15 @@ class DirHelper
 // [REMOVED] namespace app\Helpers;
 
 // [REMOVED] use app\Enum\GitHubEnum;
+// [REMOVED] use app\Enum\IconEnum;
+// [REMOVED] use app\Enum\IndentLevelEnum;
+// [REMOVED] use app\Enum\TagEnum;
 // [REMOVED] use app\Objects\Process;
 
-class OpsHelper
+/**
+ * This is Ops helper
+ */
+class OPS
 {
     const COMPOSER_CONFIG_GITHUB_AUTH_FILE = 'auth.json';
 
@@ -288,18 +355,18 @@ class OpsHelper
     {
         $GITHUB_PERSONAL_ACCESS_TOKEN_NEW = readline("Please input new GITHUB_PERSONAL_ACCESS_TOKEN? ");
         if (!$GITHUB_PERSONAL_ACCESS_TOKEN_NEW) {
-            TextHelper::messageERROR("GitHub Personal Token should be string");
+            TEXT::tag(TagEnum::ERROR)->message("GitHub Personal Token should be string");
             exit(); // END
         }
 //
         $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
-        TextHelper::message("WORKSPACE DIR = $workspaceDir");
+        TEXT::new()->message("WORKSPACE DIR = $workspaceDir");
         foreach (GitHubEnum::GITHUB_REPOSITORIES as $projectName => $GitHubUsername) {
-            TextHelper::message(sprintf(" + Project '%s > %s': %s",
+            TEXT::icon(IconEnum::PLUS)->message("Project '%s > %s': %s",
                 $GitHubUsername,
                 $projectName,
                 is_dir(sprintf("%s/%s", $workspaceDir, $projectName)) ? "✔" : "X"
-            ));
+            );
         }
 // update token
         foreach (GitHubEnum::GITHUB_REPOSITORIES as $projectName => $GitHubUsername) {
@@ -313,7 +380,7 @@ class OpsHelper
                 ]), $output, $resultCode);
                 // print output
                 foreach ($output as $line) {
-                    TextHelper::message(sprintf("    + %s", $line));
+                    TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message($line);
                 }
             }
         }
@@ -328,9 +395,9 @@ class OpsHelper
     public static function sync()
     {
         // load env into PHP
-        self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
+        self::parseEnoughDataForSync(AWS::loadOpsEnvAndHandleMore());
         // load caches of this source code
-        GitHubHelper::handleCachesAndGit([
+        GITHUB::handleCachesAndGit([
             'script path',
             'command-name', // param 1
             'ops-lib', // param 2, in this case is repository
@@ -338,19 +405,18 @@ class OpsHelper
         ]);
         // sync new lib
         $EngagePlusCachesRepositoryOpsLibDir = sprintf("%s/ops-lib", getenv('ENGAGEPLUS_CACHES_DIR'));
-        (new Process("SYNC OPS LIB", DirHelper::getWorkingDir(), [
+        (new Process("SYNC OPS LIB", DIR::getWorkingDir(), [
             'rm _ops/lib',
             sprintf(
                 "cp -f '%s/_ops/lib' '%s/_ops/lib'",
                 $EngagePlusCachesRepositoryOpsLibDir,
-                DirHelper::getWorkingDir()
+                DIR::getWorkingDir()
             ),
         ]))->execMultiInWorkDir()->printOutput();
         //
-        TextHelper::messageSeparate();
-        TextHelper::messageSUCCESS("sync done");
+        TEXT::new()->messageSeparate()->setTag(TagEnum::SUCCESS)->message("sync done");
         // show open new session to show right version
-        (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
+        (new Process("CHECK A NEW VERSION", DIR::getWorkingDir(), [
             'php _ops/lib version'
         ]))->execMultiInWorkDir(true)->printOutput();
     }
@@ -378,7 +444,7 @@ class OpsHelper
             }
         }
         //
-        putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DirHelper::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
+        putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DIR::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
     }
 
     /**
@@ -389,43 +455,43 @@ class OpsHelper
      */
     public static function postWork(): void
     {
-        TextHelper::messageTitle("Post works");
+        TEXT::new()->messageTitle("Post works");
         $isDoNothing = true;
         // === cleanup ===
         //    tmp dir (PHP project)
-        if (is_dir(DirHelper::getWorkingDir('tmp'))) {
-            (new Process("Remove tmp dir", DirHelper::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('tmp'))
+        if (is_dir(DIR::getWorkingDir('tmp'))) {
+            (new Process("Remove tmp dir", DIR::getWorkingDir(), [
+                sprintf("rm -rf '%s'", DIR::getWorkingDir('tmp'))
             ]))->execMultiInWorkDir()->printOutput();
             // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DirHelper::getWorkingDir()));
-            TextHelper::messageCondition(!$checkTmpDir,
+            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DIR::getWorkingDir()));
+            TEXT::new()->messageCondition(!$checkTmpDir,
                 'remove a tmp dir successfully', 'remove a tmp dir failure');
             //
             $isDoNothing = false;
         }
         //    dist dir (Angular project)
-        if (is_dir(DirHelper::getWorkingDir('dist'))) {
-            (new Process("Remove dist dir", DirHelper::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('dist'))
+        if (is_dir(DIR::getWorkingDir('dist'))) {
+            (new Process("Remove dist dir", DIR::getWorkingDir(), [
+                sprintf("rm -rf '%s'", DIR::getWorkingDir('dist'))
             ]))->execMultiInWorkDir()->printOutput();
             // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DirHelper::getWorkingDir()));
-            TextHelper::messageCondition(!$checkTmpDir,
+            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DIR::getWorkingDir()));
+            TEXT::new()->messageCondition(!$checkTmpDir,
                 'remove a dist dir successfully', 'remove a dist dir failure');
             //
             $isDoNothing = false;
         }
         //    composer config file: auth.json
-        if (is_file(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))) {
-            $authJsonContent = file_get_contents(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
+        if (is_file(DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))) {
+            $authJsonContent = file_get_contents(DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
             if (STR::contains($authJsonContent, "github-oauth") && STR::contains($authJsonContent, "github.com")) {
-                (new Process("Remove composer config file", DirHelper::getWorkingDir(), [
-                    sprintf("rm -f '%s'", DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
+                (new Process("Remove composer config file", DIR::getWorkingDir(), [
+                    sprintf("rm -f '%s'", DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
                 ]))->execMultiInWorkDir()->printOutput();
                 // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DirHelper::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
-                TextHelper::messageCondition(
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DIR::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
+                TEXT::new()->messageCondition(
                     !$checkTmpDir,
                     sprintf("remove file '%s' successfully", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE),
                     sprintf("remove file '%s' failed", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE)
@@ -435,9 +501,9 @@ class OpsHelper
             }
         }
         //    dangling Docker images / <none> Docker images
-        if (DockerHelper::isDockerInstalled()) {
-            if (DockerHelper::isDanglingImages()) {
-                DockerHelper::removeDanglingImages();
+        if (DOCKER::isDockerInstalled()) {
+            if (DOCKER::isDanglingImages()) {
+                DOCKER::removeDanglingImages();
                 //
                 $isDoNothing = false;
             }
@@ -446,9 +512,9 @@ class OpsHelper
         // === end cleanup ===
         //
         if ($isDoNothing) {
-            TextHelper::message("do nothing");
+            TEXT::new()->message("do nothing");
         }
-        TextHelper::messageSeparate();
+        TEXT::new()->messageSeparate();
     }
 
     /**
@@ -464,7 +530,7 @@ class OpsHelper
             if (!getenv($envVar)) $envVarsMissing[] = $envVar;
         }
         if (count($envVarsMissing) > 0) {
-            TextHelper::messageERROR(sprintf("[ENV] missing %s", join(" or ", $envVarsMissing)));
+            TEXT::tagMultiple([TagEnum::ERROR, TagEnum::ENV])->message("missing %s", join(" or ", $envVarsMissing));
             return false; // END | case error
         }
         return true; // END | case OK
@@ -483,8 +549,8 @@ class OpsHelper
                 self::validateDevice();
                 break;
             default:
-                TextHelper::messageERROR("invalid action, current support:  branch, docker, device");
-                TextHelper::message("should be like eg:   php _ops/lib validate branch");
+                TEXT::tag(TagEnum::ERROR)->message("invalid action, current support:  branch, docker, device")
+                    ->message("should be like eg:   php _ops/lib validate branch");
                 break;
         }
     }
@@ -498,9 +564,9 @@ class OpsHelper
     private static function validateBranch()
     {
         if (in_array(getenv('BRANCH'), ['develop', 'staging', 'master'])) {
-            TextHelper::messageSUCCESS('validation branch got OK result: ' . getenv('BRANCH'));
+            TEXT::tag(TagEnum::SUCCESS)->message("validation branch got OK result: %s", getenv('BRANCH'));
         } else {
-            TextHelper::messageERROR(sprintf("Invalid branch to build | current branch is '%s'", getenv('BRANCH')));
+            TEXT::tag(TagEnum::ERROR)->message("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
             exit(1); // END app
         }
     }
@@ -514,9 +580,9 @@ class OpsHelper
     {
         $dockerServer = exec("docker version | grep 'Server:'");
         if (trim($dockerServer)) {
-            TextHelper::messageSUCCESS("Docker is running: $dockerServer");
+            TEXT::tag(TagEnum::SUCCESS)->message("Docker is running: $dockerServer");
         } else {
-            TextHelper::messageERROR("Docker isn't running. Please start Docker app.");
+            TEXT::tag(TagEnum::ERROR)->message("Docker isn't running. Please start Docker app.");
             exit(1); // END app
         }
     }
@@ -529,9 +595,9 @@ class OpsHelper
     private static function validateDevice()
     {
         if (getenv('DEVICE')) {
-            TextHelper::messageSUCCESS('validation device got OK result: ' . getenv('DEVICE'));
+            TEXT::tag(TagEnum::SUCCESS)->message("validation device got OK result: %s", getenv('DEVICE'));
         } else {
-            TextHelper::messageERROR("Invalid device | should pass in your command");
+            TEXT::tag(TagEnum::ERROR)->message("Invalid device | should pass in your command");
             exit(1); // END app
         }
     }
@@ -539,97 +605,64 @@ class OpsHelper
 
 // [REMOVED] namespace app\Helpers;
 
-class TextHelper
+// [REMOVED] use app\Enum\IndentLevelEnum;
+// [REMOVED] use app\Enum\TagEnum;
+// [REMOVED] use app\Objects\TextLine;
+
+/**
+ * This is TEXT Helper
+ * - e.g. usage
+ *     - TEXT::message("simple_text");
+ *     - TEXT::indent(IndentLevelEnum)->icon(IconEnum)->tag(TagEnum)->message("format %s %a", params)->message("next line");
+ */
+class TEXT
 {
     /**
-     * @param string|null $text
-     * @return void
+     * get new instance of Text Line
+     * @return TextLine
      */
-    public static function message(string $text = null): void
+    public static function new(): TextLine
     {
-        echo sprintf("%s\n", $text);
+        return (new TextLine());
     }
 
     /**
-     * @param string|null $text
-     * @return void
+     * start with indent level
+     * @param int $indentLevel
+     * @return TextLine
      */
-    public static function messageItem(string $text = null): void
+    public static function indent(int $indentLevel = IndentLevelEnum::MAIN_LINE): TextLine
     {
-        echo sprintf("    %s\n", $text);
+        return new TextLine(null, $indentLevel);
     }
 
     /**
-     * print a separate line with =
-     * @return void
+     * start with icon
+     * @param string $icon
+     * @return TextLine
      */
-    public static function messageSeparate(): void
+    public static function icon(string $icon): TextLine
     {
-        self::message('===');
+        return (new TextLine())->setIcon($icon);
     }
 
     /**
-     * print a separate line with -
-     * @return void
+     * start with tag
+     * @param string $tag
+     * @return TextLine
      */
-    public static function messageSeparateItem(): void
+    public static function tag(string $tag): TextLine
     {
-        self::message('    ---');
+        return (new TextLine())->setTag($tag);
     }
 
     /**
-     * print a separate line
-     * @return void
+     * @param array $tags
+     * @return TextLine
      */
-    public static function messageSeparateHigh(): void
+    public static function tagMultiple(array $tags): TextLine
     {
-        self::message(PHP_EOL);
-        self:: message('.');
-        self::message('.');
-        self::message('---------------------------------------');
-        self::message('.');
-        self::message('.');
-        self::message(PHP_EOL);
-    }
-
-    /**
-     * print a title
-     * @return void
-     */
-    public static function messageTitle(string $title): void
-    {
-        self::message(sprintf("=== %s ===", $title));
-    }
-
-    /**
-     * print a text to screen with tag SUCCESS
-     * @param string $errorText
-     * @return void
-     */
-    public static function messageSUCCESS(string $errorText): void
-    {
-        self::message(sprintf("[SUCCESS] %s", $errorText));
-    }
-
-    /**
-     * print a text to screen with tag ERROR
-     * @param string $errorText
-     * @return void
-     */
-    public static function messageERROR(string $errorText): void
-    {
-        self::message(sprintf("[ERROR] %s", $errorText));
-    }
-
-    /**
-     * @param bool $condition
-     * @param string $messageSuccess
-     * @param string $messageError
-     * @return void
-     */
-    public static function messageCondition(bool $condition, string $messageSuccess, string $messageError)
-    {
-        $condition ? self::messageSUCCESS($messageSuccess) : self::messageERROR($messageError);
+        return (new TextLine())->setTagMultiple($tags);
     }
 
     /**
@@ -648,11 +681,12 @@ class TextHelper
         $replaceText = $argv[3] ?? null;
         $filePath = $argv[4] ?? null;
         if (!$searchText || is_null($replaceText) || !$filePath) {
-            TextHelper::messageERROR("[PARAMS] missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
+            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                ->message("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
             exit(); // END
         }
         if (!is_file($filePath)) {
-            TextHelper::messageERROR("$filePath does not exist");
+            self::tag(TagEnum::ERROR)->message("$filePath does not exist");
             exit(); // END
         }
 
@@ -661,21 +695,21 @@ class TextHelper
         file_put_contents($filePath, str_replace($searchText, $replaceText, $oldText));
         $newText = file_get_contents($filePath);
 //    validate result
-        if ($oldText === $newText) {
-            TextHelper::messageERROR("replace done with failed result");
-        } else {
-            TextHelper::messageSUCCESS("replace done with successful result");
-        }
-
+        self::new()->messageCondition($oldText !== $newText,
+            "replace done with successful result", "replace done with failed result");
     }
 }
 
 // [REMOVED] namespace app\Helpers;
 
 // [REMOVED] use app\Enum\GitHubEnum;
+// [REMOVED] use app\Enum\TagEnum;
 // [REMOVED] use app\Objects\Process;
 
-class GitHubHelper
+/**
+ * This is a GitHub helper
+ */
+class GITHUB
 {
     /**
      * get current GitHub info, will return
@@ -752,27 +786,28 @@ class GitHubHelper
         $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
 
         if (!$repository || !$branch || !$engagePlusCachesDir || !$GitHubPersonalAccessToken) {
-            TextHelper::messageERROR("[ENV] missing a REPOSITORY or BRANCH or ENGAGEPLUS_CACHES_DIR or GITHUB_PERSONAL_ACCESS_TOKEN");
+            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
+                ->message("missing a REPOSITORY or BRANCH or ENGAGEPLUS_CACHES_DIR or GITHUB_PERSONAL_ACCESS_TOKEN");
             exit(); // END
         }
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        TextHelper::message(sprintf("[%s] REPOSITORY = %s", $param2 ? 'CUSTOM' : 'ENV', $repository));
-        TextHelper::message(sprintf("[%s] BRANCH = %s", $param3 ? 'CUSTOM' : 'ENV', $branch));
-        TextHelper::message("DIR = '$EngagePlusCachesRepositoryDir'");
+        TEXT::tag($param2 ? 'CUSTOM' : 'ENV')->message("REPOSITORY = %s", $repository)
+            ->setTag($param3 ? 'CUSTOM' : 'ENV')->message("BRANCH = %s", $branch)
+            ->message("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
         //     var
         $remoteOriginUrl = sprintf("https://%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, GitHubEnum::GITHUB_REPOSITORIES[$repository], $repository);
-        TextHelper::messageTitle("Handle Caches and Git");
+        TEXT::new()->messageTitle("Handle Caches and Git");
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
-            TextHelper::message("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
+            TEXT::new()->message("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
             //
             // case clone
         } else {
-            TextHelper::messageERROR("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
+            TEXT::tag(TagEnum::ERROR)->message("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
             //
             (new Process("Remove old directory", null, [
                 sprintf("rm -rf \"%s\"", $EngagePlusCachesRepositoryDir),
@@ -795,7 +830,12 @@ class GitHubHelper
 
 // [REMOVED] namespace app\Helpers;
 
-class ServicesHelper
+// [REMOVED] use app\Enum\TagEnum;
+
+/**
+ * This is a Service helper
+ */
+class SERVICE
 {
     /**
      * php _ops/lib slack "a message"
@@ -808,7 +848,7 @@ class ServicesHelper
         //    validate a message
         $message = $argv[2] ?? null;
         if (!$message) {
-            TextHelper::messageERROR("missing a MESSAGE");
+            TEXT::tag(TagEnum::ERROR)->message("missing a MESSAGE");
             exit(); // END
         }
         //    validate env vars
@@ -817,7 +857,8 @@ class ServicesHelper
         $slackBotToken = getenv('SLACK_BOT_TOKEN');
         $slackChannel = getenv('SLACK_CHANNEL');
         if (!$repository || !$branch || !$slackBotToken || !$slackChannel) {
-            TextHelper::messageERROR("[ENV] missing a BRANCH or REPOSITORY or SLACK_BOT_TOKEN or SLACK_CHANNEL");
+            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
+                ->message("missing a BRANCH or REPOSITORY or SLACK_BOT_TOKEN or SLACK_CHANNEL");
             exit(); // END
         }
 
@@ -834,17 +875,17 @@ class ServicesHelper
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
         $response = curl_exec($curl);
         if (!$response) {
-            TextHelper::messageERROR(curl_error($curl));
+            TEXT::tag(TagEnum::ERROR)->message(curl_error($curl));
         } else {
             $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             if ($responseCode === 200) {
                 if (json_decode($response, true)['ok']) {
-                    TextHelper::messageSUCCESS("Message sent successfully | Slack status OK | HTTP code $responseCode");
+                    TEXT::tagMultiple([TagEnum::SLACK, TagEnum::SUCCESS])->message("Message sent successfully | Slack status OK | HTTP code $responseCode");
                 } else {
-                    TextHelper::messageERROR(json_decode($response, true)['error'] . " | Slack status NO | HTTP code $responseCode");
+                    TEXT::tagMultiple([TagEnum::SLACK, TagEnum::ERROR])->message(json_decode($response, true)['error'] . " | Slack status NO | HTTP code $responseCode");
                 }
             } else {
-                TextHelper::messageERROR("Error sending message | HTTP code $responseCode");
+                TEXT::tagMultiple([TagEnum::SLACK, TagEnum::ERROR])->message("Error sending message | HTTP code $responseCode");
             }
         }
 
@@ -854,11 +895,15 @@ class ServicesHelper
 // [REMOVED] namespace app\Helpers;
 
 // [REMOVED] use app\app;
+// [REMOVED] use app\Enum\TagEnum;
 // [REMOVED] use app\Objects\Process;
 // [REMOVED] use DateTime;
 // [REMOVED] use Exception;
 
-class AWSHelper
+/**
+ * this is an AWS Helper
+ */
+class AWS
 {
     const ELB_TEMP_DIR = "tmp/elb-version";
     const ELB_EBEXTENSIONS_DIR = ".ebextensions"; // should place at inside elb version dir
@@ -875,15 +920,21 @@ class AWSHelper
     {
         $ENVName = $customENVName ?? '.env'; // default
         // remove old file
-        if (is_file(DirHelper::getWorkingDir($ENVName))) {
-            (new Process("Delete old env file", DirHelper::getWorkingDir(), [
-                sprintf("rm -f %s", DirHelper::getWorkingDir($ENVName)),
+        if (is_file(DIR::getWorkingDir($ENVName))) {
+            (new Process("Delete old env file", DIR::getWorkingDir(), [
+                sprintf("rm -f %s", DIR::getWorkingDir($ENVName)),
             ]))
                 ->execMultiInWorkDir()->printOutput();
         }
         // get
         exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output text  > %s", $secretName, $ENVName));
-        TextHelper::messageSUCCESS("get secret '$secretName' success and save at '$ENVName'");
+        // validate result
+        $isSuccess = is_file(DIR::getWorkingDir($ENVName)) && trim(file_get_contents(DIR::getWorkingDir($ENVName)));
+        TEXT::new()->messageCondition($isSuccess,
+            "get secret '$secretName' success and save at '$ENVName'",
+            "get secret '$secretName' failure"
+        );
+        if(!$isSuccess) exit(1);
     }
 
     /**
@@ -912,7 +963,7 @@ class AWSHelper
     {
         try {
             // === validate ===
-            if (!OpsHelper::validateEnvVars([
+            if (!OPS::validateEnvVars([
                 'BRANCH', "REPOSITORY",
                 'ENV', 'ECR_REPO_API', 'S3_EB_APP_VERSION_BUCKET_NAME',
                 'EB_APP_VERSION_FOLDER_NAME', 'EB_ENVIRONMENT_NAME',
@@ -922,16 +973,17 @@ class AWSHelper
                 exit(1); // END
             }
             // === handle ===
-            TextHelper::messageSeparate();
-            TextHelper::messageTitle(sprintf("[%s] [%s] Handle ELB version - ELASTIC BEANSTALK", getenv('REPOSITORY'), getenv('BRANCH')));
+            TEXT::new()->messageSeparate()
+                ->setTagMultiple([getenv('REPOSITORY'), getenv('BRANCH')])
+                ->messageTitle("Handle ELB version - ELASTIC BEANSTALK");
             //    vars
             $ENV = getenv('ENV');
             //    handle ELB version dir
-            if (is_dir(DirHelper::getWorkingDir(self::ELB_TEMP_DIR))) {
-                $commands[] = sprintf("rm -rf '%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR));
+            if (is_dir(DIR::getWorkingDir(self::ELB_TEMP_DIR))) {
+                $commands[] = sprintf("rm -rf '%s'", DIR::getWorkingDir(self::ELB_TEMP_DIR));
             }
-            $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
-            (new Process("handle ELB version directory", DirHelper::getWorkingDir(), $commands))
+            $commands[] = sprintf("mkdir -p '%s/%s'", DIR::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
+            (new Process("handle ELB version directory", DIR::getWorkingDir(), $commands))
                 ->execMultiInWorkDir()->printOutput();
             //   handle SSM and get image tag values
             //        SSM tag names
@@ -939,7 +991,7 @@ class AWSHelper
             $SSM_ENV_TAG_INVOICE_SERVICE_NAME = "/$ENV/TAG_INVOICE_SERVICE_NAME";
             $SSM_ENV_TAG_PAYMENT_SERVICE_NAME = "/$ENV/TAG_PAYMENT_SERVICE_NAME";
             $SSM_ENV_TAG_INTEGRATION_API_NAME = "/$ENV/TAG_INTEGRATION_API_NAME";
-            $imageTagValues = (new Process("get image tag value from AWS SSM", DirHelper::getWorkingDir(), [
+            $imageTagValues = (new Process("get image tag value from AWS SSM", DIR::getWorkingDir(), [
                 "aws ssm get-parameters --names '$SSM_ENV_TAG_API_NAME' '$SSM_ENV_TAG_INVOICE_SERVICE_NAME' '$SSM_ENV_TAG_PAYMENT_SERVICE_NAME' '$SSM_ENV_TAG_INTEGRATION_API_NAME' --output json"
             ]))->execMulti()->getOutputStrAll();
             foreach (json_decode($imageTagValues, true)['Parameters'] as $paramObj) {
@@ -986,16 +1038,14 @@ class AWSHelper
             //    validate configs files again
             //        .ebextensions/blockdevice-xvdcz.config
             $blockdeviceConfigContent = file_get_contents(sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME));
-            TextHelper::message(".ebextensions/blockdevice-xvdcz.config");
-            TextHelper::message($blockdeviceConfigContent);
+            TEXT::new()->message(".ebextensions/blockdevice-xvdcz.config")->message($blockdeviceConfigContent);
             if (!STR::contains($blockdeviceConfigContent, getenv('EB_2ND_DISK_SIZE'))) {
-                TextHelper::messageERROR(".ebextensions/blockdevice-xvdcz.config got an error");
+                TEXT::tag(TagEnum::ERROR)->message(".ebextensions/blockdevice-xvdcz.config got an error");
                 exit(1); // END
             }
             //        Dockerrun.aws.json
             $DockerrunContentToCheckAgain = file_get_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME));
-            TextHelper::message("Dockerrun.aws.json");
-            TextHelper::message($DockerrunContentToCheckAgain);
+            TEXT::new()->message("Dockerrun.aws.json")->message($DockerrunContentToCheckAgain);
             if (!STR::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_API'))
                 || !STR::contains($DockerrunContentToCheckAgain, $TAG_API_NAME)
                 || !STR::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INVOICE_SERVICE'))
@@ -1005,12 +1055,12 @@ class AWSHelper
                 || !STR::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INTEGRATION_API'))
                 || !STR::contains($DockerrunContentToCheckAgain, $TAG_INTEGRATION_API_NAME)
             ) {
-                TextHelper::messageERROR("Dockerrun.aws.json got an error");
+                TEXT::tag(TagEnum::ERROR)->message("Dockerrun.aws.json got an error");
                 exit(1); // END
             }
             //    create ELB version and update
             $EB_APP_VERSION_LABEL = sprintf("$ENV-$TAG_API_NAME-$TAG_INVOICE_SERVICE_NAME-$TAG_PAYMENT_SERVICE_NAME-$TAG_INTEGRATION_API_NAME-%sZ", (new DateTime())->format('Ymd-His'));
-            (new Process("zip ELB version", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), [
+            (new Process("zip ELB version", DIR::getWorkingDir(self::ELB_TEMP_DIR), [
                 //    create .zip file
                 sprintf("zip -r %s.zip Dockerrun.aws.json .ebextensions", $EB_APP_VERSION_LABEL),
                 //    Copy to s3 and create eb application version | required to run in elb-version directory
@@ -1037,47 +1087,47 @@ class AWSHelper
             //    Check new service healthy every X seconds | timeout = 20 minutes
             //        08/28/2023: Elastic Beanstalk environment update about 4 - 7 minutes
             for ($minute = 3; $minute >= 1; $minute--) {
-                TextHelper::message("Wait $minute minutes for the ELB environment does the update, and add some lines of logs...");
+                TEXT::new()->message("Wait $minute minutes for the ELB environment does the update, and add some lines of logs...");
                 sleep(60);
             }
             //        do check | ELB logs
             for ($i = 1; $i <= 40; $i++) {
-                TextHelper::message("Healthcheck the $i time");
-                $lastELBLogs = (new Process("get last ELB logs", DirHelper::getWorkingDir(), [
+                TEXT::new()->message("Healthcheck the $i time");
+                $lastELBLogs = (new Process("get last ELB logs", DIR::getWorkingDir(), [
                     sprintf("aws elasticbeanstalk describe-events --application-name %s --environment-name %s --query 'Events[].Message' --output json --max-items 5",
                         getenv('EB_APP_NAME'),
                         getenv('EB_ENVIRONMENT_NAME')
                     ),
                 ]))->execMulti()->getOutputStrAll();
                 if (in_array(self::ELB_LOG_UPDATE_SUCCESSFULLY, json_decode($lastELBLogs))) {
-                    TextHelper::messageSUCCESS(self::ELB_LOG_UPDATE_SUCCESSFULLY);
-                    ServicesHelper::SlackMessage(['script path', 'slack', sprintf(
+                    TEXT::tag(TagEnum::SUCCESS)->message(self::ELB_LOG_UPDATE_SUCCESSFULLY);
+                    SERVICE::SlackMessage(['script path', 'slack', sprintf(
                         "[FINISH] [SUCCESS] %s just finished building and deploying the project %s",
                         getenv('DEVICE'), getenv('REPOSITORY')
                     )]);
                     exit(0); // END | successful
                 } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
-                    TextHelper::messageERROR(self::ELB_LOG_UPDATE_FAILED);
-                    ServicesHelper::SlackMessage(['script path', 'slack', sprintf(
+                    TEXT::tag(TagEnum::ERROR)->message(self::ELB_LOG_UPDATE_FAILED);
+                    SERVICE::SlackMessage(['script path', 'slack', sprintf(
                         "[FINISH] [FAILURE 1 | Deploy failed] %s just finished building and deploying the project %s",
                         getenv('DEVICE'), getenv('REPOSITORY')
                     )]);
                     exit(1); // END | failed
                 } else {
-                    TextHelper::message("Environment is still not healthy");
+                    TEXT::new()->message("Environment is still not healthy");
                     // check again after X seconds
                     sleep(30);
                 }
             }
             //             case timeout
-            TextHelper::messageERROR("Deployment got a timeout result");
-            ServicesHelper::SlackMessage(['script path', 'slack', sprintf(
+            TEXT::tag(TagEnum::ERROR)->message("Deployment got a timeout result");
+            SERVICE::SlackMessage(['script path', 'slack', sprintf(
                 "[FINISH] [FAILURE 2 | Timeout] %s just finished building and deploying the project %s",
                 getenv('DEVICE'), getenv('REPOSITORY')
             )]);
             exit(1); // END | failed
         } catch (Exception $ex) {
-            TextHelper::messageERROR($ex->getMessage());
+            TEXT::tag(TagEnum::ERROR)->message($ex->getMessage());
             exit(1); // END | exception error
         }
     }
@@ -1164,10 +1214,16 @@ class AppHelper
 // [REMOVED] namespace app\Helpers;
 
 
+// [REMOVED] use app\Enum\IconEnum;
+// [REMOVED] use app\Enum\IndentLevelEnum;
+// [REMOVED] use app\Enum\TagEnum;
 // [REMOVED] use app\Objects\DockerImage;
 // [REMOVED] use app\Objects\Process;
 
-class DockerHelper
+/**
+ * this is a Docker helper
+ */
+class DOCKER
 {
     public static function isDockerInstalled(): bool
     {
@@ -1188,52 +1244,62 @@ class DockerHelper
         $imageTag = $argv[3] ?? null;
         // === validate ===
         if (!$imageRepository || !$imageTag) {
-            TextHelper::messageERROR("[PARAMS] missing a 'imageRepository' 'imageTag'");
+            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                ->message("missing a 'imageRepository' 'imageTag'");
             exit(); // END
         }
         // === handle ===
-        TextHelper::messageTitle("Keep latest Docker image by repository");
+        TEXT::tag(TagEnum::DOCKER)->messageTitle("Keep latest Docker image by repository");
         $listImage = self::getListImages();
         if (count($listImage) === 0) {
-            TextHelper::message("Empty images. Do nothing.");
-            TextHelper::messageSeparate();
+            TEXT::new()->message("Empty images. Do nothing.")->messageSeparate();
             return; // END
         }
         /** @var DockerImage $image */
         foreach (self::getListImages() as $image) {
-            TextHelper::messageSeparateItem();
+            TEXT::indent(IndentLevelEnum::ITEM_LINE)->messageSeparate();
             // case: to check image
             if ($image->getRepository() === $imageRepository) {
                 if ($image->getTag() === $imageTag) {
-                    TextHelper::messageItem(sprintf("✔ Keep image '%s:%s'", $image->getRepository(), $image->getTag()));
+                    TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)
+                        ->message("Keep image '%s:%s'", $image->getRepository(), $image->getTag());
+                    TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)
+                        ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
                     // do nothing | skip this image
                 } else {
-                    TextHelper::messageItem(sprintf("X Delete image '%s:%s'", $image->getRepository(), $image->getTag()));
-                    (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
+                    TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
+                        ->message("Delete image '%s:%s'", $image->getRepository(), $image->getTag());
+                    TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)
+                        ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
+                    (new Process("Delete Docker Image", DIR::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
-                    ]))->execMultiInWorkDir(true)->printOutput();
+                    ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
+                        ->execMultiInWorkDir(true)->printOutput();
                 }
                 //
                 // case: other images
             } else {
-                TextHelper::messageItem(sprintf("✔ Keep other image '%s:%s'", $image->getRepository(), $image->getTag()));
+                TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)
+                    ->message("Keep other image '%s:%s'", $image->getRepository(), $image->getTag());
+                TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)
+                    ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
             }
         }
         //
-        TextHelper::messageSeparate();
+        TEXT::new()->messageSeparate();
     }
 
     private static function getListImages(): array
     {
         $list = [];
-        $dockerImagesDataArr = (new Process("Get Docker Images Data", DirHelper::getWorkingDir(), [
+        $dockerImagesDataArr = (new Process("Get Docker Images Data", DIR::getWorkingDir(), [
             "docker images --format \"{{json .}}\""
         ]))->execMultiInWorkDir(true)->getOutput();
         foreach ($dockerImagesDataArr as $imageDataJson) {
             $imageData = json_decode($imageDataJson, true);
             $list[] = new DockerImage(
                 $imageData['Repository'], $imageData['Tag'], $imageData['ID'],
-                $imageData['CreatedAt'], $imageData['Size']
+                $imageData['CreatedAt'], $imageData['CreatedSince'], $imageData['Size']
             );
         }
         return $list;
@@ -1242,7 +1308,7 @@ class DockerHelper
     /**
      * @return bool
      */
-    public static function isDanglingImages():bool
+    public static function isDanglingImages(): bool
     {
         /** @var DockerImage $image */
         foreach (self::getListImages() as $image) {
@@ -1258,24 +1324,25 @@ class DockerHelper
     public static function removeDanglingImages(): void
     {
         // === handle ===
-        TextHelper::messageTitle("[Docker] Remove dangling images / <none> images");
+        TEXT::tag(TagEnum::DOCKER)->messageTitle("Remove dangling images / <none> images");
         $listImage = self::getListImages();
         if (count($listImage) === 0) {
-            TextHelper::message("Empty images. Do nothing.");
-            TextHelper::messageSeparate();
+            TEXT::new()->message("Empty images. Do nothing.")->messageSeparate();
             return; // END
         }
         /** @var DockerImage $image */
         foreach (self::getListImages() as $image) {
             if ($image->isDanglingImage()) {
-                TextHelper::message(sprintf("X Delete dangling image '%s:%s'", $image->getRepository(), $image->getTag()));
-                (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
+                TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
+                    ->message("Delete dangling image '%s:%s'", $image->getRepository(), $image->getTag());
+                (new Process("Delete Docker Image", DIR::getWorkingDir(), [
                     sprintf("docker rmi -f %s", $image->getId())
-                ]))->execMultiInWorkDir(true)->printOutput();
+                ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
+                    ->execMultiInWorkDir(true)->printOutput();
             }
         }
         //
-        TextHelper::messageSeparate();
+        TEXT::new()->messageSeparate();
     }
 }
 
@@ -1326,10 +1393,11 @@ class STR
 
 // [REMOVED] use app\app;
 // [REMOVED] use app\Enum\GitHubEnum;
+// [REMOVED] use app\Enum\TagEnum;
 // [REMOVED] use app\Helpers\AppHelper;
-// [REMOVED] use app\Helpers\DEVHelper;
-// [REMOVED] use app\Helpers\DirHelper;
-// [REMOVED] use app\Helpers\TextHelper;
+// [REMOVED] use app\Helpers\DEV;
+// [REMOVED] use app\Helpers\DIR;
+// [REMOVED] use app\Helpers\TEXT;
 // [REMOVED] use DateTime;
 
 class Release
@@ -1342,22 +1410,26 @@ class Release
         // === Enum ===
         'app/Enum/CommandEnum.php',
         'app/Enum/GitHubEnum.php',
+        'app/Enum/IndentLevelEnum.php',
+        'app/Enum/IconEnum.php',
+        'app/Enum/TagEnum.php',
         // === Helper ===
-        'app/Helpers/DEVHelper.php',
-        'app/Helpers/DirHelper.php',
-        'app/Helpers/OpsHelper.php',
-        'app/Helpers/TextHelper.php',
-        'app/Helpers/GitHubHelper.php',
-        'app/Helpers/ServicesHelper.php',
-        'app/Helpers/AWSHelper.php',
+        'app/Helpers/DEV.php',
+        'app/Helpers/DIR.php',
+        'app/Helpers/OPS.php',
+        'app/Helpers/TEXT.php',
+        'app/Helpers/GITHUB.php',
+        'app/Helpers/SERVICE.php',
+        'app/Helpers/AWS.php',
         'app/Helpers/AppHelper.php',
-        'app/Helpers/DockerHelper.php',
+        'app/Helpers/DOCKER.php',
         'app/Helpers/STR.php',
         // === Objects ===
         'app/Objects/Release.php',
         'app/Objects/Process.php',
         'app/Objects/Version.php',
         'app/Objects/DockerImage.php',
+        'app/Objects/TextLine.php',
         // always on bottom
         'app/app',
     ];
@@ -1374,49 +1446,51 @@ class Release
      *  string: error message
      * @return string|null
      */
-    private function validate(): ?string
+    private function validate(): bool
     {
-        switch (basename(DirHelper::getScriptDir())) {
+        switch (basename(DIR::getScriptDir())) {
             case 'app':
-                return null;
+                return true;
             case '_ops':
-                return "[ERROR] in release directory \ another project, stop release job\n";
+                TEXT::tag(TagEnum::ERROR)->message("release in directory / another project, stop release job");
+                return false;
             default:
-                return "[ERROR] unknown error\n";
+                TEXT::tag(TagEnum::ERROR)->message("unknown error");
+                return false;
         }
     }
 
     public function handle(array $argv): void
     {
         // validate
-        if ($this->validate()) {
-            echo DEVHelper::message($this->validate(), __CLASS__, __FUNCTION__);
+        if (!$this->validate()) {
+            echo DEV::message($this->validate(), __CLASS__, __FUNCTION__);
             return; // END
         }
         //    validate version part
         $part = $argv[2] ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
-            TextHelper::messageERROR(sprintf("invalid part of version, should be: %s", join(', ', Version::PARTS)));
+            TEXT::tag(TagEnum::ERROR)->message("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END
         }
         // handle
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
         //    generate files
-        echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
+        echo DEV::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
         file_put_contents(self::RELEASE_PATH, sprintf("\n\n// === %s ===\n", app::version($newVersion))); // init file
         $this->handleLibrariesClass();
         $this->handleAppClass();
-        echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);
+        echo DEV::message("DONE\n", __CLASS__, __FUNCTION__);
         //    push new release to GitHub
-        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
+        (new Process("PUSH NEW RELEASE TO GITHUB", DIR::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
             sprintf("git commit -m 'release %s on %s UTC'", app::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
         //
-        TextHelper::messageSeparate();
-        TextHelper::messageSUCCESS(sprintf("Release successful %s", app::version($newVersion)));
+        TEXT::new()->messageSeparate()
+            ->setTag(TagEnum::SUCCESS)->message("Release successful %s", app::version($newVersion));
     }
 
     /**
@@ -1495,9 +1569,12 @@ class Release
 // [REMOVED] namespace app\Objects;
 
 // [REMOVED] use app\Enum\GitHubEnum;
-// [REMOVED] use app\Helpers\DirHelper;
-// [REMOVED] use app\Helpers\GitHubHelper;
-// [REMOVED] use app\Helpers\TextHelper;
+// [REMOVED] use app\Enum\IconEnum;
+// [REMOVED] use app\Enum\IndentLevelEnum;
+// [REMOVED] use app\Enum\TagEnum;
+// [REMOVED] use app\Helpers\DIR;
+// [REMOVED] use app\Helpers\GITHUB;
+// [REMOVED] use app\Helpers\TEXT;
 
 class Process
 {
@@ -1512,6 +1589,9 @@ class Process
 
     /** @var array|null */
     private $output;
+
+    /** @var int */
+    private $outputParentIndentLevel = IndentLevelEnum::MAIN_LINE;
 
     /**
      * @param string|null $workName
@@ -1609,6 +1689,25 @@ class Process
         return $this;
     }
 
+    /**
+     * @return int
+     */
+    public function getOutputParentIndentLevel(): int
+    {
+        return $this->outputParentIndentLevel;
+    }
+
+    /**
+     * @param int $outputParentIndentLevel
+     * @return Process
+     */
+    public function setOutputParentIndentLevel(int $outputParentIndentLevel): Process
+    {
+        $this->outputParentIndentLevel = $outputParentIndentLevel;
+        return $this;
+    }
+
+
     // === UTILS ZONE ===
 
     public function execMulti(): Process
@@ -1626,14 +1725,14 @@ class Process
                 "rm -rf /",
                 "rm -rf '/'",
                 "rm -rf \"/\"",
-                sprintf("rm -rf %s", DirHelper::getHomeDir()),
-                sprintf("rm -rf '%s'", DirHelper::getHomeDir()),
-                sprintf("rm -rf \"%s\"", DirHelper::getHomeDir()),
-                sprintf("rm -rf %s/", DirHelper::getHomeDir()),
-                sprintf("rm -rf '%s/'", DirHelper::getHomeDir()),
-                sprintf("rm -rf \"%s/\"", DirHelper::getHomeDir()),
+                sprintf("rm -rf %s", DIR::getHomeDir()),
+                sprintf("rm -rf '%s'", DIR::getHomeDir()),
+                sprintf("rm -rf \"%s\"", DIR::getHomeDir()),
+                sprintf("rm -rf %s/", DIR::getHomeDir()),
+                sprintf("rm -rf '%s/'", DIR::getHomeDir()),
+                sprintf("rm -rf \"%s/\"", DIR::getHomeDir()),
             ])) {
-                TextHelper::messageERROR("detect dangerous command: $command  , exit app");
+                TEXT::tag(TagEnum::ERROR)->message("detect dangerous command: $command  , exit app");
                 exit(1); // END
             }
         }
@@ -1643,7 +1742,7 @@ class Process
             exec(join(';', $this->commands), $this->output, $exitCode);
             if ($exitCode) {
                 $this->printOutput();
-                TextHelper::messageERROR("detect execute shell command failed, exit app | exit code = $exitCode");
+                TEXT::tag(TagEnum::ERROR)->message("detect execute shell command failed, exit app | exit code = $exitCode");
                 exit($exitCode); // END app
             }
         }
@@ -1655,9 +1754,9 @@ class Process
     {
         // case not .git and want to use git commands
         if (!$skipCheckDir) {
-            if (!GitHubHelper::isGit(DirHelper::getWorkingDir())) {
-                TextHelper::messageERROR("detect no .git in this directory, init a fake repository");
-                $arrDirCommands[] = sprintf("cd '%s'", DirHelper::getWorkingDir()); // cd to work dir
+            if (!GITHUB::isGit(DIR::getWorkingDir())) {
+                TEXT::tag(TagEnum::ERROR)->message("detect no .git in this directory, init a fake repository");
+                $arrDirCommands[] = sprintf("cd '%s'", DIR::getWorkingDir()); // cd to work dir
                 $arrDirCommands[] = GitHubEnum::INIT_REPOSITORY_COMMAND;
             }
         }
@@ -1674,17 +1773,18 @@ class Process
 
     public function printOutput(): Process
     {
-        TextHelper::message(sprintf("\n[WORK] %s", $this->workName));
-        TextHelper::message("- Commands: ");
+        TEXT::indent($this->getOutputParentIndentLevel())->setTag(TagEnum::WORK)->message($this->workName);
+        TEXT::indent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Commands:");
         if ($this->commands) {
             foreach ($this->commands as $command) {
-                TextHelper::message(sprintf("    > %s", $command));
+                TEXT::indent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)
+                    ->setIcon(IconEnum::CHEVRON_RIGHT)->message($command);
             }
         }
-        TextHelper::message("- Output: ");
+        TEXT::indent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Output:");
         if ($this->output) {
             foreach ($this->output as $outputLine) {
-                TextHelper::message(sprintf("    + %s", $outputLine));
+                TEXT::indent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message($outputLine);
             }
         }
         //
@@ -1894,6 +1994,9 @@ class DockerImage
     private $createdAt;
 
     /** @var string|null */
+    private $createdSince;
+
+    /** @var string|null */
     private $size;
 
     /**
@@ -1901,14 +2004,16 @@ class DockerImage
      * @param string|null $tag
      * @param string|null $id
      * @param string|null $createdAt
+     * @param string|null $createdSince
      * @param string|null $size
      */
-    public function __construct(?string $repository, ?string $tag, ?string $id, ?string $createdAt, ?string $size)
+    public function __construct(?string $repository, ?string $tag, ?string $id, ?string $createdAt, ?string $createdSince, ?string $size)
     {
         $this->repository = $repository;
         $this->tag = $tag;
         $this->id = $id;
         $this->createdAt = $createdAt;
+        $this->createdSince = $createdSince;
         $this->size = $size;
     }
 
@@ -1987,6 +2092,24 @@ class DockerImage
     /**
      * @return string|null
      */
+    public function getCreatedSince(): ?string
+    {
+        return $this->createdSince;
+    }
+
+    /**
+     * @param string|null $createdSince
+     * @return DockerImage
+     */
+    public function setCreatedSince(?string $createdSince): DockerImage
+    {
+        $this->createdSince = $createdSince;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
     public function getSize(): ?string
     {
         return $this->size;
@@ -2014,6 +2137,186 @@ class DockerImage
     }
 }
 
+// [REMOVED] namespace app\Objects;
+
+// [REMOVED] use app\Enum\IndentLevelEnum;
+// [REMOVED] use app\Enum\TagEnum;
+
+class TextLine
+{
+    /** @var string */
+    private $text;
+
+    /** @var int */
+    private $indentLevel;
+
+    /** @var string */
+    private $icon;
+
+    /** @var string */
+    private $tag;
+
+    /**
+     * @param string|null $text
+     * @param int $indentLevel
+     * @param string|null $icon
+     * @param string|null $tag
+     */
+    public function __construct(
+        string $text = null, int $indentLevel = IndentLevelEnum::MAIN_LINE,
+        string $icon = null, string $tag = null
+    )
+    {
+        $this->text = $text;
+        $this->indentLevel = $indentLevel;
+        $this->icon = $icon;
+        $this->tag = $tag;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getText(): ?string
+    {
+        return $this->text;
+    }
+
+    /**
+     * @param string|null $text
+     * @return TextLine
+     */
+    public function setText(?string $text): TextLine
+    {
+        $this->text = $text;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getIndentLevel(): int
+    {
+        return $this->indentLevel;
+    }
+
+    /**
+     * @param int $indentLevel
+     * @return TextLine
+     */
+    public function setIndentLevel(int $indentLevel): TextLine
+    {
+        $this->indentLevel = $indentLevel;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getIcon(): ?string
+    {
+        return $this->icon;
+    }
+
+    /**
+     * @param string|null $icon
+     * @return TextLine
+     */
+    public function setIcon(?string $icon): TextLine
+    {
+        $this->icon = $icon;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTag(): ?string
+    {
+        return $this->tag;
+    }
+
+    /**
+     * @param string|null $tag
+     * @return TextLine
+     */
+    public function setTag(?string $tag): TextLine
+    {
+        $this->tag = $tag;
+        return $this;
+    }
+
+    public function setTagMultiple(array $tags): TextLine
+    {
+        $this->tag = join(' | ', $tags);
+        return $this;
+    }
+
+    // === functions ===
+    private function toString(): string
+    {
+        return sprintf(
+            "%s%s%s%s",
+            str_repeat(" ", $this->indentLevel * IndentLevelEnum::AMOUNT_SPACES),
+            $this->icon ? $this->icon . ' ' : '',
+            $this->tag ? sprintf("[%s] ", $this->tag) : '',
+            $this->text
+        );
+    }
+
+    public function message(string $format, ...$values): TextLine
+    {
+        // set message text
+        $this->text = vsprintf($format, $values);
+        // print
+        echo sprintf("%s\n", $this->toString());
+        //
+        return $this;
+    }
+
+    public function messageTitle(string $format, ...$values): TextLine
+    {
+        // set message text
+        $this->text = vsprintf($format, $values);
+        // print
+        echo sprintf("=== %s ===\n", $this->toString());
+        //
+        return $this;
+    }
+
+    public function messageSubTitle(string $format, ...$values): TextLine
+    {
+        // set message text
+        $this->text = vsprintf($format, $values);
+        // print
+        echo sprintf("-- %s --\n", $this->toString());
+        //
+        return $this;
+    }
+
+    public function messageSeparate(): TextLine
+    {
+        $this->message($this->indentLevel === IndentLevelEnum::MAIN_LINE ? '===' : '---');
+        //
+        return $this;
+    }
+
+    /**
+     * @param bool $condition
+     * @param string $messageSuccess
+     * @param string $messageError
+     * @return void
+     */
+    public function messageCondition(bool $condition, string $messageSuccess, string $messageError): TextLine
+    {
+        $condition ? $this->setTag(TagEnum::SUCCESS)->message($messageSuccess)
+            : $this->setTag(TagEnum::ERROR)->message($messageError);
+        //
+        return $this;
+    }
+
+
+}
+
 // === end Generated libraries classes ===
 
 
@@ -2023,7 +2326,7 @@ class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.11.2';
+    const APP_VERSION = '2.12.0';
 
     const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKHBocCBfb3BzL2xpYiBicmFuY2gpCmV4cG9ydCBSRVBPU0lUT1JZPSQocGhwIF9vcHMvbGliIHJlcG9zaXRvcnkpCmV4cG9ydCBIRUFEX0NPTU1JVF9JRD0kKHBocCBfb3BzL2xpYiBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBoYW5kbGUgYnJhbmNoZXMgdmFycyA9PT0KaWYgWyAiJHtCUkFOQ0h9IiA9ICJkZXZlbG9wIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1kZXYKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9ZGV2ZWxvcC1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0iZGV2ZWxvcC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAwCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJzdGFnaW5nIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1zdGcKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9c3RhZ2luZy1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0ic3RhZ2luZy1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAxCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjEwMCIKICBleHBvcnQgRUJfTUFJTF9DQVRDSEVSX1BPUlQ9IiAgICAiICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UgfCA0IHNwYWNlcyB0byBwYXNzIGVtcHR5IHN0cmluZwogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAyCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKIyA9PT0gRU5EID09PQoKIyA9PT0gQVdTIEFjY291bnQgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEFXU19BQ0NPVU5UX0lEPSI5ODIwODA2NzI5ODMiCmV4cG9ydCBSRUdJT049ImFwLWVhc3QtMSIKIyAgICBFQ1IgY29uZmlndXJhdGlvbgojICAgICAgICBiYXNlIGFuZCBjYWNoZXMgcmVwb3NpdG9yaWVzCmV4cG9ydCBFQ1JfUkVQT19BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19QQVlNRU5UX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtcGF5bWVudC1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlZPSUNFX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW52b2ljZS1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlRFR1JBVElPTl9BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW50ZWdyYXRpb24tYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19FTUFJTF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWVtYWlsLXNlcnZpY2UtcmVwb3NpdG9yeSIKIyAgICAgICAgbm9ybWFsIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgRWxhc3RpYyBCZWFuc3RhbGsgY29uZmlndXJhdGlvbgpleHBvcnQgUzNfRUJfQVBQX1ZFUlNJT05fQlVDS0VUX05BTUU9ImVsYXN0aWNiZWFuc3RhbGstJHtSRUdJT059LSR7QVdTX0FDQ09VTlRfSUR9IgpleHBvcnQgRUJfQVBQX1ZFUlNJT05fRk9MREVSX05BTUU9ImVuZ2FnZXBsdXMiCmV4cG9ydCBFQl9BUFBfTkFNRT0iZW5nYWdlcGx1cyIKIyA9PT0gRU5EID09PQoKIyA9PT0gRW5nYWdlUGx1cyBjb25maWd1cmF0aW9uID09PQpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRk9MREVSPSIuY2FjaGVzX2VuZ2FnZXBsdXMiCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19ESVI9IiQocGhwIF9vcHMvbGliIGhvbWUtZGlyKS8ke0VOR0FHRVBMVVNfQ0FDSEVTX0ZPTERFUn0iCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19SRVBPU0lUT1JZX0RJUj0iJHtFTkdBR0VQTFVTX0NBQ0hFU19ESVJ9LyR7UkVQT1NJVE9SWX0iCiMgPT09IEVORCA9PT0KCiMgPT09IGdldCBERVZJQ0UgZnJvbSBwYXJhbSAxID09PQpleHBvcnQgREVWSUNFPSIkMSIKIyA9PT0gRU5EID09PQo=';
 
@@ -2080,26 +2383,27 @@ class app
                 (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
-                TextHelper::message(app::version());
+                TEXT::new()->message(app::version());
                 break;
             case CommandEnum::SYNC:
-                OpsHelper::sync();
+                OPS::sync();
                 break;
             // === AWS related ===
             case CommandEnum::LOAD_ENV_OPS:
-                echo AWSHelper::loadOpsEnvAndHandleMore();
+                echo AWS::loadOpsEnvAndHandleMore();
                 break;
             case CommandEnum::GET_SECRET_ENV:
                 // validate
                 if (!$param1) {
-                    TextHelper::messageERROR("required secret name");
+                    TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                        ->message("required secret name");
                     exit(); // END
                 }
                 // handle
-                AWSHelper::getSecretEnv($param1, $param2);
+                AWS::getSecretEnv($param1, $param2);
                 break;
             case CommandEnum::ELB_UPDATE_VERSION:
-                AWSHelper::ELBUpdateVersion();
+                AWS::ELBUpdateVersion();
                 break;
             // === git ===
             case CommandEnum::BRANCH:
@@ -2112,44 +2416,44 @@ class app
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
                 break;
             case CommandEnum::HANDLE_CACHES_AND_GIT:
-                GitHubHelper::handleCachesAndGit($argv);
+                GITHUB::handleCachesAndGit($argv);
                 break;
             // === Docker ===
             case CommandEnum::DOCKER_KEEP_IMAGE_BY:
-                DockerHelper::keepImageBy($argv);
+                DOCKER::keepImageBy($argv);
                 break;
             // === utils ===
             case CommandEnum::HOME_DIR:
-                echo DirHelper::getHomeDir();
+                echo DIR::getHomeDir();
                 break;
             case  CommandEnum::SCRIPT_DIR:
-                echo DirHelper::getScriptDir();
+                echo DIR::getScriptDir();
                 break;
             case CommandEnum::WORKING_DIR:
-                echo DirHelper::getWorkingDir();
+                echo DIR::getWorkingDir();
                 break;
             case CommandEnum::REPLACE_TEXT_IN_FILE:
-                TextHelper::replaceTextInFile($argv);
+                TEXT::replaceTextInFile($argv);
                 break;
             case CommandEnum::SLACK:
-                ServicesHelper::SlackMessage($argv);
+                SERVICE::SlackMessage($argv);
                 break;
             case CommandEnum::TMP:
-                DirHelper::tmp($argv);
+                DIR::tmp($argv);
                 break;
             case CommandEnum::POST_WORK:
-                OpsHelper::postWork();
+                OPS::postWork();
                 break;
             // === private ===
             case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
-                echo OpsHelper::getS3WhiteListIpsDevelopment();
+                echo OPS::getS3WhiteListIpsDevelopment();
                 break;
             case CommandEnum::UPDATE_GITHUB_TOKEN_ALL_PROJECT:
-                OpsHelper::updateGitHubTokenAllProjects();
+                OPS::updateGitHubTokenAllProjects();
                 break;
             // === validation ===
             case CommandEnum::VALIDATE:
-                OpsHelper::validate($argv);
+                OPS::validate($argv);
                 break;
             // === other ===
             default:
@@ -2160,15 +2464,34 @@ class app
 
     private function help()
     {
-        TextHelper::message();
-        TextHelper::messageTitle(sprintf("%s v%s", self::APP_NAME, self::APP_VERSION));
-        echo "[INFO] usage:  php _ops/lib COMMAND  \n";
-        echo "               php _ops/lib COMMAND PARAM_1 \n\n";
-        echo "[INFO] Support commands:\n";
-        foreach (CommandEnum::SUPPORT_COMMANDS as $command => $description) {
-            echo sprintf(" +    %s    :  %s\n", $command, $description);
+        TEXT::new()->message('')
+            ->messageTitle("%s v%s", self::APP_NAME, self::APP_VERSION)
+            ->setTag(TagEnum::INFO)->message("usage:  php _ops/lib COMMAND")
+            ->setTag(TagEnum::NONE)->message("               php _ops/lib COMMAND PARAM1 PARAM2 ...")
+            ->setTag(TagEnum::NONE)->message('')
+            ->setTag(TagEnum::INFO)->message("Support commands:");
+        /**
+         * @var  $command string
+         * @var  $descriptionArr array
+         */
+        foreach (CommandEnum::SUPPORT_COMMANDS as $command => $descriptionArr) {
+            switch (count($descriptionArr)) {
+                case 0: // group command's title
+                    TEXT::new()->messageSubTitle($command);
+                    break;
+                case 1: // group command's items - single line description
+                    TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)
+                        ->message("%s     : %s", $command, $descriptionArr[0]);
+                    break;
+                default: // group command's items - multiple line description
+                    TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->message($command);
+                    foreach ($descriptionArr as $descriptionLine) {
+                        TEXT::indent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->message($descriptionLine);
+                    }
+                    break;
+            }
         }
-        echo "\n===\n\n";
+        TEXT::new()->messageSeparate();
     }
 
     public static function version(Version $newVersion = null): string

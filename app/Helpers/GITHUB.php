@@ -3,9 +3,13 @@
 namespace app\Helpers;
 
 use app\Enum\GitHubEnum;
+use app\Enum\TagEnum;
 use app\Objects\Process;
 
-class GitHubHelper
+/**
+ * This is a GitHub helper
+ */
+class GITHUB
 {
     /**
      * get current GitHub info, will return
@@ -82,27 +86,28 @@ class GitHubHelper
         $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
 
         if (!$repository || !$branch || !$engagePlusCachesDir || !$GitHubPersonalAccessToken) {
-            TextHelper::messageERROR("[ENV] missing a REPOSITORY or BRANCH or ENGAGEPLUS_CACHES_DIR or GITHUB_PERSONAL_ACCESS_TOKEN");
+            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
+                ->message("missing a REPOSITORY or BRANCH or ENGAGEPLUS_CACHES_DIR or GITHUB_PERSONAL_ACCESS_TOKEN");
             exit(); // END
         }
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        TextHelper::message(sprintf("[%s] REPOSITORY = %s", $param2 ? 'CUSTOM' : 'ENV', $repository));
-        TextHelper::message(sprintf("[%s] BRANCH = %s", $param3 ? 'CUSTOM' : 'ENV', $branch));
-        TextHelper::message("DIR = '$EngagePlusCachesRepositoryDir'");
+        TEXT::tag($param2 ? 'CUSTOM' : 'ENV')->message("REPOSITORY = %s", $repository)
+            ->setTag($param3 ? 'CUSTOM' : 'ENV')->message("BRANCH = %s", $branch)
+            ->message("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
         //     var
         $remoteOriginUrl = sprintf("https://%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, GitHubEnum::GITHUB_REPOSITORIES[$repository], $repository);
-        TextHelper::messageTitle("Handle Caches and Git");
+        TEXT::new()->messageTitle("Handle Caches and Git");
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
-            TextHelper::message("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
+            TEXT::new()->message("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
             //
             // case clone
         } else {
-            TextHelper::messageERROR("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
+            TEXT::tag(TagEnum::ERROR)->message("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
             //
             (new Process("Remove old directory", null, [
                 sprintf("rm -rf \"%s\"", $EngagePlusCachesRepositoryDir),

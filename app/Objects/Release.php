@@ -4,10 +4,11 @@ namespace app\Objects;
 
 use app\app;
 use app\Enum\GitHubEnum;
+use app\Enum\TagEnum;
 use app\Helpers\AppHelper;
-use app\Helpers\DEVHelper;
-use app\Helpers\DirHelper;
-use app\Helpers\TextHelper;
+use app\Helpers\DEV;
+use app\Helpers\DIR;
+use app\Helpers\TEXT;
 use DateTime;
 
 class Release
@@ -21,22 +22,25 @@ class Release
         'app/Enum/CommandEnum.php',
         'app/Enum/GitHubEnum.php',
         'app/Enum/IndentLevelEnum.php',
+        'app/Enum/IconEnum.php',
+        'app/Enum/TagEnum.php',
         // === Helper ===
-        'app/Helpers/DEVHelper.php',
-        'app/Helpers/DirHelper.php',
-        'app/Helpers/OpsHelper.php',
-        'app/Helpers/TextHelper.php',
-        'app/Helpers/GitHubHelper.php',
-        'app/Helpers/ServicesHelper.php',
-        'app/Helpers/AWSHelper.php',
+        'app/Helpers/DEV.php',
+        'app/Helpers/DIR.php',
+        'app/Helpers/OPS.php',
+        'app/Helpers/TEXT.php',
+        'app/Helpers/GITHUB.php',
+        'app/Helpers/SERVICE.php',
+        'app/Helpers/AWS.php',
         'app/Helpers/AppHelper.php',
-        'app/Helpers/DockerHelper.php',
+        'app/Helpers/DOCKER.php',
         'app/Helpers/STR.php',
         // === Objects ===
         'app/Objects/Release.php',
         'app/Objects/Process.php',
         'app/Objects/Version.php',
         'app/Objects/DockerImage.php',
+        'app/Objects/TextLine.php',
         // always on bottom
         'app/app',
     ];
@@ -53,49 +57,51 @@ class Release
      *  string: error message
      * @return string|null
      */
-    private function validate(): ?string
+    private function validate(): bool
     {
-        switch (basename(DirHelper::getScriptDir())) {
+        switch (basename(DIR::getScriptDir())) {
             case 'app':
-                return null;
+                return true;
             case '_ops':
-                return "[ERROR] in release directory \ another project, stop release job\n";
+                TEXT::tag(TagEnum::ERROR)->message("release in directory / another project, stop release job");
+                return false;
             default:
-                return "[ERROR] unknown error\n";
+                TEXT::tag(TagEnum::ERROR)->message("unknown error");
+                return false;
         }
     }
 
     public function handle(array $argv): void
     {
         // validate
-        if ($this->validate()) {
-            echo DEVHelper::message($this->validate(), __CLASS__, __FUNCTION__);
+        if (!$this->validate()) {
+            echo DEV::message($this->validate(), __CLASS__, __FUNCTION__);
             return; // END
         }
         //    validate version part
         $part = $argv[2] ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
-            TextHelper::messageERROR(sprintf("invalid part of version, should be: %s", join(', ', Version::PARTS)));
+            TEXT::tag(TagEnum::ERROR)->message("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END
         }
         // handle
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
         //    generate files
-        echo DEVHelper::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
+        echo DEV::message("init ops/lib file\n", __CLASS__, __FUNCTION__);
         file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", app::version($newVersion))); // init file
         $this->handleLibrariesClass();
         $this->handleAppClass();
-        echo DEVHelper::message("DONE\n", __CLASS__, __FUNCTION__);
+        echo DEV::message("DONE\n", __CLASS__, __FUNCTION__);
         //    push new release to GitHub
-        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
+        (new Process("PUSH NEW RELEASE TO GITHUB", DIR::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
             sprintf("git commit -m 'release %s on %s UTC'", app::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
         //
-        TextHelper::messageSeparate();
-        TextHelper::messageSUCCESS(sprintf("Release successful %s", app::version($newVersion)));
+        TEXT::new()->messageSeparate()
+            ->setTag(TagEnum::SUCCESS)->message("Release successful %s", app::version($newVersion));
     }
 
     /**

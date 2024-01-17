@@ -7,7 +7,8 @@ require_once 'app/Objects/Process.php';
 require_once 'app/Helpers/DirHelper.php';
 require_once 'tests/TestApp/BaseTestCase.php';
 
-use app\Helpers\DirHelper;
+use app\Enum\TagEnum;
+use app\Helpers\DIR;
 use app\Objects\Process;
 use app\Objects\Version;
 
@@ -45,7 +46,7 @@ class OpsLibTest extends BaseTestCase
 
     public function testLoadOpsEnv()
     {
-        $envContent = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
+        $envContent = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
             "php _ops/lib load-env-ops"
         ]))->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("SLACK_BOT_TOKEN", $envContent);
@@ -67,6 +68,11 @@ class OpsLibTest extends BaseTestCase
     public function testELBUpdateVersion()
     {
         $this->customAssertIsStringAndContainsString("[ENV] missing ", exec("php _ops/lib elb-update-version"));
+    }
+
+    public function testAWSGetENV(){
+        $this->customAssertIsStringAndContainsString(TagEnum::SUCCESS, exec("php _ops/lib get-secret-env WRONG-ENVFILE"));
+        $this->customAssertIsStringAndContainsString(TagEnum::ERROR, exec("php _ops/lib get-secret-env env-email-dev"));
     }
 
 }

@@ -19,6 +19,9 @@ class DockerImage
     private $createdAt;
 
     /** @var string|null */
+    private $createdSince;
+
+    /** @var string|null */
     private $size;
 
     /**
@@ -26,14 +29,16 @@ class DockerImage
      * @param string|null $tag
      * @param string|null $id
      * @param string|null $createdAt
+     * @param string|null $createdSince
      * @param string|null $size
      */
-    public function __construct(?string $repository, ?string $tag, ?string $id, ?string $createdAt, ?string $size)
+    public function __construct(?string $repository, ?string $tag, ?string $id, ?string $createdAt, ?string $createdSince, ?string $size)
     {
         $this->repository = $repository;
         $this->tag = $tag;
         $this->id = $id;
         $this->createdAt = $createdAt;
+        $this->createdSince = $createdSince;
         $this->size = $size;
     }
 
@@ -106,6 +111,24 @@ class DockerImage
     public function setCreatedAt(?string $createdAt): DockerImage
     {
         $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCreatedSince(): ?string
+    {
+        return $this->createdSince;
+    }
+
+    /**
+     * @param string|null $createdSince
+     * @return DockerImage
+     */
+    public function setCreatedSince(?string $createdSince): DockerImage
+    {
+        $this->createdSince = $createdSince;
         return $this;
     }
 

@@ -2,9 +2,13 @@
 
 namespace app\Helpers;
 
+use app\Enum\TagEnum;
 use app\Objects\Process;
 
-class DirHelper
+/**
+ * this is a DIRectory helper / folder helper
+ */
+class DIR
 {
     /**
      * get home directory / get root directory of user
@@ -36,7 +40,7 @@ class DirHelper
      */
     public static function getScriptDir(): string
     {
-        $scriptDir= substr($_SERVER['SCRIPT_FILENAME'], 0, strlen($_SERVER['SCRIPT_FILENAME']) - strlen(basename($_SERVER['SCRIPT_FILENAME'])) - 1);
+        $scriptDir = substr($_SERVER['SCRIPT_FILENAME'], 0, strlen($_SERVER['SCRIPT_FILENAME']) - strlen(basename($_SERVER['SCRIPT_FILENAME'])) - 1);
         return self::getWorkingDir($scriptDir);
     }
 
@@ -65,7 +69,7 @@ class DirHelper
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
                     ->execMultiInWorkDir()->printOutput();
                 // validate result
-                TextHelper::messageCondition(is_dir(self::getWorkingDir('tmp')),
+                TEXT::new()->messageCondition(is_dir(self::getWorkingDir('tmp')),
                     'create a tmp dir successfully', 'create a tmp dir failure');
                 break;
             case 'remove':
@@ -75,14 +79,14 @@ class DirHelper
                         ->execMultiInWorkDir()->printOutput();
                     // validate result
                     $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", self::getWorkingDir()));
-                    TextHelper::messageCondition(!$checkTmpDir,
+                    TEXT::new()->messageCondition(!$checkTmpDir,
                         'remove a tmp dir successfully', 'remove a tmp dir failure');
                 } else {
-                    TextHelper::message("tmp directory doesn't exist, do nothing");
+                    TEXT::new()->message("tmp directory doesn't exist, do nothing");
                 }
                 break;
             default:
-                TextHelper::messageERROR("missing action, action should be 'add' or 'remove'");
+                TEXT::tag(TagEnum::ERROR)->message("missing action, action should be 'add' or 'remove'");
                 break;
         }
     }

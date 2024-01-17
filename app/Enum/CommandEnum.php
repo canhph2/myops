@@ -45,48 +45,59 @@ class CommandEnum
      * key => value | key is command, value is description
      */
     const SUPPORT_COMMANDS = [
-        self::HELP => 'show list support command and usage',
-        self::RELEASE => "combine all PHP files into '_ops/lib'
-                        default version increasing is 'patch'
-                        feature should be 'minor'",
-        self::VERSION => "show app version",
-        self::SYNC => "sync new release code to project at _ops/lib",
-
-        "=== AWS related commands ===" => '',
-        self::LOAD_ENV_OPS => "[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:
-                               eval \"$(php _ops/lib load-env-ops)\"   \n",
-        self::GET_SECRET_ENV => "[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName",
-        self::ELB_UPDATE_VERSION => "[AWS Elastic Beanstalk] create a new version and update an environment",
-
-        "=== git ===" => '',
-        self::BRANCH => 'get git branch / GitHub branch',
-        self::REPOSITORY => 'get GitHub repository name',
-        self::HEAD_COMMIT_ID => 'get head commit id of branch',
-        self::HANDLE_CACHES_AND_GIT => 'handle GitHub repository in caches directory',
-
-        "=== Docker ===" => '',
-        self::DOCKER_KEEP_IMAGE_BY => 'Keep image by repository and tag, use for keep latest image. Required:  imageRepository imageTag',
-
-        "=== utils ===" => '',
-        self::HOME_DIR => 'return home directory of machine / server',
-        self::SCRIPT_DIR => 'return directory of script',
-        self::WORKING_DIR => 'get root project directory / current working directory',
-        self::REPLACE_TEXT_IN_FILE => 'php _ops/lib replace-text-in-file "search text" "replace text" "file path"',
-        self::SLACK => "notify a message to Slack",
-        self::TMP => "handle temporary directory (tmp), use 'tmp add' to add new tmp dir, use 'tmp remove' to remove tmp dir",
-        self::POST_WORK => "do post works, eg cleanup ...",
-
-        "=== private ===" => '',
-        self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => '[PRIVATE] get S3 whitelist IPs to add to AWS Policy',
-        self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => '[PRIVATE] update token all projects in workspace',
-
-        "=== validation ===" => '',
-        self::VALIDATE => "required: 'set -e' in bash file
-                    should combine with exit 1, eg:   php _ops/lib validate TYPE | exit 1
-                    supports:
-                    - branch  : to only allow develop, staging, master
-                    - docker  : docker should is running
-                    - device: should pass env var: DEVICE in your first command
-                    ",
+        // group title
+        "OPS APP" => [],
+        self::HELP => ['show list support command and usage'],
+        self::RELEASE => [
+            "combine all PHP files into '_ops/lib'",
+            "default version increasing is 'patch'",
+            "feature should be 'minor'",
+        ],
+        self::VERSION => ["show app version"],
+        self::SYNC => ["sync new release code to project at _ops/lib"],
+        // group title
+        "AWS Related" => [],
+        self::LOAD_ENV_OPS => [
+            '[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:',
+            '            eval \"$(php _ops/lib load-env-ops)\"    ',
+        ],
+        self::GET_SECRET_ENV => ["[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName"],
+        self::ELB_UPDATE_VERSION => ["[AWS Elastic Beanstalk] create a new version and update an environment"],
+        // group title
+        "GIT / GITHUB" => [],
+        self::BRANCH => ['get git branch / GitHub branch'],
+        self::REPOSITORY => ['get GitHub repository name'],
+        self::HEAD_COMMIT_ID => ['get head commit id of branch'],
+        self::HANDLE_CACHES_AND_GIT => ['handle GitHub repository in caches directory'],
+        // group title
+        "DOCKER" => [],
+        self::DOCKER_KEEP_IMAGE_BY => ['Keep image by repository and tag, use for keep latest image. Required:  imageRepository imageTag'],
+        // group title
+        "UTILS" => [],
+        self::HOME_DIR => ['return home directory of machine / server'],
+        self::SCRIPT_DIR => ['return directory of script'],
+        self::WORKING_DIR => ['get root project directory / current working directory'],
+        self::REPLACE_TEXT_IN_FILE => ['php _ops/lib replace-text-in-file "search text" "replace text" "file path"'],
+        self::SLACK => ["notify a message to Slack"],
+        self::TMP => [
+            'handle temporary directory (tmp)',
+            "use 'tmp add' to add new tmp dir",
+            "use 'tmp remove' to remove tmp dir"
+        ],
+        self::POST_WORK => ["do post works, eg cleanup ..."],
+        // group title
+        "PRIVATE" => [],
+        self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => ['[PRIVATE] get S3 whitelist IPs to add to AWS Policy'],
+        self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => ['[PRIVATE] update token all projects in workspace'],
+        // group title
+        "VALIDATION" => [],
+        self::VALIDATE => [
+            "required: 'set -e' in bash file",
+            '  should combine with exit 1, eg:   php _ops/lib validate TYPE | exit 1',
+            '  support TYPEs:',
+            '    branch  : to only allow develop, staging, master',
+            '    docker  : docker should is running',
+            '    device  : should pass env var: DEVICE in your first command',
+        ],
     ];
 }

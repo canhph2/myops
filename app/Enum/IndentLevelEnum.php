@@ -4,7 +4,7 @@ namespace app\Enum;
 
 class IndentLevelEnum
 {
-    const AMOUNT_SPACES = 4; // per indent
+    const AMOUNT_SPACES = 2; // per indent
 
     const MAIN_LINE = 0; // no indent
     const ITEM_LINE = 1; // indent with 4 spaces

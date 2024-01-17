@@ -3,9 +3,15 @@
 namespace app\Helpers;
 
 use app\Enum\GitHubEnum;
+use app\Enum\IconEnum;
+use app\Enum\IndentLevelEnum;
+use app\Enum\TagEnum;
 use app\Objects\Process;
 
-class OpsHelper
+/**
+ * This is Ops helper
+ */
+class OPS
 {
     const COMPOSER_CONFIG_GITHUB_AUTH_FILE = 'auth.json';
 
@@ -36,18 +42,18 @@ class OpsHelper
     {
         $GITHUB_PERSONAL_ACCESS_TOKEN_NEW = readline("Please input new GITHUB_PERSONAL_ACCESS_TOKEN? ");
         if (!$GITHUB_PERSONAL_ACCESS_TOKEN_NEW) {
-            TextHelper::messageERROR("GitHub Personal Token should be string");
+            TEXT::tag(TagEnum::ERROR)->message("GitHub Personal Token should be string");
             exit(); // END
         }
 //
         $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
-        TextHelper::message("WORKSPACE DIR = $workspaceDir");
+        TEXT::new()->message("WORKSPACE DIR = $workspaceDir");
         foreach (GitHubEnum::GITHUB_REPOSITORIES as $projectName => $GitHubUsername) {
-            TextHelper::message(sprintf(" + Project '%s > %s': %s",
+            TEXT::icon(IconEnum::PLUS)->message("Project '%s > %s': %s",
                 $GitHubUsername,
                 $projectName,
                 is_dir(sprintf("%s/%s", $workspaceDir, $projectName)) ? "✔" : "X"
-            ));
+            );
         }
 // update token
         foreach (GitHubEnum::GITHUB_REPOSITORIES as $projectName => $GitHubUsername) {
@@ -61,7 +67,7 @@ class OpsHelper
                 ]), $output, $resultCode);
                 // print output
                 foreach ($output as $line) {
-                    TextHelper::message(sprintf("    + %s", $line));
+                    TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message($line);
                 }
             }
         }
@@ -76,9 +82,9 @@ class OpsHelper
     public static function sync()
     {
         // load env into PHP
-        self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
+        self::parseEnoughDataForSync(AWS::loadOpsEnvAndHandleMore());
         // load caches of this source code
-        GitHubHelper::handleCachesAndGit([
+        GITHUB::handleCachesAndGit([
             'script path',
             'command-name', // param 1
             'ops-lib', // param 2, in this case is repository
@@ -86,19 +92,18 @@ class OpsHelper
         ]);
         // sync new lib
         $EngagePlusCachesRepositoryOpsLibDir = sprintf("%s/ops-lib", getenv('ENGAGEPLUS_CACHES_DIR'));
-        (new Process("SYNC OPS LIB", DirHelper::getWorkingDir(), [
+        (new Process("SYNC OPS LIB", DIR::getWorkingDir(), [
             'rm _ops/lib',
             sprintf(
                 "cp -f '%s/_ops/lib' '%s/_ops/lib'",
                 $EngagePlusCachesRepositoryOpsLibDir,
-                DirHelper::getWorkingDir()
+                DIR::getWorkingDir()
             ),
         ]))->execMultiInWorkDir()->printOutput();
         //
-        TextHelper::messageSeparate();
-        TextHelper::messageSUCCESS("sync done");
+        TEXT::new()->messageSeparate()->setTag(TagEnum::SUCCESS)->message("sync done");
         // show open new session to show right version
-        (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
+        (new Process("CHECK A NEW VERSION", DIR::getWorkingDir(), [
             'php _ops/lib version'
         ]))->execMultiInWorkDir(true)->printOutput();
     }
@@ -126,7 +131,7 @@ class OpsHelper
             }
         }
         //
-        putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DirHelper::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
+        putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DIR::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
     }
 
     /**
@@ -137,43 +142,43 @@ class OpsHelper
      */
     public static function postWork(): void
     {
-        TextHelper::messageTitle("Post works");
+        TEXT::new()->messageTitle("Post works");
         $isDoNothing = true;
         // === cleanup ===
         //    tmp dir (PHP project)
-        if (is_dir(DirHelper::getWorkingDir('tmp'))) {
-            (new Process("Remove tmp dir", DirHelper::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('tmp'))
+        if (is_dir(DIR::getWorkingDir('tmp'))) {
+            (new Process("Remove tmp dir", DIR::getWorkingDir(), [
+                sprintf("rm -rf '%s'", DIR::getWorkingDir('tmp'))
             ]))->execMultiInWorkDir()->printOutput();
             // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DirHelper::getWorkingDir()));
-            TextHelper::messageCondition(!$checkTmpDir,
+            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DIR::getWorkingDir()));
+            TEXT::new()->messageCondition(!$checkTmpDir,
                 'remove a tmp dir successfully', 'remove a tmp dir failure');
             //
             $isDoNothing = false;
         }
         //    dist dir (Angular project)
-        if (is_dir(DirHelper::getWorkingDir('dist'))) {
-            (new Process("Remove dist dir", DirHelper::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('dist'))
+        if (is_dir(DIR::getWorkingDir('dist'))) {
+            (new Process("Remove dist dir", DIR::getWorkingDir(), [
+                sprintf("rm -rf '%s'", DIR::getWorkingDir('dist'))
             ]))->execMultiInWorkDir()->printOutput();
             // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DirHelper::getWorkingDir()));
-            TextHelper::messageCondition(!$checkTmpDir,
+            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DIR::getWorkingDir()));
+            TEXT::new()->messageCondition(!$checkTmpDir,
                 'remove a dist dir successfully', 'remove a dist dir failure');
             //
             $isDoNothing = false;
         }
         //    composer config file: auth.json
-        if (is_file(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))) {
-            $authJsonContent = file_get_contents(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
+        if (is_file(DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))) {
+            $authJsonContent = file_get_contents(DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
             if (STR::contains($authJsonContent, "github-oauth") && STR::contains($authJsonContent, "github.com")) {
-                (new Process("Remove composer config file", DirHelper::getWorkingDir(), [
-                    sprintf("rm -f '%s'", DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
+                (new Process("Remove composer config file", DIR::getWorkingDir(), [
+                    sprintf("rm -f '%s'", DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
                 ]))->execMultiInWorkDir()->printOutput();
                 // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DirHelper::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
-                TextHelper::messageCondition(
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DIR::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
+                TEXT::new()->messageCondition(
                     !$checkTmpDir,
                     sprintf("remove file '%s' successfully", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE),
                     sprintf("remove file '%s' failed", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE)
@@ -183,9 +188,9 @@ class OpsHelper
             }
         }
         //    dangling Docker images / <none> Docker images
-        if (DockerHelper::isDockerInstalled()) {
-            if (DockerHelper::isDanglingImages()) {
-                DockerHelper::removeDanglingImages();
+        if (DOCKER::isDockerInstalled()) {
+            if (DOCKER::isDanglingImages()) {
+                DOCKER::removeDanglingImages();
                 //
                 $isDoNothing = false;
             }
@@ -194,9 +199,9 @@ class OpsHelper
         // === end cleanup ===
         //
         if ($isDoNothing) {
-            TextHelper::message("do nothing");
+            TEXT::new()->message("do nothing");
         }
-        TextHelper::messageSeparate();
+        TEXT::new()->messageSeparate();
     }
 
     /**
@@ -212,7 +217,7 @@ class OpsHelper
             if (!getenv($envVar)) $envVarsMissing[] = $envVar;
         }
         if (count($envVarsMissing) > 0) {
-            TextHelper::messageERROR(sprintf("[ENV] missing %s", join(" or ", $envVarsMissing)));
+            TEXT::tagMultiple([TagEnum::ERROR, TagEnum::ENV])->message("missing %s", join(" or ", $envVarsMissing));
             return false; // END | case error
         }
         return true; // END | case OK
@@ -231,8 +236,8 @@ class OpsHelper
                 self::validateDevice();
                 break;
             default:
-                TextHelper::messageERROR("invalid action, current support:  branch, docker, device");
-                TextHelper::message("should be like eg:   php _ops/lib validate branch");
+                TEXT::tag(TagEnum::ERROR)->message("invalid action, current support:  branch, docker, device")
+                    ->message("should be like eg:   php _ops/lib validate branch");
                 break;
         }
     }
@@ -246,9 +251,9 @@ class OpsHelper
     private static function validateBranch()
     {
         if (in_array(getenv('BRANCH'), ['develop', 'staging', 'master'])) {
-            TextHelper::messageSUCCESS('validation branch got OK result: ' . getenv('BRANCH'));
+            TEXT::tag(TagEnum::SUCCESS)->message("validation branch got OK result: %s", getenv('BRANCH'));
         } else {
-            TextHelper::messageERROR(sprintf("Invalid branch to build | current branch is '%s'", getenv('BRANCH')));
+            TEXT::tag(TagEnum::ERROR)->message("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
             exit(1); // END app
         }
     }
@@ -262,9 +267,9 @@ class OpsHelper
     {
         $dockerServer = exec("docker version | grep 'Server:'");
         if (trim($dockerServer)) {
-            TextHelper::messageSUCCESS("Docker is running: $dockerServer");
+            TEXT::tag(TagEnum::SUCCESS)->message("Docker is running: $dockerServer");
         } else {
-            TextHelper::messageERROR("Docker isn't running. Please start Docker app.");
+            TEXT::tag(TagEnum::ERROR)->message("Docker isn't running. Please start Docker app.");
             exit(1); // END app
         }
     }
@@ -277,9 +282,9 @@ class OpsHelper
     private static function validateDevice()
     {
         if (getenv('DEVICE')) {
-            TextHelper::messageSUCCESS('validation device got OK result: ' . getenv('DEVICE'));
+            TEXT::tag(TagEnum::SUCCESS)->message("validation device got OK result: %s", getenv('DEVICE'));
         } else {
-            TextHelper::messageERROR("Invalid device | should pass in your command");
+            TEXT::tag(TagEnum::ERROR)->message("Invalid device | should pass in your command");
             exit(1); // END app
         }
     }

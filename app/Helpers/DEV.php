@@ -2,7 +2,10 @@
 
 namespace app\Helpers;
 
-class DEVHelper
+/**
+ * this is a DEV helper
+ */
+class DEV
 {
     /**
      * get class name only, usage   DEVHelper::name(__CLASS__)

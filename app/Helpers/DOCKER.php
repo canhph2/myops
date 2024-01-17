@@ -3,11 +3,16 @@
 namespace app\Helpers;
 
 
+use app\Enum\IconEnum;
 use app\Enum\IndentLevelEnum;
+use app\Enum\TagEnum;
 use app\Objects\DockerImage;
 use app\Objects\Process;
 
-class DockerHelper
+/**
+ * this is a Docker helper
+ */
+class DOCKER
 {
     public static function isDockerInstalled(): bool
     {
@@ -28,52 +33,62 @@ class DockerHelper
         $imageTag = $argv[3] ?? null;
         // === validate ===
         if (!$imageRepository || !$imageTag) {
-            TextHelper::messageERROR("[PARAMS] missing a 'imageRepository' 'imageTag'");
+            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                ->message("missing a 'imageRepository' 'imageTag'");
             exit(); // END
         }
         // === handle ===
-        TextHelper::messageTitle("Keep latest Docker image by repository");
+        TEXT::tag(TagEnum::DOCKER)->messageTitle("Keep latest Docker image by repository");
         $listImage = self::getListImages();
         if (count($listImage) === 0) {
-            TextHelper::message("Empty images. Do nothing.");
-            TextHelper::messageSeparate();
+            TEXT::new()->message("Empty images. Do nothing.")->messageSeparate();
             return; // END
         }
         /** @var DockerImage $image */
         foreach (self::getListImages() as $image) {
-            TextHelper::messageSeparate(IndentLevelEnum::ITEM_LINE);
+            TEXT::indent(IndentLevelEnum::ITEM_LINE)->messageSeparate();
             // case: to check image
             if ($image->getRepository() === $imageRepository) {
                 if ($image->getTag() === $imageTag) {
-                    TextHelper::message(sprintf("✔ Keep image '%s:%s'", $image->getRepository(), $image->getTag()), IndentLevelEnum::ITEM_LINE);
+                    TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)
+                        ->message("Keep image '%s:%s'", $image->getRepository(), $image->getTag());
+                    TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)
+                        ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
                     // do nothing | skip this image
                 } else {
-                    TextHelper::message(sprintf("X Delete image '%s:%s'", $image->getRepository(), $image->getTag()), IndentLevelEnum::ITEM_LINE);
-                    (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
+                    TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
+                        ->message("Delete image '%s:%s'", $image->getRepository(), $image->getTag());
+                    TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)
+                        ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
+                    (new Process("Delete Docker Image", DIR::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
-                    ]))->execMultiInWorkDir(true)->printOutput();
+                    ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
+                        ->execMultiInWorkDir(true)->printOutput();
                 }
                 //
                 // case: other images
             } else {
-                TextHelper::message(sprintf("✔ Keep other image '%s:%s'", $image->getRepository(), $image->getTag()), IndentLevelEnum::ITEM_LINE);
+                TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)
+                    ->message("Keep other image '%s:%s'", $image->getRepository(), $image->getTag());
+                TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)
+                    ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
             }
         }
         //
-        TextHelper::messageSeparate();
+        TEXT::new()->messageSeparate();
     }
 
     private static function getListImages(): array
     {
         $list = [];
-        $dockerImagesDataArr = (new Process("Get Docker Images Data", DirHelper::getWorkingDir(), [
+        $dockerImagesDataArr = (new Process("Get Docker Images Data", DIR::getWorkingDir(), [
             "docker images --format \"{{json .}}\""
         ]))->execMultiInWorkDir(true)->getOutput();
         foreach ($dockerImagesDataArr as $imageDataJson) {
             $imageData = json_decode($imageDataJson, true);
             $list[] = new DockerImage(
                 $imageData['Repository'], $imageData['Tag'], $imageData['ID'],
-                $imageData['CreatedAt'], $imageData['Size']
+                $imageData['CreatedAt'], $imageData['CreatedSince'], $imageData['Size']
             );
         }
         return $list;
@@ -82,7 +97,7 @@ class DockerHelper
     /**
      * @return bool
      */
-    public static function isDanglingImages():bool
+    public static function isDanglingImages(): bool
     {
         /** @var DockerImage $image */
         foreach (self::getListImages() as $image) {
@@ -98,23 +113,24 @@ class DockerHelper
     public static function removeDanglingImages(): void
     {
         // === handle ===
-        TextHelper::messageTitle("[Docker] Remove dangling images / <none> images");
+        TEXT::tag(TagEnum::DOCKER)->messageTitle("Remove dangling images / <none> images");
         $listImage = self::getListImages();
         if (count($listImage) === 0) {
-            TextHelper::message("Empty images. Do nothing.");
-            TextHelper::messageSeparate();
+            TEXT::new()->message("Empty images. Do nothing.")->messageSeparate();
             return; // END
         }
         /** @var DockerImage $image */
         foreach (self::getListImages() as $image) {
             if ($image->isDanglingImage()) {
-                TextHelper::message(sprintf("X Delete dangling image '%s:%s'", $image->getRepository(), $image->getTag()));
-                (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
+                TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
+                    ->message("Delete dangling image '%s:%s'", $image->getRepository(), $image->getTag());
+                (new Process("Delete Docker Image", DIR::getWorkingDir(), [
                     sprintf("docker rmi -f %s", $image->getId())
-                ]))->execMultiInWorkDir(true)->printOutput();
+                ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
+                    ->execMultiInWorkDir(true)->printOutput();
             }
         }
         //
-        TextHelper::messageSeparate();
+        TEXT::new()->messageSeparate();
     }
 }

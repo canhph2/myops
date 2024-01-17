@@ -3,9 +3,12 @@
 namespace app\Objects;
 
 use app\Enum\GitHubEnum;
-use app\Helpers\DirHelper;
-use app\Helpers\GitHubHelper;
-use app\Helpers\TextHelper;
+use app\Enum\IconEnum;
+use app\Enum\IndentLevelEnum;
+use app\Enum\TagEnum;
+use app\Helpers\DIR;
+use app\Helpers\GITHUB;
+use app\Helpers\TEXT;
 
 class Process
 {
@@ -20,6 +23,9 @@ class Process
 
     /** @var array|null */
     private $output;
+
+    /** @var int */
+    private $outputParentIndentLevel = IndentLevelEnum::MAIN_LINE;
 
     /**
      * @param string|null $workName
@@ -117,6 +123,25 @@ class Process
         return $this;
     }
 
+    /**
+     * @return int
+     */
+    public function getOutputParentIndentLevel(): int
+    {
+        return $this->outputParentIndentLevel;
+    }
+
+    /**
+     * @param int $outputParentIndentLevel
+     * @return Process
+     */
+    public function setOutputParentIndentLevel(int $outputParentIndentLevel): Process
+    {
+        $this->outputParentIndentLevel = $outputParentIndentLevel;
+        return $this;
+    }
+
+
     // === UTILS ZONE ===
 
     public function execMulti(): Process
@@ -134,14 +159,14 @@ class Process
                 "rm -rf /",
                 "rm -rf '/'",
                 "rm -rf \"/\"",
-                sprintf("rm -rf %s", DirHelper::getHomeDir()),
-                sprintf("rm -rf '%s'", DirHelper::getHomeDir()),
-                sprintf("rm -rf \"%s\"", DirHelper::getHomeDir()),
-                sprintf("rm -rf %s/", DirHelper::getHomeDir()),
-                sprintf("rm -rf '%s/'", DirHelper::getHomeDir()),
-                sprintf("rm -rf \"%s/\"", DirHelper::getHomeDir()),
+                sprintf("rm -rf %s", DIR::getHomeDir()),
+                sprintf("rm -rf '%s'", DIR::getHomeDir()),
+                sprintf("rm -rf \"%s\"", DIR::getHomeDir()),
+                sprintf("rm -rf %s/", DIR::getHomeDir()),
+                sprintf("rm -rf '%s/'", DIR::getHomeDir()),
+                sprintf("rm -rf \"%s/\"", DIR::getHomeDir()),
             ])) {
-                TextHelper::messageERROR("detect dangerous command: $command  , exit app");
+                TEXT::tag(TagEnum::ERROR)->message("detect dangerous command: $command  , exit app");
                 exit(1); // END
             }
         }
@@ -151,7 +176,7 @@ class Process
             exec(join(';', $this->commands), $this->output, $exitCode);
             if ($exitCode) {
                 $this->printOutput();
-                TextHelper::messageERROR("detect execute shell command failed, exit app | exit code = $exitCode");
+                TEXT::tag(TagEnum::ERROR)->message("detect execute shell command failed, exit app | exit code = $exitCode");
                 exit($exitCode); // END app
             }
         }
@@ -163,9 +188,9 @@ class Process
     {
         // case not .git and want to use git commands
         if (!$skipCheckDir) {
-            if (!GitHubHelper::isGit(DirHelper::getWorkingDir())) {
-                TextHelper::messageERROR("detect no .git in this directory, init a fake repository");
-                $arrDirCommands[] = sprintf("cd '%s'", DirHelper::getWorkingDir()); // cd to work dir
+            if (!GITHUB::isGit(DIR::getWorkingDir())) {
+                TEXT::tag(TagEnum::ERROR)->message("detect no .git in this directory, init a fake repository");
+                $arrDirCommands[] = sprintf("cd '%s'", DIR::getWorkingDir()); // cd to work dir
                 $arrDirCommands[] = GitHubEnum::INIT_REPOSITORY_COMMAND;
             }
         }
@@ -182,17 +207,18 @@ class Process
 
     public function printOutput(): Process
     {
-        TextHelper::message(sprintf("\n[WORK] %s", $this->workName));
-        TextHelper::message("- Commands: ");
+        TEXT::indent($this->getOutputParentIndentLevel())->setTag(TagEnum::WORK)->message($this->workName);
+        TEXT::indent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Commands:");
         if ($this->commands) {
             foreach ($this->commands as $command) {
-                TextHelper::message(sprintf("    > %s", $command));
+                TEXT::indent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)
+                    ->setIcon(IconEnum::CHEVRON_RIGHT)->message($command);
             }
         }
-        TextHelper::message("- Output: ");
+        TEXT::indent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Output:");
         if ($this->output) {
             foreach ($this->output as $outputLine) {
-                TextHelper::message(sprintf("    + %s", $outputLine));
+                TEXT::indent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message($outputLine);
             }
         }
         //
