@@ -2,6 +2,7 @@
 
 ---
 ## === v2 ===
+- 2.14.0 | TODO ADD SOME CHANGE LOGS
 - 2.13.0 | TODO ADD SOME CHANGE LOGS
 - 2.12.0 | Upgrade TEXT helper, update helpers' name
 - 2.11.0 | add Docker commands and support
