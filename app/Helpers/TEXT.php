@@ -95,4 +95,24 @@ class TEXT
         self::new()->messageCondition($oldText !== $newText,
             "replace done with successful result", "replace done with failed result");
     }
+
+    /**
+     * detect some sensitive information and hide these, .e.g token, password
+     *
+     * @param string $line
+     * @return string
+     */
+    public static function hideSensitiveInformation(string $line): string
+    {
+        // detect GitHub token
+        if (STR::contains($line, "https://") && STR::contains($line, "@github.com")) {
+            // handle hide GitHub token: show last X letter of token
+            $tempArr  = explode("https://", $line);
+            $tempArr2 = explode("@github.com", $tempArr[1]);
+            $token = $tempArr2[0];
+            $hiddenToken = "****".substr($token, -3);
+            $line = str_replace($token, $hiddenToken, $line);
+        }
+        return $line;
+    }
 }

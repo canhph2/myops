@@ -212,13 +212,13 @@ class Process
         if ($this->commands) {
             foreach ($this->commands as $command) {
                 TEXT::indent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)
-                    ->setIcon(IconEnum::CHEVRON_RIGHT)->message($command);
+                    ->setIcon(IconEnum::CHEVRON_RIGHT)->message(TEXT::hideSensitiveInformation($command));
             }
         }
         TEXT::indent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Output:");
         if ($this->output) {
             foreach ($this->output as $outputLine) {
-                TEXT::indent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message($outputLine);
+                TEXT::indent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message(TEXT::hideSensitiveInformation($outputLine));
             }
         }
         //

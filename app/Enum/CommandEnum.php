@@ -59,7 +59,7 @@ class CommandEnum
         "AWS Related" => [],
         self::LOAD_ENV_OPS => [
             '[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:',
-            '            eval \"$(php _ops/lib load-env-ops)\"    ',
+            '            eval "$(php _ops/lib load-env-ops)"    ',
         ],
         self::GET_SECRET_ENV => ["[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName"],
         self::ELB_UPDATE_VERSION => ["[AWS Elastic Beanstalk] create a new version and update an environment"],
