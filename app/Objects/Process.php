@@ -207,9 +207,7 @@ class Process
 
     public function printOutput(): Process
     {
-        TEXT::indent($this->getOutputParentIndentLevel())
-            ->messageSeparate()
-            ->setTag(TagEnum::WORK)->message($this->workName);
+        TEXT::indent($this->getOutputParentIndentLevel())->setTag(TagEnum::WORK)->message($this->workName);
         TEXT::indent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Commands:");
         if ($this->commands) {
             foreach ($this->commands as $command) {
