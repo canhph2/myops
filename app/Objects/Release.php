@@ -84,6 +84,7 @@ class Release
             return; // END
         }
         // handle
+        TEXT::new()->messageTitle("release");
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
         //    generate files
