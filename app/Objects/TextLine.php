@@ -198,7 +198,7 @@ class TextLine
     public function message(string $format, ...$values): TextLine
     {
         // set message text
-        $this->text = vsprintf($format, $values);
+        $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
         $finalText = sprintf("%s\n", $this->toString());
         //     case 1: set both color and format
@@ -220,7 +220,7 @@ class TextLine
     public function messageTitle(string $format, ...$values): TextLine
     {
         // set message text
-        $this->text = vsprintf($format, $values);
+        $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
         echo UI::colorFormat(sprintf("=== %s ===\n", $this->toString()),
             UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD);
@@ -231,7 +231,7 @@ class TextLine
     public function messageSubTitle(string $format, ...$values): TextLine
     {
         // set message text
-        $this->text = vsprintf($format, $values);
+        $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
         echo UI::color(sprintf("-- %s --\n", $this->toString()), UIEnum::COLOR_BLUE);
         //
