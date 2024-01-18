@@ -31,7 +31,7 @@ class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.14.6';
+    const APP_VERSION = '2.14.7';
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -204,10 +204,9 @@ class app
 
     public static function version(Version $newVersion = null): string
     {
-        return sprintf(
-            "%s v%s",
-            self::APP_NAME,
-            $newVersion ? $newVersion->toString() : self::APP_VERSION
+        return UI::colorFormat(
+            sprintf("%s v%s", self::APP_NAME, $newVersion ? $newVersion->toString() : self::APP_VERSION),
+            UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD
         );
     }
 }

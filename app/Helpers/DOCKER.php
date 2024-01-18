@@ -6,6 +6,7 @@ namespace app\Helpers;
 use app\Enum\IconEnum;
 use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
+use app\Enum\UIEnum;
 use app\Objects\DockerImage;
 use app\Objects\Process;
 
@@ -57,8 +58,10 @@ class DOCKER
                     // do nothing | skip this image
                 } else {
                     TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
+                        ->setColor(UIEnum::COLOR_RED)
                         ->message("Delete image '%s:%s'", $image->getRepository(), $image->getTag());
                     TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)
+                        ->setColor(UIEnum::COLOR_RED)
                         ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
                     (new Process("Delete Docker Image", DIR::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
