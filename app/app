@@ -31,7 +31,7 @@ class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.15.1';
+    const APP_VERSION = '2.15.2';
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -162,6 +162,27 @@ class app
             // === validation ===
             case CommandEnum::VALIDATE:
                 OPS::validate($argv);
+                break;
+            // === UI/Text ===
+            case CommandEnum::TITLE:
+                // validate
+                if (!$param1) {
+                    TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                        ->message("required title text");
+                    exit(); // END
+                }
+                // handle
+               TEXT::new()->messageTitle($param1);
+                break;
+            case CommandEnum::SUB_TITLE:
+                // validate
+                if (!$param1) {
+                    TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                        ->message("required sub title text");
+                    exit(); // END
+                }
+                // handle
+                TEXT::new()->messageSubTitle($param1);
                 break;
             // === other ===
             default:

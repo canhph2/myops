@@ -41,6 +41,10 @@ class CommandEnum
     // === validation ===
     const VALIDATE = 'validate';
 
+    // === UI/Text ===
+    const TITLE = 'title';
+    const SUB_TITLE = 'sub-title';
+
     /**
      * @var array
      * key => value | key is command, value is description
@@ -104,5 +108,9 @@ class CommandEnum
             '    docker  : docker should is running',
             '    device  : should pass env var: DEVICE in your first command',
         ],
+        // group title
+        "UI/Text" => [],
+        self::TITLE => ["print a title in terminal/console"],
+        self::SUB_TITLE => ["print a sub title in terminal/console"],
     ];
 }
