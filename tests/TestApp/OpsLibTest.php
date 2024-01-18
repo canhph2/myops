@@ -78,21 +78,20 @@ class OpsLibTest extends BaseTestCase
     {
         $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
             "php _ops/lib elb-update-version"
-        ]))->execMulti()->getOutputStrAll();
+        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("missing BRANCH or REPOSITORY or ENV", $result1);
-        file_put_contents("test.4", $result1);
     }
 
     public function testAWSGetENV()
     {
         $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
             "php _ops/lib get-secret-env env-email-dev"
-        ]))->execMulti()->getOutputStrAll();
+        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::SUCCESS, $result1);
         //
         $result2 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
             "php _ops/lib get-secret-env WRONG-ENVFILE"
-        ]))->execMulti()->getOutputStrAll();
+        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result2);
     }
 

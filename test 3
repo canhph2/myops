@@ -1,9 +1,0 @@
-[WORK] Delete old env file
-- Commands:
-  > cd '/Users/congnqnexlesoft/Desktop/ops-lib'
-  > git rev-parse --show-toplevel
-  > rm -f /Users/congnqnexlesoft/Desktop/ops-lib/.env
-- Output:
-  + /Users/congnqnexlesoft/Desktop/ops-lib
-[32m[SUCCESS] get secret 'env-email-dev' success and save at '.env'
-[0m
