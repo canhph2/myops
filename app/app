@@ -31,7 +31,7 @@ class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.14.4';
+    const APP_VERSION = '2.14.5';
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -61,13 +61,6 @@ class app
 
     public function run(array $argv)
     {
-//        // todo
-//        echo UI::color("test", UIEnum::COLOR_BLUE);
-//        echo UI::colorFormat("test", UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD);
-//        echo UI::colorFormat("test", UIEnum::COLOR_BLUE, UIEnum::FORMAT_ITALIC);
-//        echo UI::colorFormat("test", UIEnum::COLOR_RED, UIEnum::FORMAT_BOLD);
-//        die();
-
         // === params ===
         $command = $argv[1] ?? null;
         $param1 = $argv[2] ?? null; // to use if needed
