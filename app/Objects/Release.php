@@ -23,6 +23,7 @@ class Release
         'app/Enum/IndentLevelEnum.php',
         'app/Enum/IconEnum.php',
         'app/Enum/TagEnum.php',
+        'app/Enum/UIEnum.php',
         // === Helper ===
         'app/Helpers/DIR.php',
         'app/Helpers/OPS.php',
@@ -33,6 +34,7 @@ class Release
         'app/Helpers/AppHelper.php',
         'app/Helpers/DOCKER.php',
         'app/Helpers/STR.php',
+        'app/Helpers/UI.php',
         // === Objects ===
         'app/Objects/Release.php',
         'app/Objects/Process.php',
