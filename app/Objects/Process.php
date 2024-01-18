@@ -27,20 +27,26 @@ class Process
     /** @var int */
     private $outputParentIndentLevel = IndentLevelEnum::MAIN_LINE;
 
+    /** @var bool */
+    private $isExistOnError;
+
     /**
      * @param string|null $workName
      * @param string|null $workDir
      * @param array|null $commands
+     * @param bool $isExistOnError
      */
     public function __construct(
         string $workName = null,
         string $workDir = null,
-        array  $commands = null
+        array  $commands = null,
+        bool $isExistOnError = true // default
     )
     {
         $this->workName = $workName;
         $this->workDir = $workDir;
         $this->commands = $commands;
+        $this->isExistOnError = $isExistOnError;
     }
 
     /**
@@ -141,6 +147,24 @@ class Process
         return $this;
     }
 
+    /**
+     * @return bool
+     */
+    public function isExistOnError(): bool
+    {
+        return $this->isExistOnError;
+    }
+
+    /**
+     * @param bool $isExistOnError
+     * @return Process
+     */
+    public function setIsExistOnError(bool $isExistOnError): Process
+    {
+        $this->isExistOnError = $isExistOnError;
+        return $this;
+    }
+
 
     // === UTILS ZONE ===
 
@@ -174,7 +198,7 @@ class Process
         if ($this->commands) {
             $resultCode = null;
             exec(join(';', $this->commands), $this->output, $exitCode);
-            if ($exitCode) {
+            if ($exitCode && $this->isExistOnError) {
                 $this->printOutput();
                 TEXT::tag(TagEnum::ERROR)->message("detect execute shell command failed, exit app | exit code = $exitCode");
                 exit($exitCode); // END app

@@ -4,9 +4,16 @@ namespace TestApp;
 
 require_once 'app/Objects/Version.php';
 require_once 'app/Objects/Process.php';
-require_once 'app/Helpers/DIR.php';
+require_once 'app/Objects/TextLine.php';
 require_once 'app/Enum/IndentLevelEnum.php';
 require_once 'app/Enum/TagEnum.php';
+require_once 'app/Enum/UIEnum.php';
+require_once 'app/Enum/IconEnum.php';
+require_once 'app/Helpers/TEXT.php';
+require_once 'app/Helpers/DIR.php';
+require_once 'app/Helpers/STR.php';
+require_once 'app/Helpers/UI.php';
+//
 require_once 'tests/TestApp/BaseTestCase.php';
 
 use app\Enum\TagEnum;
@@ -69,12 +76,24 @@ class OpsLibTest extends BaseTestCase
 
     public function testELBUpdateVersion()
     {
-        $this->customAssertIsStringAndContainsString("missing BRANCH or REPOSITORY or ENV", exec("php _ops/lib elb-update-version"));
+        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+            "php _ops/lib elb-update-version"
+        ]))->execMulti()->getOutputStrAll();
+        $this->customAssertIsStringAndContainsString("missing BRANCH or REPOSITORY or ENV", $result1);
+        file_put_contents("test.4", $result1);
     }
 
-    public function testAWSGetENV(){
-        $this->customAssertIsStringAndContainsString(TagEnum::SUCCESS, exec("php _ops/lib get-secret-env env-email-dev"));
-        $this->customAssertIsStringAndContainsString(TagEnum::ERROR, exec("php _ops/lib get-secret-env WRONG-ENVFILE"));
+    public function testAWSGetENV()
+    {
+        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+            "php _ops/lib get-secret-env env-email-dev"
+        ]))->execMulti()->getOutputStrAll();
+        $this->customAssertIsStringAndContainsString(TagEnum::SUCCESS, $result1);
+        //
+        $result2 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+            "php _ops/lib get-secret-env WRONG-ENVFILE"
+        ]))->execMulti()->getOutputStrAll();
+        $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result2);
     }
 
 }
