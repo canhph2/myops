@@ -31,7 +31,7 @@ class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.14.7';
+    const APP_VERSION = '2.14.8';
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -68,12 +68,12 @@ class app
 
         // === validation ===
         if (!$command) {
-            echo "[ERROR] missing command, should be 'php _ops/lib COMMAND'\n";
+            TEXT::tag(TagEnum::ERROR)->message("missing command, should be 'php _ops/lib COMMAND'");
             $this->help();
             exit(); // END
         }
         if (!array_key_exists($command, CommandEnum::SUPPORT_COMMANDS)) {
-            echo sprintf("[ERROR] do not support this command '%s'\n", $command);
+            TEXT::tag(TagEnum::ERROR)->message("do not support this command '%s'", $command);
             $this->help();
             exit(); // END
         }
