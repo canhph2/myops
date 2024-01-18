@@ -34,19 +34,18 @@ class Process
      * @param string|null $workName
      * @param string|null $workDir
      * @param array|null $commands
-     * @param bool $isExistOnError
      */
     public function __construct(
         string $workName = null,
         string $workDir = null,
-        array  $commands = null,
-        bool $isExistOnError = true // default
+        array  $commands = null
     )
     {
         $this->workName = $workName;
         $this->workDir = $workDir;
         $this->commands = $commands;
-        $this->isExistOnError = $isExistOnError;
+        // default
+        $this->isExistOnError = true; // default
     }
 
     /**
