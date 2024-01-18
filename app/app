@@ -12,6 +12,7 @@ use app\Enum\GitHubEnum;
 use app\Enum\IconEnum;
 use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
+use app\Enum\UIEnum;
 use app\Helpers\AppHelper;
 use app\Helpers\AWS;
 use app\Helpers\DIR;
@@ -20,6 +21,7 @@ use app\Helpers\GITHUB;
 use app\Helpers\OPS;
 use app\Helpers\SERVICE;
 use app\Helpers\TEXT;
+use app\Helpers\UI;
 use app\Objects\Release;
 use app\Objects\Version;
 
@@ -29,7 +31,7 @@ class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.14.2';
+    const APP_VERSION = '2.14.3';
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -59,6 +61,13 @@ class app
 
     public function run(array $argv)
     {
+//        // todo
+//        echo UI::color("test", UIEnum::COLOR_BLUE);
+//        echo UI::colorFormat("test", UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD);
+//        echo UI::colorFormat("test", UIEnum::COLOR_BLUE, UIEnum::FORMAT_ITALIC);
+//        echo UI::colorFormat("test", UIEnum::COLOR_RED, UIEnum::FORMAT_BOLD);
+//        die();
+
         // === params ===
         $command = $argv[1] ?? null;
         $param1 = $argv[2] ?? null; // to use if needed

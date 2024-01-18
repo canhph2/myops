@@ -4,6 +4,8 @@ namespace app\Objects;
 
 use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
+use app\Enum\UIEnum;
+use app\Helpers\UI;
 
 class TextLine
 {
@@ -141,7 +143,8 @@ class TextLine
         // set message text
         $this->text = vsprintf($format, $values);
         // print
-        echo sprintf("=== %s ===\n", $this->toString());
+        echo UI::colorFormat(sprintf("=== %s ===\n", $this->toString()),
+            UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD);
         //
         return $this;
     }
