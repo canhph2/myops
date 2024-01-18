@@ -95,4 +95,30 @@ class OpsLibTest extends BaseTestCase
         $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result2);
     }
 
+    public function testUITitleSubTitleFuncs(){
+        // validate title
+        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+            "php _ops/lib title"
+        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
+        $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result1);
+        // title
+        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+            "php _ops/lib title 'this is test title'"
+        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
+        $this->customAssertIsStringAndContainsString("===", $result1);
+        $this->customAssertIsStringAndContainsString("test title", $result1);
+        // validate sub title
+        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+            "php _ops/lib sub-title"
+        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
+        $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result1);
+        // sub title
+        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+            "php _ops/lib sub-title 'this is test sub title'"
+        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
+        $this->customAssertIsStringAndContainsString("--", $result1);
+        $this->customAssertIsStringAndContainsString("test sub title", $result1);
+        // validate
+    }
+
 }
