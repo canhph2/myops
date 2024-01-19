@@ -126,6 +126,7 @@ class DOCKER
         foreach (self::getListImages() as $image) {
             if ($image->isDanglingImage()) {
                 TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
+                    ->setColor(UIEnum::COLOR_RED)
                     ->message("Delete dangling image '%s:%s'", $image->getRepository(), $image->getTag());
                 (new Process("Delete Docker Image", DIR::getWorkingDir(), [
                     sprintf("docker rmi -f %s", $image->getId())
