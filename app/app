@@ -50,7 +50,6 @@ class app
             ? json_decode(base64_decode(self::ELB_TEMPLATE_BASE_64), true)
             : [
                 'blockdeviceTemplate' => file_get_contents('app/_AWS_/ELB-template/.ebextensions/blockdevice-xvdcz.config.TEMPLATE'),
-                'environmentPropertiesTemplate' => file_get_contents('app/_AWS_/ELB-template/.ebextensions/environment-properties.config.TEMPLATE'),
                 'DockerrunTemplate' => file_get_contents('app/_AWS_/ELB-template/Dockerrun.aws.json.TEMPLATE'),
             ];
     }

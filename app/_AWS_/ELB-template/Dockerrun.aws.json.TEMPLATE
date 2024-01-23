@@ -1,47 +1,41 @@
 {
-    "AWSEBDockerrunVersion": 2,
-    "containerDefinitions": [
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "ECR_REPO_IMAGE_URI_API",
+      "essential": true,
+      "memoryReservation": 256,
+      "portMappings": [
         {
-            "name": "api",
-            "image": "ECR_REPO_IMAGE_URI_API",
-            "essential": true,
-            "memoryReservation": 256,
-            "portMappings": [
-                {
-                    "hostPort": 80,
-                    "containerPort": 8080
-                }
-                _MAIL_CATCHER_PORT_
-            ],
-            "links": [
-                "payment-service",
-                "invoice-service",
-                "integration-api"
-            ],
-            "environment": [
-                { "name": "AWS_KEY", "value": "testawskeyvalue" }
-            ]
-        },
-        {
-            "name": "invoice-service",
-            "image": "ECR_REPO_IMAGE_URI_INVOICE_SERVICE",
-            "memoryReservation": 256,
-            "essential": false,
-            "environment": [
-                { "name": "AWS_KEY", "value": "testawskeyvalue-invoice" }
-            ]
-        },
-        {
-            "name": "payment-service",
-            "image": "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE",
-            "memoryReservation": 256,
-            "essential": false
-        },
-        {
-            "name": "integration-api",
-            "image": "ECR_REPO_IMAGE_URI_INTEGRATION_API",
-            "memoryReservation": 256,
-            "essential": false
+          "hostPort": 80,
+          "containerPort": 8080
         }
-    ]
+        _MAIL_CATCHER_PORT_
+      ],
+      "links": [
+        "payment-service",
+        "invoice-service",
+        "integration-api"
+      ]
+    },
+    {
+      "name": "invoice-service",
+      "image": "ECR_REPO_IMAGE_URI_INVOICE_SERVICE",
+      "memoryReservation": 256,
+      "essential": false
+    },
+    {
+      "name": "payment-service",
+      "image": "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE",
+      "memoryReservation": 256,
+      "essential": false
+    },
+    {
+      "name": "integration-api",
+      "image": "ECR_REPO_IMAGE_URI_INTEGRATION_API",
+      "memoryReservation": 256,
+      "essential": false
+    }
+  ]
 }

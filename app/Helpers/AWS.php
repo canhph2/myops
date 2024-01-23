@@ -16,7 +16,6 @@ class AWS
     const ELB_TEMP_DIR = "tmp/elb-version";
     const ELB_EBEXTENSIONS_DIR = ".ebextensions"; // should place at inside elb version dir
     const ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME = "blockdevice-xvdcz.config";
-    const ELB_EBEXTENSIONS_ENVIRONMENT_PROPERTIES_FILE_NAME = "environment-properties.config";
     const ELB_DOCKERRUN_FILE_NAME = "Dockerrun.aws.json";
     const ELB_LOG_UPDATE_SUCCESSFULLY = "Environment update completed successfully.";
     const ELB_LOG_UPDATE_FAILED = "Failed to deploy application.";
@@ -143,10 +142,6 @@ class AWS
                 sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME),
                 str_replace("_2ND_DISK_SIZE_", getenv('EB_2ND_DISK_SIZE'), app::getELBTemplate()["blockdeviceTemplate"])
             );
-            file_put_contents(
-                sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_ENVIRONMENT_PROPERTIES_FILE_NAME),
-                app::getELBTemplate()["environmentPropertiesTemplate"] // todo
-            );
             file_put_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME), $DockerrunContent);
             //    validate configs files again
             //        .ebextensions/blockdevice-xvdcz.config
@@ -156,7 +151,6 @@ class AWS
                 TEXT::tag(TagEnum::ERROR)->message(".ebextensions/blockdevice-xvdcz.config got an error");
                 exit(1); // END
             }
-            // todo validate environment properties
             //        Dockerrun.aws.json
             $DockerrunContentToCheckAgain = file_get_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME));
             TEXT::new()->message("Dockerrun.aws.json")->message($DockerrunContentToCheckAgain);
