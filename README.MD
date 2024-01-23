@@ -28,7 +28,7 @@ php _ops/lib sync
 ---
 - In this project (development and library):
 - [RELEASE] Building project will result ``_ops/lib``
-  - add new files to FILES_LIST in Release class 
+  - add new files to FILES_LIST in Release class
   - combine and release
 ```shell
 php app/app release
@@ -38,6 +38,8 @@ php vendor/phpunit/phpunit/phpunit tests
 ### Note 3 | AWS services
 #### ELB - Elastic Beanstalk
 - ELB application version structure
+  - docs: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/ebextensions-optionsettings.html
+  - files structure
 ```
 <EB_APP_VERSION directory .zip>    (zip file)
     .ebextensions    (dir)
@@ -48,6 +50,8 @@ php vendor/phpunit/phpunit/phpunit tests
   - 2nd disk size - blockdevice-xvdcz.config: ``master = 100 (GB)``, ``staging = 20 (GB)``, ``develop = 20 (GB)``
   - Mail catcher port - Dockerrun.aws.json: ``staging, develop =  "hostPort": 1025,  "containerPort": 1025``
 
+### Note 4 | Not use common name like `.env`, should use another name => change `.env` to another name:
+- change `.env` file in backend projects to `.project-config`
 
 ---
 ## === Test  | PHPUNIT ===
