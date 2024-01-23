@@ -38,15 +38,13 @@ php vendor/phpunit/phpunit/phpunit tests
 ### Note 3 | AWS services
 #### ELB - Elastic Beanstalk
 - ELB application version structure
-  - docs: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/ebextensions-optionsettings.html
-  - files structure
 ```
 <EB_APP_VERSION directory .zip>    (zip file)
     .ebextensions    (dir)
         blockdevice-xvdcz.config    (file)
     Dockerrun.aws.json    (file)
 ```
-- Engage ELB notes:
+- EngagePlus ELB notes:
   - 2nd disk size - blockdevice-xvdcz.config: ``master = 100 (GB)``, ``staging = 20 (GB)``, ``develop = 20 (GB)``
   - Mail catcher port - Dockerrun.aws.json: ``staging, develop =  "hostPort": 1025,  "containerPort": 1025``
 
