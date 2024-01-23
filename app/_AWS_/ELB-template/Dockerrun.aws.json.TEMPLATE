@@ -26,7 +26,10 @@
             "name": "invoice-service",
             "image": "ECR_REPO_IMAGE_URI_INVOICE_SERVICE",
             "memoryReservation": 256,
-            "essential": false
+            "essential": false,
+            "environment": [
+                { "name": "AWS_KEY", "value": "testawskeyvalue-invoice" }
+            ]
         },
         {
             "name": "payment-service",
