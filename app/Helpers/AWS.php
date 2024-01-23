@@ -156,6 +156,7 @@ class AWS
                 TEXT::tag(TagEnum::ERROR)->message(".ebextensions/blockdevice-xvdcz.config got an error");
                 exit(1); // END
             }
+            // todo validate environment properties
             //        Dockerrun.aws.json
             $DockerrunContentToCheckAgain = file_get_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME));
             TEXT::new()->message("Dockerrun.aws.json")->message($DockerrunContentToCheckAgain);
