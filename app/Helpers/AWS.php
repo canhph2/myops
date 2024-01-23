@@ -16,6 +16,7 @@ class AWS
     const ELB_TEMP_DIR = "tmp/elb-version";
     const ELB_EBEXTENSIONS_DIR = ".ebextensions"; // should place at inside elb version dir
     const ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME = "blockdevice-xvdcz.config";
+    const ELB_EBEXTENSIONS_ENVIRONMENT_PROPERTIES_FILE_NAME = "environment-properties.config";
     const ELB_DOCKERRUN_FILE_NAME = "Dockerrun.aws.json";
     const ELB_LOG_UPDATE_SUCCESSFULLY = "Environment update completed successfully.";
     const ELB_LOG_UPDATE_FAILED = "Failed to deploy application.";
@@ -141,6 +142,10 @@ class AWS
             file_put_contents(
                 sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME),
                 str_replace("_2ND_DISK_SIZE_", getenv('EB_2ND_DISK_SIZE'), app::getELBTemplate()["blockdeviceTemplate"])
+            );
+            file_put_contents(
+                sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_ENVIRONMENT_PROPERTIES_FILE_NAME),
+                app::getELBTemplate()["environmentPropertiesTemplate"] // todo
             );
             file_put_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME), $DockerrunContent);
             //    validate configs files again
