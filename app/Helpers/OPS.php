@@ -6,6 +6,7 @@ use app\Enum\GitHubEnum;
 use app\Enum\IconEnum;
 use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
+use app\Enum\ValidationTypeEnum;
 use app\Objects\Process;
 
 /**
@@ -231,17 +232,20 @@ class OPS
     public static function validate(array $argv)
     {
         switch ($argv[2] ?? null) {
-            case 'branch':
+            case ValidationTypeEnum::BRANCH:
                 self::validateBranch();
                 break;
-            case 'docker':
+            case ValidationTypeEnum::DOCKER:
                 self::validateDocker();
                 break;
-            case 'device':
+            case ValidationTypeEnum::DEVICE:
                 self::validateDevice();
                 break;
+            case ValidationTypeEnum::FILE_CONTAINS_TEXT:
+                self::validateFileContainsText($argv);
+                break;
             default:
-                TEXT::tag(TagEnum::ERROR)->message("invalid action, current support:  branch, docker, device")
+                TEXT::tag(TagEnum::ERROR)->message("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
                     ->message("should be like eg:   php _ops/lib validate branch");
                 break;
         }
@@ -291,6 +295,27 @@ class OPS
         } else {
             TEXT::tag(TagEnum::ERROR)->message("Invalid device | should pass in your command");
             exit(1); // END app
+        }
+    }
+
+    private static function validateFileContainsText(array $argv){
+        // validate
+        $filePath = $argv[3] ?? null;
+        $searchText = $argv[4] ?? null;
+        if(!$filePath || !$searchText){
+            Text::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->message("missing filePath or searchText");
+            exit(1);
+        }
+        if(!is_file($filePath)){
+            Text::tag(TagEnum::ERROR)->message("'%s' does not exist",$filePath);
+            exit(1);
+        }
+        // handle
+        if(STR::contains(file_get_contents($filePath), $searchText)){
+            Text::tagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->message("file '%s' contains text '%s'", $filePath, $searchText);
+        }else {
+            Text::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->message("file '%s' does not contains text '%s'", $filePath, $searchText);
+            exit(1);
         }
     }
 }

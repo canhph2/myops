@@ -25,6 +25,7 @@ class Release
         'app/Enum/TagEnum.php',
         'app/Enum/UIEnum.php',
         'app/Enum/DockerEnum.php',
+        'app/Enum/ValidationTypeEnum.php',
         // === Helper ===
         'app/Helpers/DIR.php',
         'app/Helpers/OPS.php',
