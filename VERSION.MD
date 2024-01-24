@@ -2,7 +2,7 @@
 
 ---
 ## === v2 ===
-- 2.16.0 | TODO ADD SOME CHANGE LOGS
+- 2.16.0 | add ENVs into Dockerfile functions
 - 2.15.0 | add UI helper with color and format functions
 - 2.14.0 | add GitHub force-checkout
 - 2.12.0 | Upgrade TEXT helper, update helpers' name
