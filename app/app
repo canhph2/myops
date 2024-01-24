@@ -130,6 +130,9 @@ class app
             case CommandEnum::DOCKER_KEEP_IMAGE_BY:
                 DOCKER::keepImageBy($argv);
                 break;
+            case CommandEnum::DOCKER_FILE_ADD_ENVS:
+                DOCKER::DockerfileAddEnvs($argv);
+                break;
             // === utils ===
             case CommandEnum::HOME_DIR:
                 echo DIR::getHomeDir();

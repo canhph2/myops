@@ -24,6 +24,7 @@ class CommandEnum
 
     // === Docker ===
     const DOCKER_KEEP_IMAGE_BY = 'docker-keep-image-by';
+    const DOCKER_FILE_ADD_ENVS = 'dockerfile-add-envs';
 
     // === utils ===
     const HOME_DIR = 'home-dir';
@@ -81,6 +82,7 @@ class CommandEnum
         // group title
         "DOCKER" => [],
         self::DOCKER_KEEP_IMAGE_BY => ['Keep image by repository and tag, use for keep latest image. Required:  imageRepository imageTag'],
+        self::DOCKER_FILE_ADD_ENVS => ['add ENVs into Dockerfile below FROM line. Required: DockerfilePath, secretName'],
         // group title
         "UTILS" => [],
         self::HOME_DIR => ['return home directory of machine / server'],

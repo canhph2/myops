@@ -3,6 +3,7 @@
 namespace app\Helpers;
 
 
+use app\Enum\DockerEnum;
 use app\Enum\IconEnum;
 use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
@@ -79,6 +80,62 @@ class DOCKER
         }
         //
         TEXT::new()->messageSeparate();
+    }
+
+    /**
+     * add ENVs into Dockerfile below FROM line. Required: DockerfilePath, secretName
+     *
+     * @param array $argv
+     * @return void
+     */
+    public static function DockerfileAddEnvs(array $argv): void
+    {
+        // === param ===
+        $DockerfilePath = $argv[2] ?? null;
+        $secretName = $argv[3] ?? null;
+        // === validate ===
+        if (!$DockerfilePath || !$secretName) {
+            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                ->message("missing a 'DockerfilePath' 'secretName'");
+            exit(); // END
+        }
+        if (!is_file($DockerfilePath)) {
+            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])
+                ->message("'DockerfilePath' isn't a file");
+            exit(); // END
+        }
+        // === handle ===
+        TEXT::tag(TagEnum::DOCKER)->messageTitle("Dockerfile: get .env from AWS Secret and add to Dockerfile");
+        //    get secret
+        $envData = json_decode(exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output json", $secretName)));
+        $envLines = ["", "# === Generated vars ==="];
+        foreach (explode(PHP_EOL, $envData) as $line) {
+            $lineTrim = trim($line);
+            if ($lineTrim && strlen($lineTrim) > 0) {
+                if ($lineTrim[0] !== '#') {  // skip comment line
+                    $envLines[] = sprintf("%s %s", DockerEnum::ENV, $line);
+                }
+            }
+        }
+        $envLines[] = "# === end Generated vars ===";
+        //    add to Docker file
+        $DockerfileLines = [];
+        foreach (explode(PHP_EOL, file_get_contents($DockerfilePath)) as $line2) {
+            $DockerfileLines[] = $line2;
+            // insert envs after FROM ... line
+            if (substr($line2, 0, 4) === DockerEnum::FROM) {
+                $DockerfileLines = array_merge($DockerfileLines, $envLines);
+            }
+        }
+        file_put_contents($DockerfilePath, implode(PHP_EOL, $DockerfileLines));
+        //    validate result
+        if (STR::contains(file_get_contents($DockerfilePath), DockerEnum::ENV)) {
+            Text::tag(TagEnum::SUCCESS)->message("get .env from AWS Secret and add to Dockerfile successfully");
+        } else {
+            Text::tag(TagEnum::ERROR)->message("ENV data doesn't exist in Dockerfile");
+            exit(1);
+        }
+        Text::new()->messageSeparate();
     }
 
     private static function getListImages(): array
