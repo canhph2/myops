@@ -6,6 +6,7 @@ use app\Enum\GitHubEnum;
 use app\Enum\IconEnum;
 use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
+use app\Enum\UIEnum;
 use app\Enum\ValidationTypeEnum;
 use app\Objects\Process;
 
@@ -298,23 +299,47 @@ class OPS
         }
     }
 
-    private static function validateFileContainsText(array $argv){
+    private static function validateFileContainsText(array $argv)
+    {
         // validate
         $filePath = $argv[3] ?? null;
-        $searchText = $argv[4] ?? null;
-        if(!$filePath || !$searchText){
-            Text::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->message("missing filePath or searchText");
+        $searchTextArr = [];
+        for ($i = 4; $i < 20; $i++) {
+            if (count($argv) > $i)
+                if ($argv[$i]) {
+                    $searchTextArr[] = $argv[$i];
+                }
+        }
+        if (!$filePath || !count($searchTextArr)) {
+            Text::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->message("missing filePath or searchText (can path multiple searchText1 searchText2)");
             exit(1);
         }
-        if(!is_file($filePath)){
-            Text::tag(TagEnum::ERROR)->message("'%s' does not exist",$filePath);
+        if (!is_file($filePath)) {
+            Text::tag(TagEnum::ERROR)->message("'%s' does not exist", $filePath);
             exit(1);
         }
         // handle
-        if(STR::contains(file_get_contents($filePath), $searchText)){
-            Text::tagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->message("file '%s' contains text '%s'", $filePath, $searchText);
-        }else {
-            Text::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->message("file '%s' does not contains text '%s'", $filePath, $searchText);
+        $fileContent = file_get_contents($filePath);
+        $validationResult = [];
+        foreach ($searchTextArr as $searchText) {
+            $validationResult[] = [
+                'searchText' => $searchText,
+                'isContains' => STR::contains($fileContent, $searchText)
+            ];
+        }
+        $amountValidationPass = count(array_filter($validationResult, function ($item) {
+            return $item['isContains'];
+        }));
+        if ($amountValidationPass === count($searchTextArr)) {
+            Text::tagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->message("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTextArr));
+        } else {
+            Text::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->message("file '%s' does not contains (some) text(s):", $filePath);
+            foreach ($validationResult as $result) {
+                TEXT::indent(IndentLevelEnum::ITEM_LINE)
+                    ->setIcon($result['isContains'] ? IconEnum::CHECK : IconEnum::X)
+                    ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
+                    ->message($result['searchText']);
+            }
             exit(1);
         }
     }
