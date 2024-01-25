@@ -34,6 +34,7 @@ class CommandEnum
     const SLACK = 'slack';
     const TMP = 'tmp';
     const POST_WORK = 'post-work';
+    const CLEAR_OPS_DIR = 'clear-ops-dir';
 
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
@@ -96,6 +97,7 @@ class CommandEnum
             "use 'tmp remove' to remove tmp dir"
         ],
         self::POST_WORK => ["do post works, eg cleanup ..."],
+        self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
         // group title
         "PRIVATE" => [],
         self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => ['[PRIVATE] get S3 whitelist IPs to add to AWS Policy'],

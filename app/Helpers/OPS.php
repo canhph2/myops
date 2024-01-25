@@ -153,10 +153,10 @@ class OPS
         $isDoNothing = true;
         // === cleanup ===
         //    clear .env, .project-config
-        if(getenv('ENGAGEPLUS_CACHES_FOLDER')
-            && STR::contains(DIR::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))){
+        if (getenv('ENGAGEPLUS_CACHES_FOLDER')
+            && STR::contains(DIR::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))) {
             //        .env
-            if(is_file(DIR::getWorkingDir('.env'))){
+            if (is_file(DIR::getWorkingDir('.env'))) {
                 (new Process("Remove .env", DIR::getWorkingDir(), [
                     sprintf("rm -rf '%s'", DIR::getWorkingDir('.env'))
                 ]))->execMultiInWorkDir()->printOutput();
@@ -168,7 +168,7 @@ class OPS
                 $isDoNothing = false;
             }
             //        .env
-            if(is_file(DIR::getWorkingDir('.project-config'))){
+            if (is_file(DIR::getWorkingDir('.project-config'))) {
                 (new Process("Remove .project-config", DIR::getWorkingDir(), [
                     sprintf("rm -rf '%s'", DIR::getWorkingDir('.project-config'))
                 ]))->execMultiInWorkDir()->printOutput();
@@ -237,6 +237,17 @@ class OPS
             TEXT::new()->message("do nothing");
         }
         TEXT::new()->messageSeparate();
+    }
+
+    public static function clearOpsDir(): void
+    {
+        TEXT::new()->messageTitle("Clear _ops directory");
+        (new Process("Clear _ops directory", DIR::getWorkingDir(), [
+            sprintf("rm -rf '%s'", DIR::getWorkingDir('_ops'))
+        ]))->execMultiInWorkDir(true)->printOutput();
+        // validate result
+        $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DIR::getWorkingDir()));
+        TEXT::new()->messageCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
     }
 
     /**

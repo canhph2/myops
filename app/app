@@ -155,6 +155,9 @@ class app
             case CommandEnum::POST_WORK:
                 OPS::postWork();
                 break;
+            case CommandEnum::CLEAR_OPS_DIR:
+                OPS::clearOpsDir();
+                break;
             // === private ===
             case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
                 echo OPS::getS3WhiteListIpsDevelopment();
