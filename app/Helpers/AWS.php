@@ -39,8 +39,8 @@ class AWS
         // validate result
         $isSuccess = is_file(DIR::getWorkingDir($ENVName)) && trim(file_get_contents(DIR::getWorkingDir($ENVName)));
         TEXT::new()->messageCondition($isSuccess,
-            "get secret '$secretName' success and save at '$ENVName'",
-            "get secret '$secretName' failure"
+            "get secret '$secretName' successfully and save at '$ENVName'",
+            "get secret '$secretName' failed"
         );
         if(!$isSuccess) exit(1);
     }

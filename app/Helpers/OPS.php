@@ -152,6 +152,20 @@ class OPS
         TEXT::new()->messageTitle("Post works");
         $isDoNothing = true;
         // === cleanup ===
+        //    clear .env, .project-config
+        if(getenv('ENGAGEPLUS_CACHES_FOLDER')
+            && STR::contains(DIR::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))){
+            if(is_file(DIR::getWorkingDir('.env'))){
+                echo "will delete .env file at ".DIR::getWorkingDir('.env');
+            }
+        }
+        // todo check
+        if(getenv('ENGAGEPLUS_CACHES_FOLDER')
+            && !STR::contains(DIR::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))){
+            if(is_file(DIR::getWorkingDir('.env'))){
+                echo "detect .env in project folder not caches folder";
+            }
+        }
         //    tmp dir (PHP project)
         if (is_dir(DIR::getWorkingDir('tmp'))) {
             (new Process("Remove tmp dir", DIR::getWorkingDir(), [
