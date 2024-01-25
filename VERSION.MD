@@ -2,7 +2,7 @@
 
 ---
 ## === v2 ===
-- 2.18.0 | TODO ADD SOME CHANGE LOGS
+- 2.18.0 | add clear '_ops' dir function
 - 2.17.0 | add validate file contains text function
 - 2.16.0 | add ENVs into Dockerfile function
 - 2.15.0 | add UI helper with color and format functions
