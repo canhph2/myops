@@ -20,7 +20,7 @@ class GITHUB
      */
     public static function parseGitHub(string $remoteOriginUrl = null): array
     {
-        $remoteOriginUrl = $remoteOriginUrl ?? self::getRemoteOriginUrl();
+        $remoteOriginUrl = $remoteOriginUrl ?? self::getRemoteOriginUrl_Current();
         return [
             $remoteOriginUrl,
             strpos($remoteOriginUrl, "@") !== false
@@ -31,9 +31,28 @@ class GITHUB
         ];
     }
 
-    public static function getRemoteOriginUrl(): ?string
+    public static function getRemoteOriginUrl_Current(): ?string
     {
         return exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND);
+    }
+
+    /**
+     * @param string $repository
+     * @param string|null $GitHubPersonalAccessToken
+     * @return string
+     */
+    public static function getRemoteOriginUrl_Custom(string $repository, string $GitHubPersonalAccessToken = null): string
+    {
+        return $GitHubPersonalAccessToken
+            ? sprintf("https://%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, GitHubEnum::GITHUB_REPOSITORIES[$repository], $repository)
+            : sprintf("https://github.com/%s/%s.git", GitHubEnum::GITHUB_REPOSITORIES[$repository], $repository);
+    }
+
+    public static function setRemoteOriginUrl(string $remoteOriginUrl): void
+    {
+        (new Process("GitHub Set Remote Origin Url", DIR::getWorkingDir(), [
+            sprintf("git remote set-url origin %s", $remoteOriginUrl)
+        ]))->execMultiInWorkDir()->printOutput();
     }
 
     public static function getBranchUsingCommand(string $workDir): ?string
@@ -98,8 +117,6 @@ class GITHUB
             ->message("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
-        //     var
-        $remoteOriginUrl = sprintf("https://%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, GitHubEnum::GITHUB_REPOSITORIES[$repository], $repository);
         TEXT::tag(TagEnum::GIT)->messageTitle("Handle Caches and Git");
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
@@ -115,15 +132,20 @@ class GITHUB
             ]))->execMulti()->printOutput();
             //
             (new Process("CLONE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
-                sprintf("git clone -b %s %s .", $branch, $remoteOriginUrl),
+                sprintf("git clone -b %s %s .", $branch, self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
             ]))->execMultiInWorkDir(true)->printOutput();
         }
         // === update new code ===
         (new Process("UPDATE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
-            sprintf("git remote set-url origin %s", $remoteOriginUrl),
+            sprintf("git remote set-url origin %s",  self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
             GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout %s", $branch),
             GitHubEnum::PULL_COMMAND
+        ]))->execMultiInWorkDir()->printOutput();
+        // === remove token ===
+        self::setRemoteOriginUrl(self::getRemoteOriginUrl_Custom($repository));
+        (new Process("To check current remote origin url", $EngagePlusCachesRepositoryDir, [
+            GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
     }
 
@@ -155,7 +177,7 @@ class GITHUB
             ? sprintf("git remote set-url origin %s", $GIT_URL_WITH_TOKEN)
             : sprintf("git remote add origin %s", $GIT_URL_WITH_TOKEN);
         (new Process("Set repository remote url and force checkout branch", DIR::getWorkingDir(), [
-                $setRemoteOriginUrlCommand,
+            $setRemoteOriginUrlCommand,
             GitHubEnum::PULL_COMMAND,
             GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout -f %s", $BRANCH_TO_FORCE_CHECKOUT),

@@ -209,14 +209,6 @@ class Process
 
     public function execMultiInWorkDir(bool $skipCheckDir = false): Process
     {
-        // case not .git and want to use git commands
-        if (!$skipCheckDir) {
-            if (!GITHUB::isGit(DIR::getWorkingDir())) {
-                TEXT::tag(TagEnum::ERROR)->message("detect no .git in this directory, init a fake repository");
-                $arrDirCommands[] = sprintf("cd '%s'", DIR::getWorkingDir()); // cd to work dir
-                $arrDirCommands[] = GitHubEnum::INIT_REPOSITORY_COMMAND;
-            }
-        }
         // dir commands
         $arrDirCommands[] = sprintf("cd '%s'", $this->workDir); // cd
         if (!$skipCheckDir) {
