@@ -48,11 +48,16 @@ class GITHUB
             : sprintf("https://github.com/%s/%s.git", GitHubEnum::GITHUB_REPOSITORIES[$repository], $repository);
     }
 
-    public static function setRemoteOriginUrl(string $remoteOriginUrl): void
+    public static function setRemoteOriginUrl(string $remoteOriginUrl, string $workingDir = null, bool $isCheckResult = false): void
     {
-        (new Process("GitHub Set Remote Origin Url", DIR::getWorkingDir(), [
-            sprintf("git remote set-url origin %s", $remoteOriginUrl)
-        ]))->execMultiInWorkDir()->printOutput();
+        $commandsToCheckResult = $isCheckResult ? [GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND] : [];
+        (new Process(
+            "GitHub Set Remote Origin Url",
+            $workingDir ?? DIR::getWorkingDir(),
+            array_merge([
+                sprintf("git remote set-url origin %s", $remoteOriginUrl)
+            ], $commandsToCheckResult)
+        ))->execMultiInWorkDir()->printOutput();
     }
 
     public static function getBranchUsingCommand(string $workDir): ?string
@@ -137,16 +142,13 @@ class GITHUB
         }
         // === update new code ===
         (new Process("UPDATE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
-            sprintf("git remote set-url origin %s",  self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
+            sprintf("git remote set-url origin %s", self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
             GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout %s", $branch),
             GitHubEnum::PULL_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
         // === remove token ===
-        self::setRemoteOriginUrl(self::getRemoteOriginUrl_Custom($repository));
-        (new Process("To check current remote origin url", $EngagePlusCachesRepositoryDir, [
-            GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND
-        ]))->execMultiInWorkDir()->printOutput();
+        self::setRemoteOriginUrl(self::getRemoteOriginUrl_Custom($repository), $EngagePlusCachesRepositoryDir, true);
     }
 
     public static function forceCheckout()
