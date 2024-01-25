@@ -105,7 +105,7 @@ class DOCKER
             exit(); // END
         }
         // === handle ===
-        TEXT::tag(TagEnum::DOCKER)->messageTitle("Dockerfile: get .env from AWS Secret and add to Dockerfile");
+        TEXT::tag(TagEnum::DOCKER)->messageTitle("Dockerfile: get '%s' from AWS Secret and add to Dockerfile", $secretName);
         //    get secret
         $envData = json_decode(exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output json", $secretName)));
         $envLines = ["", "# === Generated vars ==="];
@@ -130,7 +130,7 @@ class DOCKER
         file_put_contents($DockerfilePath, implode(PHP_EOL, $DockerfileLines));
         //    validate result
         if (STR::contains(file_get_contents($DockerfilePath), DockerEnum::ENV)) {
-            Text::tag(TagEnum::SUCCESS)->message("get .env from AWS Secret and add to Dockerfile successfully");
+            Text::tag(TagEnum::SUCCESS)->message("get '%s' from AWS Secret and add to Dockerfile successfully", $secretName);
         } else {
             Text::tag(TagEnum::ERROR)->message("ENV data doesn't exist in Dockerfile");
             exit(1);
