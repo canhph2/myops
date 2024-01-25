@@ -163,7 +163,7 @@ class OPS
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DIR::getWorkingDir()));
                 TEXT::new()->messageCondition(!$checkTmpDir,
-                    "remove a '.env' dir successfully", "remove a '.env' dir failed");
+                    "remove '.env' file successfully", "remove '.env' file failed");
                 //
                 $isDoNothing = false;
             }
@@ -175,7 +175,7 @@ class OPS
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.project-config'", DIR::getWorkingDir()));
                 TEXT::new()->messageCondition(!$checkTmpDir,
-                    "remove a '.project-config' dir successfully", "remove a '.project-config' dir failed");
+                    "remove a '.project-config' file successfully", "remove a '.project-config' file failed");
                 //
                 $isDoNothing = false;
             }
