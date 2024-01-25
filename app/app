@@ -153,7 +153,7 @@ class app
                 DIR::tmp($argv);
                 break;
             case CommandEnum::POST_WORK:
-                OPS::postWork();
+                OPS::postWork($argv);
                 break;
             case CommandEnum::CLEAR_OPS_DIR:
                 OPS::clearOpsDir();

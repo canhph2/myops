@@ -96,7 +96,7 @@ class CommandEnum
             "use 'tmp add' to add new tmp dir",
             "use 'tmp remove' to remove tmp dir"
         ],
-        self::POST_WORK => ["do post works, eg cleanup ..."],
+        self::POST_WORK => ["do post works. Optional: add param 'skip-check-dir' to skip check dir"],
         self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
         // group title
         "PRIVATE" => [],

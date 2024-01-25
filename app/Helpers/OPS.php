@@ -5,6 +5,7 @@ namespace app\Helpers;
 use app\Enum\GitHubEnum;
 use app\Enum\IconEnum;
 use app\Enum\IndentLevelEnum;
+use app\Enum\PostWorkEnum;
 use app\Enum\TagEnum;
 use app\Enum\UIEnum;
 use app\Enum\ValidationTypeEnum;
@@ -147,9 +148,16 @@ class OPS
      * @param array $argv
      * @return void
      */
-    public static function postWork(): void
+    public static function postWork(array $argv): void
     {
+        // === param ===
+        $isSkipCheckDir = ($argv[2] ?? null) === PostWorkEnum::SKIP_CHECK_DIR;
+        //
         TEXT::new()->messageTitle("Post works");
+        if($isSkipCheckDir){
+            TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)
+                ->message("skip check execution directory");
+        }
         $isDoNothing = true;
         // === cleanup ===
         //    clear .env, .project-config
@@ -159,7 +167,7 @@ class OPS
             if (is_file(DIR::getWorkingDir('.env'))) {
                 (new Process("Remove .env", DIR::getWorkingDir(), [
                     sprintf("rm -rf '%s'", DIR::getWorkingDir('.env'))
-                ]))->execMultiInWorkDir()->printOutput();
+                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DIR::getWorkingDir()));
                 TEXT::new()->messageCondition(!$checkTmpDir,
@@ -171,7 +179,7 @@ class OPS
             if (is_file(DIR::getWorkingDir('.project-config'))) {
                 (new Process("Remove .project-config", DIR::getWorkingDir(), [
                     sprintf("rm -rf '%s'", DIR::getWorkingDir('.project-config'))
-                ]))->execMultiInWorkDir()->printOutput();
+                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.project-config'", DIR::getWorkingDir()));
                 TEXT::new()->messageCondition(!$checkTmpDir,
@@ -184,7 +192,7 @@ class OPS
         if (is_dir(DIR::getWorkingDir('tmp'))) {
             (new Process("Remove tmp dir", DIR::getWorkingDir(), [
                 sprintf("rm -rf '%s'", DIR::getWorkingDir('tmp'))
-            ]))->execMultiInWorkDir()->printOutput();
+            ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
             // validate result
             $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DIR::getWorkingDir()));
             TEXT::new()->messageCondition(!$checkTmpDir,
@@ -196,7 +204,7 @@ class OPS
         if (is_dir(DIR::getWorkingDir('dist'))) {
             (new Process("Remove dist dir", DIR::getWorkingDir(), [
                 sprintf("rm -rf '%s'", DIR::getWorkingDir('dist'))
-            ]))->execMultiInWorkDir()->printOutput();
+            ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
             // validate result
             $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DIR::getWorkingDir()));
             TEXT::new()->messageCondition(!$checkTmpDir,
@@ -210,7 +218,7 @@ class OPS
             if (STR::contains($authJsonContent, "github-oauth") && STR::contains($authJsonContent, "github.com")) {
                 (new Process("Remove composer config file", DIR::getWorkingDir(), [
                     sprintf("rm -f '%s'", DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
-                ]))->execMultiInWorkDir()->printOutput();
+                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DIR::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
                 TEXT::new()->messageCondition(
