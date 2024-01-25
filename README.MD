@@ -1,4 +1,4 @@
-# ops-lib v2.17.5
+# ops-lib v2.17.6
 *DevOps | CICD | DevOps Shared Library*
 
 ---
