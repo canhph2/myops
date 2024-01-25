@@ -155,15 +155,29 @@ class OPS
         //    clear .env, .project-config
         if(getenv('ENGAGEPLUS_CACHES_FOLDER')
             && STR::contains(DIR::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))){
+            //        .env
             if(is_file(DIR::getWorkingDir('.env'))){
-                echo "will delete .env file at ".DIR::getWorkingDir('.env');
+                (new Process("Remove .env", DIR::getWorkingDir(), [
+                    sprintf("rm -rf '%s'", DIR::getWorkingDir('.env'))
+                ]))->execMultiInWorkDir()->printOutput();
+                // validate result
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DIR::getWorkingDir()));
+                TEXT::new()->messageCondition(!$checkTmpDir,
+                    "remove a '.env' dir successfully", "remove a '.env' dir failed");
+                //
+                $isDoNothing = false;
             }
-        }
-        // todo check
-        if(getenv('ENGAGEPLUS_CACHES_FOLDER')
-            && !STR::contains(DIR::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))){
-            if(is_file(DIR::getWorkingDir('.env'))){
-                echo "detect .env in project folder not caches folder";
+            //        .env
+            if(is_file(DIR::getWorkingDir('.project-config'))){
+                (new Process("Remove .project-config", DIR::getWorkingDir(), [
+                    sprintf("rm -rf '%s'", DIR::getWorkingDir('.project-config'))
+                ]))->execMultiInWorkDir()->printOutput();
+                // validate result
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.project-config'", DIR::getWorkingDir()));
+                TEXT::new()->messageCondition(!$checkTmpDir,
+                    "remove a '.project-config' dir successfully", "remove a '.project-config' dir failed");
+                //
+                $isDoNothing = false;
             }
         }
         //    tmp dir (PHP project)
