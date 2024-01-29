@@ -49,7 +49,7 @@ php vendor/phpunit/phpunit/phpunit tests
   - Mail catcher port - Dockerrun.aws.json: ``staging, develop =  "hostPort": 1025,  "containerPort": 1025``
 
 ### Note 4 | Not use common name like `.env`, should use another name => change `.env` to another name:
-- change `.env` file in backend projects to `.project-config`
+- change `.env` file in backend projects to `.conf-ryt`
 
 ---
 ## === Test  | PHPUNIT ===

@@ -160,7 +160,7 @@ class OPS
         }
         $isDoNothing = true;
         // === cleanup ===
-        //    clear .env, .project-config
+        //    clear .env, .conf-ryt
         if (getenv('ENGAGEPLUS_CACHES_FOLDER')
             && STR::contains(DIR::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))) {
             //        .env
@@ -175,15 +175,15 @@ class OPS
                 //
                 $isDoNothing = false;
             }
-            //        .env
-            if (is_file(DIR::getWorkingDir('.project-config'))) {
-                (new Process("Remove .project-config", DIR::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DIR::getWorkingDir('.project-config'))
+            //        .conf-ryt
+            if (is_file(DIR::getWorkingDir('.conf-ryt'))) {
+                (new Process("Remove .conf-ryt", DIR::getWorkingDir(), [
+                    sprintf("rm -rf '%s'", DIR::getWorkingDir('.conf-ryt'))
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.project-config'", DIR::getWorkingDir()));
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.conf-ryt'", DIR::getWorkingDir()));
                 TEXT::new()->messageCondition(!$checkTmpDir,
-                    "remove a '.project-config' file successfully", "remove a '.project-config' file failed");
+                    "remove a '.conf-ryt' file successfully", "remove a '.conf-ryt' file failed");
                 //
                 $isDoNothing = false;
             }
