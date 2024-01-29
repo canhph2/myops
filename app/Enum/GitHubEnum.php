@@ -4,6 +4,7 @@ namespace app\Enum;
 
 class GitHubEnum
 {
+    // === GitHub commands ===
     public const INIT_REPOSITORY_COMMAND = 'git init';
     public const RESET_BRANCH_COMMAND = 'git reset --hard HEAD'; // rollback all changing
     public const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
@@ -13,6 +14,12 @@ class GitHubEnum
     public const GET_REMOTE_ORIGIN_URL_COMMAND = 'git config --get remote.origin.url';
     public const GET_REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
     public const GET_HEAD_COMMIT_ID_COMMAND = 'git rev-parse --short HEAD';
+
+    // === Git branches ===
+    public const MAIN = 'main';
+    public const MASTER = 'master';
+    public const STAGING = 'staging';
+    public const DEVELOP = 'develop';
 
     /**
      * key => value  | key = GitHub project name, value =  GitHub username

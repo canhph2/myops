@@ -2,6 +2,7 @@
 
 namespace app\Helpers;
 
+use app\Enum\GitHubEnum;
 use app\Enum\TagEnum;
 
 /**
@@ -9,6 +10,33 @@ use app\Enum\TagEnum;
  */
 class SERVICE
 {
+    /**
+     * select appropriate Slack channel to notify
+     * - production channel: notify to the team, the manager  (required: env > SLACK_CHANNEL_PRODUCTION)
+     * - develop and test channel: notify to the developer (required: env > SLACK_CHANNEL)
+     * - default will return: SLACK_CHANNEL
+     *
+     * @return string|null
+     */
+    private static function selectSlackChannel(): ?string
+    {
+        // ops-lib | testing
+        if (getenv('REPOSITORY') === 'ops-lib') {
+            return getenv('SLACK_CHANNEL'); // END
+        }
+        // database-utils
+        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('REPOSITORY') === 'engage-database-utils') {
+            return getenv('SLACK_CHANNEL_PRODUCTION'); // END
+        }
+        // master branches
+        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('BRANCH') === GitHubEnum::MASTER) {
+            return getenv('SLACK_CHANNEL_PRODUCTION'); // END
+        }
+        //    in case don't config SLACK_CHANNEL_PRODUCTION, will fall to default below here for master branch
+        // branches: staging, develop, ticket's branches
+        return getenv('SLACK_CHANNEL'); // END
+    }
+
     /**
      * php _ops/lib slack "a message"
      * @param array $argv
@@ -27,7 +55,7 @@ class SERVICE
         $repository = getenv('REPOSITORY');
         $branch = getenv('BRANCH');
         $slackBotToken = getenv('SLACK_BOT_TOKEN');
-        $slackChannel = getenv('SLACK_CHANNEL');
+        $slackChannel = self::selectSlackChannel();
         if (!$repository || !$branch || !$slackBotToken || !$slackChannel) {
             TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
                 ->message("missing a BRANCH or REPOSITORY or SLACK_BOT_TOKEN or SLACK_CHANNEL");
