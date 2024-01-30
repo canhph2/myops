@@ -23,10 +23,10 @@ class OPS
 
         $NEXLE_IPS = [
             '115.73.208.177', // Nexle VPN
-            '115.73.208.182', // Nexle HCM office - others
-            '115.73.208.183', // Nexle HCM office - others
-            '14.161.25.117', // Nexle HCM office - others
-            '118.69.176.228', // Nexle DN office
+            '115.73.208.182', // Nexle HCM office - IP 1
+            '115.73.208.183', // Nexle HCM office - IP 2
+            '14.161.25.117', // Nexle HCM office - IP 3
+            '113.160.235.76', // Nexle DN office NEW (2 2024)
         ];
         $GITHUB_RUNNER_SERVER_IP = '18.167.126.148';
         $EC2DevelopIp = exec("echo $(curl https://develop-api.engageplus.io/api/booking/IP-QYIa20HxwQ)");
@@ -154,7 +154,7 @@ class OPS
         $isSkipCheckDir = ($argv[2] ?? null) === PostWorkEnum::SKIP_CHECK_DIR;
         //
         TEXT::new()->messageTitle("Post works");
-        if($isSkipCheckDir){
+        if ($isSkipCheckDir) {
             TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)
                 ->message("skip check execution directory");
         }
