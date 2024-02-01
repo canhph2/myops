@@ -185,7 +185,7 @@ class GITHUB
             GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout -f %s", $BRANCH_TO_FORCE_CHECKOUT),
             GitHubEnum::PULL_COMMAND,
-        ])))->execMultiInWorkDir()->printOutput();
+        ])))->execMultiInWorkDir(true)->printOutput();
         // === validate result ===
         (new Process("Validate branch", DIR::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
