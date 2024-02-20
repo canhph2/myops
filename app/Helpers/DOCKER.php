@@ -142,7 +142,7 @@ class DOCKER
     {
         $list = [];
         $dockerImagesDataArr = (new Process("Get Docker Images Data", DIR::getWorkingDir(), [
-            "docker images --format \"{{json .}}\""
+            "docker images --format \"{{json .}}\" || exit 0"
         ]))->execMultiInWorkDir(true)->getOutput();
         foreach ($dockerImagesDataArr as $imageDataJson) {
             $imageData = json_decode($imageDataJson, true);
