@@ -187,6 +187,18 @@ class OPS
                 //
                 $isDoNothing = false;
             }
+            //        [payment-service] payment-credentials.json
+            if (is_file(DIR::getWorkingDir('payment-credentials.json'))) {
+                (new Process("Remove 'payment-credentials.json'", DIR::getWorkingDir(), [
+                    sprintf("rm -rf '%s'", DIR::getWorkingDir('payment-credentials.json'))
+                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
+                // validate result
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'payment-credentials.json'", DIR::getWorkingDir()));
+                TEXT::new()->messageCondition(!$checkTmpDir,
+                    "remove a 'payment-credentials.json' file successfully", "remove a 'payment-credentials.json' file failed");
+                //
+                $isDoNothing = false;
+            }
         }
         //    tmp dir (PHP project)
         if (is_dir(DIR::getWorkingDir('tmp'))) {
