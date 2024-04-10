@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-// === [34;1mOPS SHARED LIBRARY (PHP) v2.19.1[0m ===
+// === [34;1mOPS SHARED LIBRARY (PHP) v2.19.2[0m ===
 
 // === Generated libraries classes ===
 
@@ -24,10 +24,10 @@
 // [REMOVED] use app\Helpers\DockerHelper;
 // [REMOVED] use app\Helpers\GitHubHelper;
 // [REMOVED] use app\Helpers\OPSHelper;
-// [REMOVED] use app\Helpers\SlackService;
 // [REMOVED] use app\Helpers\StrHelper;
 // [REMOVED] use app\Helpers\TextHelper;
 // [REMOVED] use app\Helpers\UIHelper;
+// [REMOVED] use app\Services\SlackService;
 // [REMOVED] use DateTime;
 
 class Release
@@ -61,12 +61,13 @@ class Release
             DirHelper::getClassPathAndFileName(OPSHelper::class),
             DirHelper::getClassPathAndFileName(TextHelper::class),
             DirHelper::getClassPathAndFileName(GitHubHelper::class),
-            DirHelper::getClassPathAndFileName(SlackService::class),
             DirHelper::getClassPathAndFileName(AWSHelper::class),
             DirHelper::getClassPathAndFileName(AppHelper::class),
             DirHelper::getClassPathAndFileName(DockerHelper::class),
             DirHelper::getClassPathAndFileName(StrHelper::class),
             DirHelper::getClassPathAndFileName(UIHelper::class),
+            // === Services ===
+            DirHelper::getClassPathAndFileName(SlackService::class),
             // always on bottom
             'app/app',
         ];
@@ -1245,7 +1246,7 @@ class CommandEnum
             '.e.g to test source code in the server'
         ],
         //        GitHub Actions
-        self::BUILD_ALL_PROJECTS => ['[GitHub Actions] build all projects to keep the GitHub runner token connecting (ES-2381)'],
+        self::BUILD_ALL_PROJECTS => ['[GitHub Actions] build all projects to keep the GitHub runner token connecting'], // ES-2381
         // group title
         "DOCKER" => [],
         self::DOCKER_KEEP_IMAGE_BY => ['Keep image by repository and tag, use for keep latest image. Required:  imageRepository imageTag'],
@@ -1463,6 +1464,14 @@ class DirHelper
     }
 
     /**
+     * @return string
+     */
+    public static function getProjectDirName(): string
+    {
+        return basename(self::getWorkingDir());
+    }
+
+    /**
      * get current working directory of script
      * @return string
      */
@@ -1529,6 +1538,8 @@ class DirHelper
     {
         return sprintf("%s.php", str_replace("\\", "/", $ClassDotClass));
     }
+
+
 }
 
 // [REMOVED] namespace app\Helpers;
@@ -2057,11 +2068,13 @@ class TextHelper
 // [REMOVED] namespace app\Helpers;
 
 // [REMOVED] use app\Classes\GitHubRepositoryInfo;
+// [REMOVED] use app\Classes\Process;
+// [REMOVED] use app\Enum\CommandEnum;
 // [REMOVED] use app\Enum\GitHubEnum;
 // [REMOVED] use app\Enum\IconEnum;
 // [REMOVED] use app\Enum\IndentLevelEnum;
 // [REMOVED] use app\Enum\TagEnum;
-// [REMOVED] use app\Classes\Process;
+// [REMOVED] use app\Services\SlackService;
 
 /**
  * This is a GitHub helper
@@ -2265,12 +2278,14 @@ class GitHubHelper
         $branchToBuild = GitHubEnum::DEVELOP;
         TextHelper::new()->messageTitle("Build all projects to keep the GitHub runner token connecting (develop env)");
         // validate
-        $GitHubToken = AWSHelper::getGitHubTokenFromEnvOpsSecretManager();
+        $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
         if (!$GitHubToken) {
             TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->message("GitHub token not found (in Secret Manager)");
             return; //END
         }
         // handle
+        //    notify
+        SlackService::sendMessageInternalUsing(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
         //    get GitHub token and login gh
         TextHelper::new()->messageSubTitle("login gh (GitHub CLI)");
         (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
@@ -2302,103 +2317,17 @@ class GitHubHelper
                 }
             }
         } // end loop
-    }
-}
-
-// [REMOVED] namespace app\Helpers;
-
-// [REMOVED] use app\Enum\GitHubEnum;
-// [REMOVED] use app\Enum\TagEnum;
-
-class SlackService
-{
-    /**
-     * select appropriate Slack channel to notify
-     * - production channel: notify to the team, the manager  (required: env > SLACK_CHANNEL_PRODUCTION)
-     * - develop and test channel: notify to the developer (required: env > SLACK_CHANNEL)
-     * - default will return: SLACK_CHANNEL
-     *
-     * @return string|null
-     */
-    private static function selectSlackChannel(): ?string
-    {
-        // ops-lib | testing
-        if (getenv('REPOSITORY') === 'ops-lib') {
-            return getenv('SLACK_CHANNEL'); // END
-        }
-        // database-utils
-        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('REPOSITORY') === 'engage-database-utils') {
-            return getenv('SLACK_CHANNEL_PRODUCTION'); // END
-        }
-        // master branches
-        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('BRANCH') === GitHubEnum::MASTER) {
-            return getenv('SLACK_CHANNEL_PRODUCTION'); // END
-        }
-        //    in case don't config SLACK_CHANNEL_PRODUCTION, will fall to default below here for master branch
-        // branches: staging, develop, ticket's branches
-        return getenv('SLACK_CHANNEL'); // END
-    }
-
-    /**
-     * php _ops/lib slack "a message"
-     * @param array $argv
-     * @return void
-     */
-    public static function SlackMessage(array $argv)
-    {
-        // === validate ===
-        //    validate a message
-        $message = $argv[2] ?? null;
-        if (!$message) {
-            TextHelper::tag(TagEnum::ERROR)->message("missing a MESSAGE");
-            exit(); // END
-        }
-        //    validate env vars
-        $repository = getenv('REPOSITORY');
-        $branch = getenv('BRANCH');
-        $slackBotToken = getenv('SLACK_BOT_TOKEN');
-        $slackChannel = self::selectSlackChannel();
-        if (!$repository || !$branch || !$slackBotToken || !$slackChannel) {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
-                ->message("missing a BRANCH or REPOSITORY or SLACK_BOT_TOKEN or SLACK_CHANNEL");
-            exit(); // END
-        }
-
-        // === handle ===
-        $slackUrl = "https://slack.com/api/chat.postMessage";
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $slackUrl);
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
-            "channel" => $slackChannel,
-            "text" => sprintf("[%s] [%s] > %s", $repository, $branch, $message),
-        ]));
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
-        $response = curl_exec($curl);
-        if (!$response) {
-            TextHelper::tag(TagEnum::ERROR)->message(curl_error($curl));
-        } else {
-            $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            if ($responseCode === 200) {
-                if (json_decode($response, true)['ok']) {
-                    TextHelper::tagMultiple([TagEnum::SLACK, TagEnum::SUCCESS])->message("Message sent successfully | Slack status OK | HTTP code $responseCode");
-                } else {
-                    TextHelper::tagMultiple([TagEnum::SLACK, TagEnum::ERROR])->message(json_decode($response, true)['error'] . " | Slack status NO | HTTP code $responseCode");
-                }
-            } else {
-                TextHelper::tagMultiple([TagEnum::SLACK, TagEnum::ERROR])->message("Error sending message | HTTP code $responseCode");
-            }
-        }
-
+        //    notify
+        SlackService::sendMessageInternalUsing(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
     }
 }
 
 // [REMOVED] namespace app\Helpers;
 
 // [REMOVED] use app\app;
-// [REMOVED] use app\Enum\TagEnum;
 // [REMOVED] use app\Classes\Process;
+// [REMOVED] use app\Enum\TagEnum;
+// [REMOVED] use app\Services\SlackService;
 // [REMOVED] use DateTime;
 // [REMOVED] use Exception;
 
@@ -2436,7 +2365,7 @@ class AWSHelper
             "get secret '$secretName' successfully and save at '$ENVName'",
             "get secret '$secretName' failed"
         );
-        if(!$isSuccess) exit(1);
+        if (!$isSuccess) exit(1);
     }
 
     /**
@@ -2457,18 +2386,19 @@ class AWSHelper
      * required:
      * - data store in SecretManager > env-ops > field GITHUB_PERSONAL_ACCESS_TOKEN
      * - AWS credential have permission to get env-ops
+     * @param string $fieldName
      * @return string|null
      */
-    public static function getGitHubTokenFromEnvOpsSecretManager(): ?string
+    public static function getValueEnvOpsSecretManager(string $fieldName): ?string
     {
         $opsEnvSecretName = 'env-ops';
         $opsEnvData = json_decode(exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output json", $opsEnvSecretName)));
         //
         $opsEnvDataArr = explode(PHP_EOL, $opsEnvData);
-        $tokenRow = array_filter($opsEnvDataArr, function ($item){
-            return StrHelper::contains($item, 'GITHUB_PERSONAL_ACCESS_TOKEN');
+        $line = array_filter($opsEnvDataArr, function ($item) use ($fieldName) {
+            return StrHelper::contains($item, $fieldName);
         });
-        return str_replace('export GITHUB_PERSONAL_ACCESS_TOKEN=', '', reset($tokenRow));
+        return trim(str_replace("export $fieldName=", '', reset($line)), "'\"");
     }
 
     /**
@@ -2621,14 +2551,14 @@ class AWSHelper
                 ]))->execMulti()->getOutputStrAll();
                 if (in_array(self::ELB_LOG_UPDATE_SUCCESSFULLY, json_decode($lastELBLogs))) {
                     TextHelper::tag(TagEnum::SUCCESS)->message(self::ELB_LOG_UPDATE_SUCCESSFULLY);
-                    SlackService::SlackMessage(['script path', 'slack', sprintf(
+                    SlackService::sendMessage(['script path', 'slack', sprintf(
                         "[FINISH] [SUCCESS] %s just finished building and deploying the project %s",
                         getenv('DEVICE'), getenv('REPOSITORY')
                     )]);
                     exit(0); // END | successful
                 } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
                     TextHelper::tag(TagEnum::ERROR)->message(self::ELB_LOG_UPDATE_FAILED);
-                    SlackService::SlackMessage(['script path', 'slack', sprintf(
+                    SlackService::sendMessage(['script path', 'slack', sprintf(
                         "[FINISH] [FAILURE 1 | Deploy failed] %s just finished building and deploying the project %s",
                         getenv('DEVICE'), getenv('REPOSITORY')
                     )]);
@@ -2641,7 +2571,7 @@ class AWSHelper
             }
             //             case timeout
             TextHelper::tag(TagEnum::ERROR)->message("Deployment got a timeout result");
-            SlackService::SlackMessage(['script path', 'slack', sprintf(
+            SlackService::sendMessage(['script path', 'slack', sprintf(
                 "[FINISH] [FAILURE 2 | Timeout] %s just finished building and deploying the project %s",
                 getenv('DEVICE'), getenv('REPOSITORY')
             )]);
@@ -2989,6 +2919,116 @@ class UIHelper
     }
 }
 
+// [REMOVED] namespace app\Services;
+
+// [REMOVED] use app\Enum\GitHubEnum;
+// [REMOVED] use app\Enum\TagEnum;
+// [REMOVED] use app\Helpers\AWSHelper;
+// [REMOVED] use app\Helpers\TextHelper;
+
+class SlackService
+{
+    /**
+     * select appropriate Slack channel to notify
+     * - production channel: notify to the team, the manager  (required: env > SLACK_CHANNEL_PRODUCTION)
+     * - develop and test channel: notify to the developer (required: env > SLACK_CHANNEL)
+     * - default will return: SLACK_CHANNEL
+     *
+     * @return string|null
+     */
+    private static function selectSlackChannel(): ?string
+    {
+        // ops-lib | testing
+        if (getenv('REPOSITORY') === 'ops-lib') {
+            return getenv('SLACK_CHANNEL'); // END
+        }
+        // database-utils
+        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('REPOSITORY') === 'engage-database-utils') {
+            return getenv('SLACK_CHANNEL_PRODUCTION'); // END
+        }
+        // master branches
+        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('BRANCH') === GitHubEnum::MASTER) {
+            return getenv('SLACK_CHANNEL_PRODUCTION'); // END
+        }
+        //    in case don't config SLACK_CHANNEL_PRODUCTION, will fall to default below here for master branch
+        // branches: staging, develop, ticket's branches
+        return getenv('SLACK_CHANNEL'); // END
+    }
+
+    /**
+     * php _ops/lib slack "a message"
+     * @param array $argv
+     * @return void
+     */
+    public static function sendMessage(array $argv)
+    {
+        // === validate ===
+        //    validate a message
+        $message = $argv[2] ?? null;
+        if (!$message) {
+            TextHelper::tag(TagEnum::ERROR)->message("missing a MESSAGE");
+            exit(); // END
+        }
+        //    validate env vars
+        $repository = getenv('REPOSITORY');
+        $branch = getenv('BRANCH');
+        $slackBotToken = getenv('SLACK_BOT_TOKEN');
+        $slackChannel = self::selectSlackChannel();
+        if (!$repository || !$branch || !$slackBotToken || !$slackChannel) {
+            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
+                ->message("missing a BRANCH or REPOSITORY or SLACK_BOT_TOKEN or SLACK_CHANNEL");
+            exit(); // END
+        }
+
+        // === handle ===
+        $slackUrl = "https://slack.com/api/chat.postMessage";
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $slackUrl);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
+            "channel" => $slackChannel,
+            "text" => sprintf("[%s] [%s] > %s", $repository, $branch, $message),
+        ]));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
+        $response = curl_exec($curl);
+        if (!$response) {
+            TextHelper::tag(TagEnum::ERROR)->message(curl_error($curl));
+        } else {
+            $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            if ($responseCode === 200) {
+                if (json_decode($response, true)['ok']) {
+                    TextHelper::tagMultiple([TagEnum::SLACK, TagEnum::SUCCESS])->message("Message sent successfully | Slack status OK | HTTP code $responseCode");
+                } else {
+                    TextHelper::tagMultiple([TagEnum::SLACK, TagEnum::ERROR])->message(json_decode($response, true)['error'] . " | Slack status NO | HTTP code $responseCode");
+                }
+            } else {
+                TextHelper::tagMultiple([TagEnum::SLACK, TagEnum::ERROR])->message("Error sending message | HTTP code $responseCode");
+            }
+        }
+    }
+
+    /**
+     * required AWS credential have access to env-ops (Secret Manager)
+     * use internal lib
+     * @return void
+     */
+    public static function sendMessageInternalUsing(
+        string $message,
+        string $repository = 'unknown_repository',
+        string $branch = 'unknown_branch'
+    )
+    {
+        // handle
+        //    prepare envs
+        putenv('REPOSITORY=' . $repository);
+        putenv('BRANCH=' . $branch);
+        putenv('SLACK_BOT_TOKEN=' . AWSHelper::getValueEnvOpsSecretManager('SLACK_BOT_TOKEN'));
+        putenv('SLACK_CHANNEL=' . AWSHelper::getValueEnvOpsSecretManager('SLACK_CHANNEL'));
+        self::sendMessage(['script path', 'slack', $message]);
+    }
+}
+
 // === end Generated libraries classes ===
 
 
@@ -2998,7 +3038,7 @@ class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.19.1';
+    const APP_VERSION = '2.19.2';
 
     const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKHBocCBfb3BzL2xpYiBicmFuY2gpCmV4cG9ydCBSRVBPU0lUT1JZPSQocGhwIF9vcHMvbGliIHJlcG9zaXRvcnkpCmV4cG9ydCBIRUFEX0NPTU1JVF9JRD0kKHBocCBfb3BzL2xpYiBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBoYW5kbGUgYnJhbmNoZXMgdmFycyA9PT0KaWYgWyAiJHtCUkFOQ0h9IiA9ICJkZXZlbG9wIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1kZXYKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9ZGV2ZWxvcC1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0iZGV2ZWxvcC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAwCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJzdGFnaW5nIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1zdGcKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9c3RhZ2luZy1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0ic3RhZ2luZy1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAxCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjEwMCIKICBleHBvcnQgRUJfTUFJTF9DQVRDSEVSX1BPUlQ9IiAgICAiICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UgfCA0IHNwYWNlcyB0byBwYXNzIGVtcHR5IHN0cmluZwogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAyCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKIyA9PT0gRU5EID09PQoKIyA9PT0gQVdTIEFjY291bnQgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEFXU19BQ0NPVU5UX0lEPSI5ODIwODA2NzI5ODMiCmV4cG9ydCBSRUdJT049ImFwLWVhc3QtMSIKIyAgICBFQ1IgY29uZmlndXJhdGlvbgojICAgICAgICBiYXNlIGFuZCBjYWNoZXMgcmVwb3NpdG9yaWVzCmV4cG9ydCBFQ1JfUkVQT19BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19QQVlNRU5UX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtcGF5bWVudC1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlZPSUNFX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW52b2ljZS1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlRFR1JBVElPTl9BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW50ZWdyYXRpb24tYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19FTUFJTF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWVtYWlsLXNlcnZpY2UtcmVwb3NpdG9yeSIKIyAgICAgICAgbm9ybWFsIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgRWxhc3RpYyBCZWFuc3RhbGsgY29uZmlndXJhdGlvbgpleHBvcnQgUzNfRUJfQVBQX1ZFUlNJT05fQlVDS0VUX05BTUU9ImVsYXN0aWNiZWFuc3RhbGstJHtSRUdJT059LSR7QVdTX0FDQ09VTlRfSUR9IgpleHBvcnQgRUJfQVBQX1ZFUlNJT05fRk9MREVSX05BTUU9ImVuZ2FnZXBsdXMiCmV4cG9ydCBFQl9BUFBfTkFNRT0iZW5nYWdlcGx1cyIKIyA9PT0gRU5EID09PQoKIyA9PT0gRW5nYWdlUGx1cyBjb25maWd1cmF0aW9uID09PQpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRk9MREVSPSIuY2FjaGVzX2VuZ2FnZXBsdXMiCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19ESVI9IiQocGhwIF9vcHMvbGliIGhvbWUtZGlyKS8ke0VOR0FHRVBMVVNfQ0FDSEVTX0ZPTERFUn0iCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19SRVBPU0lUT1JZX0RJUj0iJHtFTkdBR0VQTFVTX0NBQ0hFU19ESVJ9LyR7UkVQT1NJVE9SWX0iCiMgPT09IEVORCA9PT0KCiMgPT09IGdldCBERVZJQ0UgZnJvbSBwYXJhbSAxID09PQpleHBvcnQgREVWSUNFPSIkMSIKIyA9PT0gRU5EID09PQo=';
 
@@ -3118,7 +3158,7 @@ class app
                 TextHelper::replaceTextInFile($argv);
                 break;
             case CommandEnum::SLACK:
-                SlackService::SlackMessage($argv);
+                SlackService::sendMessage($argv);
                 break;
             case CommandEnum::TMP:
                 DirHelper::tmp($argv);
