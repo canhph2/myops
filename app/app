@@ -110,7 +110,7 @@ class app
             case CommandEnum::ELB_UPDATE_VERSION:
                 AWS::ELBUpdateVersion();
                 break;
-            // === git ===
+            // === Git / GitHub ===
             case CommandEnum::BRANCH:
                 echo exec(GitHubEnum::GET_BRANCH_COMMAND);
                 break;
@@ -125,6 +125,10 @@ class app
                 break;
             case CommandEnum::FORCE_CHECKOUT:
                 GITHUB::forceCheckout();
+                break;
+            //        GitHub Actions
+            case CommandEnum::BUILD_ALL_PROJECTS:
+                GITHUB::buildAllProject();
                 break;
             // === Docker ===
             case CommandEnum::DOCKER_KEEP_IMAGE_BY:

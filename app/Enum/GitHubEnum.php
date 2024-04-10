@@ -39,5 +39,6 @@ class GitHubEnum
         'engage-database-utils' => 'congnqnexlesoft',
         'ops-lib' => 'congnqnexlesoft',
         'docker-base-images' => 'congnqnexlesoft',
+        'engage-selenium-test-1' => 'congnqnexlesoft',
     ];
 }

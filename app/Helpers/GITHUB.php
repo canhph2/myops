@@ -191,4 +191,12 @@ class GITHUB
             GitHubEnum::GET_BRANCH_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
     }
+
+    /**
+     * [GitHub Actions]
+     * @return void
+     */
+    public static function buildAllProject(){
+        // todo build All project
+    }
 }

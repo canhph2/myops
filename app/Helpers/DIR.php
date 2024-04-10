@@ -90,4 +90,15 @@ class DIR
                 break;
         }
     }
+
+    /**
+     * .e.g usage   DIR::getClassPath(TextLine::class)
+     * class name should follow PSR-4
+     * @param string $ClassClass
+     * @return void
+     */
+    public static function getClassPath(string $ClassClass): string
+    {
+        return sprintf("%s.php", str_replace("\\", "/", $ClassClass));
+    }
 }

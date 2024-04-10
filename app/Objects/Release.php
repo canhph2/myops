@@ -3,50 +3,64 @@
 namespace app\Objects;
 
 use app\app;
+use app\Enum\CommandEnum;
+use app\Enum\DockerEnum;
 use app\Enum\GitHubEnum;
+use app\Enum\IconEnum;
+use app\Enum\IndentLevelEnum;
+use app\Enum\PostWorkEnum;
 use app\Enum\TagEnum;
+use app\Enum\UIEnum;
+use app\Enum\ValidationTypeEnum;
 use app\Helpers\AppHelper;
+use app\Helpers\AWS;
 use app\Helpers\DIR;
+use app\Helpers\DOCKER;
+use app\Helpers\GITHUB;
+use app\Helpers\OPS;
+use app\Helpers\SERVICE;
+use app\Helpers\STR;
 use app\Helpers\TEXT;
+use app\Helpers\UI;
 use DateTime;
 
 class Release
 {
     /**
-     * @var array
+     * @return array
      * to release
      */
-    const FILES_LIST = [
+    public static function GET_FILES_LIST():array { return [
         // === Enum ===
-        'app/Enum/CommandEnum.php',
-        'app/Enum/GitHubEnum.php',
-        'app/Enum/IndentLevelEnum.php',
-        'app/Enum/IconEnum.php',
-        'app/Enum/TagEnum.php',
-        'app/Enum/UIEnum.php',
-        'app/Enum/DockerEnum.php',
-        'app/Enum/ValidationTypeEnum.php',
-        'app/Enum/PostWorkEnum.php',
+        DIR::getClassPath(CommandEnum::class),
+        DIR::getClassPath(GitHubEnum::class),
+        DIR::getClassPath(IndentLevelEnum::class),
+        DIR::getClassPath(IconEnum::class),
+        DIR::getClassPath(TagEnum::class),
+        DIR::getClassPath(UIEnum::class),
+        DIR::getClassPath(DockerEnum::class),
+        DIR::getClassPath(ValidationTypeEnum::class),
+        DIR::getClassPath(PostWorkEnum::class),
         // === Helper ===
-        'app/Helpers/DIR.php',
-        'app/Helpers/OPS.php',
-        'app/Helpers/TEXT.php',
-        'app/Helpers/GITHUB.php',
-        'app/Helpers/SERVICE.php',
-        'app/Helpers/AWS.php',
-        'app/Helpers/AppHelper.php',
-        'app/Helpers/DOCKER.php',
-        'app/Helpers/STR.php',
-        'app/Helpers/UI.php',
+        DIR::getClassPath(DIR::class),
+        DIR::getClassPath(OPS::class),
+        DIR::getClassPath(TEXT::class),
+        DIR::getClassPath(GITHUB::class),
+        DIR::getClassPath(SERVICE::class),
+        DIR::getClassPath(AWS::class),
+        DIR::getClassPath(AppHelper::class),
+        DIR::getClassPath(DOCKER::class),
+        DIR::getClassPath(STR::class),
+        DIR::getClassPath(UI::class),
         // === Objects ===
-        'app/Objects/Release.php',
-        'app/Objects/Process.php',
-        'app/Objects/Version.php',
-        'app/Objects/DockerImage.php',
-        'app/Objects/TextLine.php',
+        DIR::getClassPath(Release::class),
+        DIR::getClassPath(Process::class),
+        DIR::getClassPath(Version::class),
+        DIR::getClassPath(DockerImage::class),
+        DIR::getClassPath(TextLine::class),
         // always on bottom
         'app/app',
-    ];
+    ];}
 
     const RELEASE_PATH = '_ops/lib';
 
@@ -141,7 +155,7 @@ class Release
      */
     private function handleAppClass(): void
     {
-        $appClassContent = $this->handlePHPClassContent(self::FILES_LIST[count(self::FILES_LIST) - 1]);
+        $appClassContent = $this->handlePHPClassContent(self::GET_FILES_LIST()[count(self::GET_FILES_LIST()) - 1]);
         $appClassContentClassOnly = sprintf("class app%s", explode('class app', $appClassContent)[1]);
         // handle shell data
         $appClassContentClassOnly = str_replace(
@@ -169,8 +183,8 @@ class Release
     private function handleLibrariesClass(): void
     {
         $librariesClassesContent = "";
-        for ($i = 0; $i < count(self::FILES_LIST) - 1; $i++) {
-            $librariesClassesContent .= $this->handlePHPClassContent(self::FILES_LIST[$i]);
+        for ($i = 0; $i < count(self::GET_FILES_LIST()) - 1; $i++) {
+            $librariesClassesContent .= $this->handlePHPClassContent(self::GET_FILES_LIST()[$i]);
         }
         file_put_contents(
             self::RELEASE_PATH,
