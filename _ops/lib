@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-// === [34;1mOPS SHARED LIBRARY (PHP) v2.18.10[0m ===
+// === [34;1mOPS SHARED LIBRARY (PHP) v2.18.11[0m ===
 
 // === Generated libraries classes ===
 
@@ -27,6 +27,8 @@ class CommandEnum
     const HEAD_COMMIT_ID = 'head-commit-id';
     const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
     const FORCE_CHECKOUT = 'force-checkout';
+    //        GitHub Actions
+    const BUILD_ALL_PROJECTS = 'build-all-projects';
 
     // === Docker ===
     const DOCKER_KEEP_IMAGE_BY = 'docker-keep-image-by';
@@ -86,6 +88,8 @@ class CommandEnum
             'force checkout a GitHub repository with specific branch',
             '.e.g to test source code in the server'
         ],
+        //        GitHub Actions
+        self::BUILD_ALL_PROJECTS => ['[GitHub Actions] build all projects to keep the GitHub runner token connecting (ES-2381)'],
         // group title
         "DOCKER" => [],
         self::DOCKER_KEEP_IMAGE_BY => ['Keep image by repository and tag, use for keep latest image. Required:  imageRepository imageTag'],
@@ -165,6 +169,7 @@ class GitHubEnum
         'engage-database-utils' => 'congnqnexlesoft',
         'ops-lib' => 'congnqnexlesoft',
         'docker-base-images' => 'congnqnexlesoft',
+        'engage-selenium-test-1' => 'congnqnexlesoft',
     ];
 }
 
@@ -351,6 +356,17 @@ class DIR
                 TEXT::tag(TagEnum::ERROR)->message("missing action, action should be 'add' or 'remove'");
                 break;
         }
+    }
+
+    /**
+     * .e.g usage   DIR::getClassPath(TextLine::class)
+     * class name should follow PSR-4
+     * @param string $ClassDotClass
+     * @return void
+     */
+    public static function getClassPathAndFileName(string $ClassDotClass): string
+    {
+        return sprintf("%s.php", str_replace("\\", "/", $ClassDotClass));
     }
 }
 
@@ -1066,6 +1082,14 @@ class GITHUB
             GitHubEnum::GET_BRANCH_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
     }
+
+    /**
+     * [GitHub Actions]
+     * @return void
+     */
+    public static function buildAllProject(){
+        // todo build All project
+    }
 }
 
 // [REMOVED] namespace app\Helpers;
@@ -1452,7 +1476,7 @@ class AppHelper
         }
         // update data
         //    app class
-        $appClassPath = Release::FILES_LIST[count(Release::FILES_LIST) - 1];
+        $appClassPath = Release::GET_FILES_LIST()[count(Release::GET_FILES_LIST()) - 1];
         file_put_contents($appClassPath, preg_replace(
             '/APP_VERSION\s*=\s*\'(\d+\.\d+\.\d+)\'/',
             sprintf("APP_VERSION = '%s'", $newVersion->toString()),
@@ -1740,50 +1764,64 @@ class UI
 // [REMOVED] namespace app\Objects;
 
 // [REMOVED] use app\app;
+// [REMOVED] use app\Enum\CommandEnum;
+// [REMOVED] use app\Enum\DockerEnum;
 // [REMOVED] use app\Enum\GitHubEnum;
+// [REMOVED] use app\Enum\IconEnum;
+// [REMOVED] use app\Enum\IndentLevelEnum;
+// [REMOVED] use app\Enum\PostWorkEnum;
 // [REMOVED] use app\Enum\TagEnum;
+// [REMOVED] use app\Enum\UIEnum;
+// [REMOVED] use app\Enum\ValidationTypeEnum;
 // [REMOVED] use app\Helpers\AppHelper;
+// [REMOVED] use app\Helpers\AWS;
 // [REMOVED] use app\Helpers\DIR;
+// [REMOVED] use app\Helpers\DOCKER;
+// [REMOVED] use app\Helpers\GITHUB;
+// [REMOVED] use app\Helpers\OPS;
+// [REMOVED] use app\Helpers\SERVICE;
+// [REMOVED] use app\Helpers\STR;
 // [REMOVED] use app\Helpers\TEXT;
+// [REMOVED] use app\Helpers\UI;
 // [REMOVED] use DateTime;
 
 class Release
 {
     /**
-     * @var array
+     * @return array
      * to release
      */
-    const FILES_LIST = [
+    public static function GET_FILES_LIST():array { return [
         // === Enum ===
-        'app/Enum/CommandEnum.php',
-        'app/Enum/GitHubEnum.php',
-        'app/Enum/IndentLevelEnum.php',
-        'app/Enum/IconEnum.php',
-        'app/Enum/TagEnum.php',
-        'app/Enum/UIEnum.php',
-        'app/Enum/DockerEnum.php',
-        'app/Enum/ValidationTypeEnum.php',
-        'app/Enum/PostWorkEnum.php',
+        DIR::getClassPathAndFileName(CommandEnum::class),
+        DIR::getClassPathAndFileName(GitHubEnum::class),
+        DIR::getClassPathAndFileName(IndentLevelEnum::class),
+        DIR::getClassPathAndFileName(IconEnum::class),
+        DIR::getClassPathAndFileName(TagEnum::class),
+        DIR::getClassPathAndFileName(UIEnum::class),
+        DIR::getClassPathAndFileName(DockerEnum::class),
+        DIR::getClassPathAndFileName(ValidationTypeEnum::class),
+        DIR::getClassPathAndFileName(PostWorkEnum::class),
         // === Helper ===
-        'app/Helpers/DIR.php',
-        'app/Helpers/OPS.php',
-        'app/Helpers/TEXT.php',
-        'app/Helpers/GITHUB.php',
-        'app/Helpers/SERVICE.php',
-        'app/Helpers/AWS.php',
-        'app/Helpers/AppHelper.php',
-        'app/Helpers/DOCKER.php',
-        'app/Helpers/STR.php',
-        'app/Helpers/UI.php',
+        DIR::getClassPathAndFileName(DIR::class),
+        DIR::getClassPathAndFileName(OPS::class),
+        DIR::getClassPathAndFileName(TEXT::class),
+        DIR::getClassPathAndFileName(GITHUB::class),
+        DIR::getClassPathAndFileName(SERVICE::class),
+        DIR::getClassPathAndFileName(AWS::class),
+        DIR::getClassPathAndFileName(AppHelper::class),
+        DIR::getClassPathAndFileName(DOCKER::class),
+        DIR::getClassPathAndFileName(STR::class),
+        DIR::getClassPathAndFileName(UI::class),
         // === Objects ===
-        'app/Objects/Release.php',
-        'app/Objects/Process.php',
-        'app/Objects/Version.php',
-        'app/Objects/DockerImage.php',
-        'app/Objects/TextLine.php',
+        DIR::getClassPathAndFileName(Release::class),
+        DIR::getClassPathAndFileName(Process::class),
+        DIR::getClassPathAndFileName(Version::class),
+        DIR::getClassPathAndFileName(DockerImage::class),
+        DIR::getClassPathAndFileName(TextLine::class),
         // always on bottom
         'app/app',
-    ];
+    ];}
 
     const RELEASE_PATH = '_ops/lib';
 
@@ -1878,7 +1916,7 @@ class Release
      */
     private function handleAppClass(): void
     {
-        $appClassContent = $this->handlePHPClassContent(self::FILES_LIST[count(self::FILES_LIST) - 1]);
+        $appClassContent = $this->handlePHPClassContent(self::GET_FILES_LIST()[count(self::GET_FILES_LIST()) - 1]);
         $appClassContentClassOnly = sprintf("class app%s", explode('class app', $appClassContent)[1]);
         // handle shell data
         $appClassContentClassOnly = str_replace(
@@ -1906,8 +1944,8 @@ class Release
     private function handleLibrariesClass(): void
     {
         $librariesClassesContent = "";
-        for ($i = 0; $i < count(self::FILES_LIST) - 1; $i++) {
-            $librariesClassesContent .= $this->handlePHPClassContent(self::FILES_LIST[$i]);
+        for ($i = 0; $i < count(self::GET_FILES_LIST()) - 1; $i++) {
+            $librariesClassesContent .= $this->handlePHPClassContent(self::GET_FILES_LIST()[$i]);
         }
         file_put_contents(
             self::RELEASE_PATH,
@@ -2774,7 +2812,7 @@ class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.18.10';
+    const APP_VERSION = '2.18.11';
 
     const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKHBocCBfb3BzL2xpYiBicmFuY2gpCmV4cG9ydCBSRVBPU0lUT1JZPSQocGhwIF9vcHMvbGliIHJlcG9zaXRvcnkpCmV4cG9ydCBIRUFEX0NPTU1JVF9JRD0kKHBocCBfb3BzL2xpYiBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBoYW5kbGUgYnJhbmNoZXMgdmFycyA9PT0KaWYgWyAiJHtCUkFOQ0h9IiA9ICJkZXZlbG9wIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1kZXYKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9ZGV2ZWxvcC1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0iZGV2ZWxvcC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAwCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJzdGFnaW5nIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1zdGcKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9c3RhZ2luZy1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0ic3RhZ2luZy1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAxCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjEwMCIKICBleHBvcnQgRUJfTUFJTF9DQVRDSEVSX1BPUlQ9IiAgICAiICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UgfCA0IHNwYWNlcyB0byBwYXNzIGVtcHR5IHN0cmluZwogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAyCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKIyA9PT0gRU5EID09PQoKIyA9PT0gQVdTIEFjY291bnQgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEFXU19BQ0NPVU5UX0lEPSI5ODIwODA2NzI5ODMiCmV4cG9ydCBSRUdJT049ImFwLWVhc3QtMSIKIyAgICBFQ1IgY29uZmlndXJhdGlvbgojICAgICAgICBiYXNlIGFuZCBjYWNoZXMgcmVwb3NpdG9yaWVzCmV4cG9ydCBFQ1JfUkVQT19BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19QQVlNRU5UX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtcGF5bWVudC1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlZPSUNFX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW52b2ljZS1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlRFR1JBVElPTl9BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW50ZWdyYXRpb24tYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19FTUFJTF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWVtYWlsLXNlcnZpY2UtcmVwb3NpdG9yeSIKIyAgICAgICAgbm9ybWFsIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgRWxhc3RpYyBCZWFuc3RhbGsgY29uZmlndXJhdGlvbgpleHBvcnQgUzNfRUJfQVBQX1ZFUlNJT05fQlVDS0VUX05BTUU9ImVsYXN0aWNiZWFuc3RhbGstJHtSRUdJT059LSR7QVdTX0FDQ09VTlRfSUR9IgpleHBvcnQgRUJfQVBQX1ZFUlNJT05fRk9MREVSX05BTUU9ImVuZ2FnZXBsdXMiCmV4cG9ydCBFQl9BUFBfTkFNRT0iZW5nYWdlcGx1cyIKIyA9PT0gRU5EID09PQoKIyA9PT0gRW5nYWdlUGx1cyBjb25maWd1cmF0aW9uID09PQpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRk9MREVSPSIuY2FjaGVzX2VuZ2FnZXBsdXMiCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19ESVI9IiQocGhwIF9vcHMvbGliIGhvbWUtZGlyKS8ke0VOR0FHRVBMVVNfQ0FDSEVTX0ZPTERFUn0iCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19SRVBPU0lUT1JZX0RJUj0iJHtFTkdBR0VQTFVTX0NBQ0hFU19ESVJ9LyR7UkVQT1NJVE9SWX0iCiMgPT09IEVORCA9PT0KCiMgPT09IGdldCBERVZJQ0UgZnJvbSBwYXJhbSAxID09PQpleHBvcnQgREVWSUNFPSIkMSIKIyA9PT0gRU5EID09PQo=';
 
@@ -2853,7 +2891,7 @@ class app
             case CommandEnum::ELB_UPDATE_VERSION:
                 AWS::ELBUpdateVersion();
                 break;
-            // === git ===
+            // === Git / GitHub ===
             case CommandEnum::BRANCH:
                 echo exec(GitHubEnum::GET_BRANCH_COMMAND);
                 break;
@@ -2868,6 +2906,10 @@ class app
                 break;
             case CommandEnum::FORCE_CHECKOUT:
                 GITHUB::forceCheckout();
+                break;
+            //        GitHub Actions
+            case CommandEnum::BUILD_ALL_PROJECTS:
+                GITHUB::buildAllProject();
                 break;
             // === Docker ===
             case CommandEnum::DOCKER_KEEP_IMAGE_BY:

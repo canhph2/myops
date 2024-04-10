@@ -51,7 +51,7 @@ class AppHelper
         }
         // update data
         //    app class
-        $appClassPath = Release::FILES_LIST[count(Release::FILES_LIST) - 1];
+        $appClassPath = Release::GET_FILES_LIST()[count(Release::GET_FILES_LIST()) - 1];
         file_put_contents($appClassPath, preg_replace(
             '/APP_VERSION\s*=\s*\'(\d+\.\d+\.\d+)\'/',
             sprintf("APP_VERSION = '%s'", $newVersion->toString()),
