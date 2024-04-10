@@ -1,4 +1,4 @@
-# ops-lib v2.18.13
+# ops-lib v2.19.0
 *DevOps | CICD | DevOps Shared Library*
 
 ## === Usage ===
