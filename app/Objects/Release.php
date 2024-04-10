@@ -14,7 +14,7 @@ use app\Enum\UIEnum;
 use app\Enum\ValidationTypeEnum;
 use app\Helpers\AppHelper;
 use app\Helpers\AWS;
-use app\Helpers\DIR;
+use app\Helpers\DirHelper;
 use app\Helpers\DOCKER;
 use app\Helpers\GITHUB;
 use app\Helpers\OPS;
@@ -32,32 +32,32 @@ class Release
      */
     public static function GET_FILES_LIST():array { return [
         // === Enum ===
-        DIR::getClassPathAndFileName(CommandEnum::class),
-        DIR::getClassPathAndFileName(GitHubEnum::class),
-        DIR::getClassPathAndFileName(IndentLevelEnum::class),
-        DIR::getClassPathAndFileName(IconEnum::class),
-        DIR::getClassPathAndFileName(TagEnum::class),
-        DIR::getClassPathAndFileName(UIEnum::class),
-        DIR::getClassPathAndFileName(DockerEnum::class),
-        DIR::getClassPathAndFileName(ValidationTypeEnum::class),
-        DIR::getClassPathAndFileName(PostWorkEnum::class),
+        DirHelper::getClassPathAndFileName(CommandEnum::class),
+        DirHelper::getClassPathAndFileName(GitHubEnum::class),
+        DirHelper::getClassPathAndFileName(IndentLevelEnum::class),
+        DirHelper::getClassPathAndFileName(IconEnum::class),
+        DirHelper::getClassPathAndFileName(TagEnum::class),
+        DirHelper::getClassPathAndFileName(UIEnum::class),
+        DirHelper::getClassPathAndFileName(DockerEnum::class),
+        DirHelper::getClassPathAndFileName(ValidationTypeEnum::class),
+        DirHelper::getClassPathAndFileName(PostWorkEnum::class),
         // === Helper ===
-        DIR::getClassPathAndFileName(DIR::class),
-        DIR::getClassPathAndFileName(OPS::class),
-        DIR::getClassPathAndFileName(TEXT::class),
-        DIR::getClassPathAndFileName(GITHUB::class),
-        DIR::getClassPathAndFileName(SERVICE::class),
-        DIR::getClassPathAndFileName(AWS::class),
-        DIR::getClassPathAndFileName(AppHelper::class),
-        DIR::getClassPathAndFileName(DOCKER::class),
-        DIR::getClassPathAndFileName(STR::class),
-        DIR::getClassPathAndFileName(UI::class),
+        DirHelper::getClassPathAndFileName(DirHelper::class),
+        DirHelper::getClassPathAndFileName(OPS::class),
+        DirHelper::getClassPathAndFileName(TEXT::class),
+        DirHelper::getClassPathAndFileName(GITHUB::class),
+        DirHelper::getClassPathAndFileName(SERVICE::class),
+        DirHelper::getClassPathAndFileName(AWS::class),
+        DirHelper::getClassPathAndFileName(AppHelper::class),
+        DirHelper::getClassPathAndFileName(DOCKER::class),
+        DirHelper::getClassPathAndFileName(STR::class),
+        DirHelper::getClassPathAndFileName(UI::class),
         // === Objects ===
-        DIR::getClassPathAndFileName(Release::class),
-        DIR::getClassPathAndFileName(Process::class),
-        DIR::getClassPathAndFileName(Version::class),
-        DIR::getClassPathAndFileName(DockerImage::class),
-        DIR::getClassPathAndFileName(TextLine::class),
+        DirHelper::getClassPathAndFileName(Release::class),
+        DirHelper::getClassPathAndFileName(Process::class),
+        DirHelper::getClassPathAndFileName(Version::class),
+        DirHelper::getClassPathAndFileName(DockerImage::class),
+        DirHelper::getClassPathAndFileName(TextLine::class),
         // always on bottom
         'app/app',
     ];}
@@ -76,7 +76,7 @@ class Release
      */
     private function validate(): bool
     {
-        switch (basename(DIR::getScriptDir())) {
+        switch (basename(DirHelper::getScriptDir())) {
             case 'app':
                 return true;
             case '_ops':
@@ -111,7 +111,7 @@ class Release
         $this->handleAppClass();
         TEXT::tagMultiple([__CLASS__, __FUNCTION__])->message("DONE");
         //    push new release to GitHub
-        (new Process("PUSH NEW RELEASE TO GITHUB", DIR::getWorkingDir(), [
+        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
             sprintf("git commit -m 'release %s on %s UTC'", app::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,

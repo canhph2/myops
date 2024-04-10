@@ -53,7 +53,7 @@ class GITHUB
         $commandsToCheckResult = $isCheckResult ? [GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND] : [];
         (new Process(
             "GitHub Set Remote Origin Url",
-            $workingDir ?? DIR::getWorkingDir(),
+            $workingDir ?? DirHelper::getWorkingDir(),
             array_merge([
                 sprintf("git remote set-url origin %s", $remoteOriginUrl)
             ], $commandsToCheckResult)
@@ -175,11 +175,11 @@ class GITHUB
             exit(); // END
         }
         // === handle ===
-        $initGitCommands = self::isGit(DIR::getWorkingDir()) ? [] : [GitHubEnum::INIT_REPOSITORY_COMMAND];
+        $initGitCommands = self::isGit(DirHelper::getWorkingDir()) ? [] : [GitHubEnum::INIT_REPOSITORY_COMMAND];
         $setRemoteOriginUrlCommand = exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND)
             ? sprintf("git remote set-url origin %s", $GIT_URL_WITH_TOKEN)
             : sprintf("git remote add origin %s", $GIT_URL_WITH_TOKEN);
-        (new Process("Set repository remote url and force checkout branch", DIR::getWorkingDir(), array_merge($initGitCommands, [
+        (new Process("Set repository remote url and force checkout branch", DirHelper::getWorkingDir(), array_merge($initGitCommands, [
             $setRemoteOriginUrlCommand,
             GitHubEnum::PULL_COMMAND,
             GitHubEnum::RESET_BRANCH_COMMAND,
@@ -187,7 +187,7 @@ class GITHUB
             GitHubEnum::PULL_COMMAND,
         ])))->execMultiInWorkDir(true)->printOutput();
         // === validate result ===
-        (new Process("Validate branch", DIR::getWorkingDir(), [
+        (new Process("Validate branch", DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
     }

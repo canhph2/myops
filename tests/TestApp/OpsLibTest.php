@@ -17,7 +17,7 @@ require_once 'app/Helpers/UI.php';
 require_once 'tests/TestApp/BaseTestCase.php';
 
 use app\Enum\TagEnum;
-use app\Helpers\DIR;
+use app\Helpers\DirHelper;
 use app\Objects\Process;
 use app\Objects\Version;
 
@@ -55,7 +55,7 @@ class OpsLibTest extends BaseTestCase
 
     public function testLoadOpsEnv()
     {
-        $envContent = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+        $envContent = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "php _ops/lib load-env-ops"
         ]))->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("SLACK_BOT_TOKEN", $envContent);
@@ -76,7 +76,7 @@ class OpsLibTest extends BaseTestCase
 
     public function testELBUpdateVersion()
     {
-        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+        $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "php _ops/lib elb-update-version"
         ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("missing BRANCH or REPOSITORY or ENV", $result1);
@@ -84,12 +84,12 @@ class OpsLibTest extends BaseTestCase
 
     public function testAWSGetENV()
     {
-        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+        $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "php _ops/lib get-secret-env env-email-dev"
         ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::SUCCESS, $result1);
         //
-        $result2 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+        $result2 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "php _ops/lib get-secret-env WRONG-ENVFILE"
         ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result2);
@@ -97,23 +97,23 @@ class OpsLibTest extends BaseTestCase
 
     public function testUITitleSubTitleFuncs(){
         // validate title
-        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+        $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "php _ops/lib title"
         ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result1);
         // title
-        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+        $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "php _ops/lib title 'this is test title'"
         ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("===", $result1);
         $this->customAssertIsStringAndContainsString("test title", $result1);
         // validate sub title
-        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+        $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "php _ops/lib sub-title"
         ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result1);
         // sub title
-        $result1 = (new Process(__FUNCTION__, DIR::getWorkingDir(), [
+        $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "php _ops/lib sub-title 'this is test sub title'"
         ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("--", $result1);

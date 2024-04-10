@@ -28,16 +28,16 @@ class AWS
     {
         $ENVName = $customENVName ?? '.env'; // default
         // remove old file
-        if (is_file(DIR::getWorkingDir($ENVName))) {
-            (new Process("Delete old env file", DIR::getWorkingDir(), [
-                sprintf("rm -f %s", DIR::getWorkingDir($ENVName)),
+        if (is_file(DirHelper::getWorkingDir($ENVName))) {
+            (new Process("Delete old env file", DirHelper::getWorkingDir(), [
+                sprintf("rm -f %s", DirHelper::getWorkingDir($ENVName)),
             ]))
                 ->execMultiInWorkDir()->printOutput();
         }
         // get
         exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output text  > %s", $secretName, $ENVName));
         // validate result
-        $isSuccess = is_file(DIR::getWorkingDir($ENVName)) && trim(file_get_contents(DIR::getWorkingDir($ENVName)));
+        $isSuccess = is_file(DirHelper::getWorkingDir($ENVName)) && trim(file_get_contents(DirHelper::getWorkingDir($ENVName)));
         TEXT::new()->messageCondition($isSuccess,
             "get secret '$secretName' successfully and save at '$ENVName'",
             "get secret '$secretName' failed"
@@ -87,11 +87,11 @@ class AWS
             //    vars
             $ENV = getenv('ENV');
             //    handle ELB version dir
-            if (is_dir(DIR::getWorkingDir(self::ELB_TEMP_DIR))) {
-                $commands[] = sprintf("rm -rf '%s'", DIR::getWorkingDir(self::ELB_TEMP_DIR));
+            if (is_dir(DirHelper::getWorkingDir(self::ELB_TEMP_DIR))) {
+                $commands[] = sprintf("rm -rf '%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR));
             }
-            $commands[] = sprintf("mkdir -p '%s/%s'", DIR::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
-            (new Process("handle ELB version directory", DIR::getWorkingDir(), $commands))
+            $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
+            (new Process("handle ELB version directory", DirHelper::getWorkingDir(), $commands))
                 ->execMultiInWorkDir()->printOutput();
             //   handle SSM and get image tag values
             //        SSM tag names
@@ -99,7 +99,7 @@ class AWS
             $SSM_ENV_TAG_INVOICE_SERVICE_NAME = "/$ENV/TAG_INVOICE_SERVICE_NAME";
             $SSM_ENV_TAG_PAYMENT_SERVICE_NAME = "/$ENV/TAG_PAYMENT_SERVICE_NAME";
             $SSM_ENV_TAG_INTEGRATION_API_NAME = "/$ENV/TAG_INTEGRATION_API_NAME";
-            $imageTagValues = (new Process("get image tag value from AWS SSM", DIR::getWorkingDir(), [
+            $imageTagValues = (new Process("get image tag value from AWS SSM", DirHelper::getWorkingDir(), [
                 "aws ssm get-parameters --names '$SSM_ENV_TAG_API_NAME' '$SSM_ENV_TAG_INVOICE_SERVICE_NAME' '$SSM_ENV_TAG_PAYMENT_SERVICE_NAME' '$SSM_ENV_TAG_INTEGRATION_API_NAME' --output json"
             ]))->execMulti()->getOutputStrAll();
             foreach (json_decode($imageTagValues, true)['Parameters'] as $paramObj) {
@@ -168,7 +168,7 @@ class AWS
             }
             //    create ELB version and update
             $EB_APP_VERSION_LABEL = sprintf("$ENV-$TAG_API_NAME-$TAG_INVOICE_SERVICE_NAME-$TAG_PAYMENT_SERVICE_NAME-$TAG_INTEGRATION_API_NAME-%sZ", (new DateTime())->format('Ymd-His'));
-            (new Process("zip ELB version", DIR::getWorkingDir(self::ELB_TEMP_DIR), [
+            (new Process("zip ELB version", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), [
                 //    create .zip file
                 sprintf("zip -r %s.zip Dockerrun.aws.json .ebextensions", $EB_APP_VERSION_LABEL),
                 //    Copy to s3 and create eb application version | required to run in elb-version directory
@@ -201,7 +201,7 @@ class AWS
             //        do check | ELB logs
             for ($i = 1; $i <= 40; $i++) {
                 TEXT::new()->message("Healthcheck the $i time");
-                $lastELBLogs = (new Process("get last ELB logs", DIR::getWorkingDir(), [
+                $lastELBLogs = (new Process("get last ELB logs", DirHelper::getWorkingDir(), [
                     sprintf("aws elasticbeanstalk describe-events --application-name %s --environment-name %s --query 'Events[].Message' --output json --max-items 5",
                         getenv('EB_APP_NAME'),
                         getenv('EB_ENVIRONMENT_NAME')

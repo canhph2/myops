@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-// === [34;1mOPS SHARED LIBRARY (PHP) v2.18.11[0m ===
+// === [34;1mOPS SHARED LIBRARY (PHP) v2.18.12[0m ===
 
 // === Generated libraries classes ===
 
@@ -275,7 +275,7 @@ class PostWorkEnum
 /**
  * this is a DIRectory helper / folder helper
  */
-class DIR
+class DirHelper
 {
     /**
      * get home directory / get root directory of user
@@ -466,12 +466,12 @@ class OPS
         ]);
         // sync new lib
         $EngagePlusCachesRepositoryOpsLibDir = sprintf("%s/ops-lib", getenv('ENGAGEPLUS_CACHES_DIR'));
-        (new Process("SYNC OPS LIB", DIR::getWorkingDir(), [
+        (new Process("SYNC OPS LIB", DirHelper::getWorkingDir(), [
             'rm _ops/lib',
             sprintf(
                 "cp -f '%s/_ops/lib' '%s/_ops/lib'",
                 $EngagePlusCachesRepositoryOpsLibDir,
-                DIR::getWorkingDir()
+                DirHelper::getWorkingDir()
             ),
         ]))->execMultiInWorkDir()->printOutput();
         //
@@ -479,7 +479,7 @@ class OPS
             ->setTag(TagEnum::SUCCESS)->message("sync done");
         TEXT::new()->messageSeparate();
         // show open new session to show right version
-        (new Process("CHECK A NEW VERSION", DIR::getWorkingDir(), [
+        (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
             'php _ops/lib version'
         ]))->execMultiInWorkDir(true)->printOutput();
         //
@@ -509,7 +509,7 @@ class OPS
             }
         }
         //
-        putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DIR::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
+        putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DirHelper::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
     }
 
     /**
@@ -532,38 +532,38 @@ class OPS
         // === cleanup ===
         //    clear .env, .conf-ryt
         if (getenv('ENGAGEPLUS_CACHES_FOLDER')
-            && STR::contains(DIR::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))) {
+            && STR::contains(DirHelper::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))) {
             //        .env
-            if (is_file(DIR::getWorkingDir('.env'))) {
-                (new Process("Remove .env", DIR::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DIR::getWorkingDir('.env'))
+            if (is_file(DirHelper::getWorkingDir('.env'))) {
+                (new Process("Remove .env", DirHelper::getWorkingDir(), [
+                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.env'))
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DIR::getWorkingDir()));
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DirHelper::getWorkingDir()));
                 TEXT::new()->messageCondition(!$checkTmpDir,
                     "remove '.env' file successfully", "remove '.env' file failed");
                 //
                 $isDoNothing = false;
             }
             //        .conf-ryt
-            if (is_file(DIR::getWorkingDir('.conf-ryt'))) {
-                (new Process("Remove .conf-ryt", DIR::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DIR::getWorkingDir('.conf-ryt'))
+            if (is_file(DirHelper::getWorkingDir('.conf-ryt'))) {
+                (new Process("Remove .conf-ryt", DirHelper::getWorkingDir(), [
+                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.conf-ryt'))
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.conf-ryt'", DIR::getWorkingDir()));
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.conf-ryt'", DirHelper::getWorkingDir()));
                 TEXT::new()->messageCondition(!$checkTmpDir,
                     "remove a '.conf-ryt' file successfully", "remove a '.conf-ryt' file failed");
                 //
                 $isDoNothing = false;
             }
             //        [payment-service] payment-credentials.json
-            if (is_file(DIR::getWorkingDir('payment-credentials.json'))) {
-                (new Process("Remove 'payment-credentials.json'", DIR::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DIR::getWorkingDir('payment-credentials.json'))
+            if (is_file(DirHelper::getWorkingDir('payment-credentials.json'))) {
+                (new Process("Remove 'payment-credentials.json'", DirHelper::getWorkingDir(), [
+                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('payment-credentials.json'))
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'payment-credentials.json'", DIR::getWorkingDir()));
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'payment-credentials.json'", DirHelper::getWorkingDir()));
                 TEXT::new()->messageCondition(!$checkTmpDir,
                     "remove a 'payment-credentials.json' file successfully", "remove a 'payment-credentials.json' file failed");
                 //
@@ -571,38 +571,38 @@ class OPS
             }
         }
         //    tmp dir (PHP project)
-        if (is_dir(DIR::getWorkingDir('tmp'))) {
-            (new Process("Remove tmp dir", DIR::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DIR::getWorkingDir('tmp'))
+        if (is_dir(DirHelper::getWorkingDir('tmp'))) {
+            (new Process("Remove tmp dir", DirHelper::getWorkingDir(), [
+                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('tmp'))
             ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
             // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DIR::getWorkingDir()));
+            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DirHelper::getWorkingDir()));
             TEXT::new()->messageCondition(!$checkTmpDir,
                 'remove a tmp dir successfully', 'remove a tmp dir failure');
             //
             $isDoNothing = false;
         }
         //    dist dir (Angular project)
-        if (is_dir(DIR::getWorkingDir('dist'))) {
-            (new Process("Remove dist dir", DIR::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DIR::getWorkingDir('dist'))
+        if (is_dir(DirHelper::getWorkingDir('dist'))) {
+            (new Process("Remove dist dir", DirHelper::getWorkingDir(), [
+                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('dist'))
             ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
             // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DIR::getWorkingDir()));
+            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DirHelper::getWorkingDir()));
             TEXT::new()->messageCondition(!$checkTmpDir,
                 'remove a dist dir successfully', 'remove a dist dir failure');
             //
             $isDoNothing = false;
         }
         //    composer config file: auth.json
-        if (is_file(DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))) {
-            $authJsonContent = file_get_contents(DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
+        if (is_file(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))) {
+            $authJsonContent = file_get_contents(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
             if (STR::contains($authJsonContent, "github-oauth") && STR::contains($authJsonContent, "github.com")) {
-                (new Process("Remove composer config file", DIR::getWorkingDir(), [
-                    sprintf("rm -f '%s'", DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
+                (new Process("Remove composer config file", DirHelper::getWorkingDir(), [
+                    sprintf("rm -f '%s'", DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DIR::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DirHelper::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
                 TEXT::new()->messageCondition(
                     !$checkTmpDir,
                     sprintf("remove file '%s' successfully", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE),
@@ -632,11 +632,11 @@ class OPS
     public static function clearOpsDir(): void
     {
         TEXT::new()->messageTitle("Clear _ops directory");
-        (new Process("Clear _ops directory", DIR::getWorkingDir(), [
-            sprintf("rm -rf '%s'", DIR::getWorkingDir('_ops'))
+        (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
+            sprintf("rm -rf '%s'", DirHelper::getWorkingDir('_ops'))
         ]))->execMultiInWorkDir(true)->printOutput();
         // validate result
-        $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DIR::getWorkingDir()));
+        $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
         TEXT::new()->messageCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
     }
 
@@ -944,7 +944,7 @@ class GITHUB
         $commandsToCheckResult = $isCheckResult ? [GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND] : [];
         (new Process(
             "GitHub Set Remote Origin Url",
-            $workingDir ?? DIR::getWorkingDir(),
+            $workingDir ?? DirHelper::getWorkingDir(),
             array_merge([
                 sprintf("git remote set-url origin %s", $remoteOriginUrl)
             ], $commandsToCheckResult)
@@ -1066,11 +1066,11 @@ class GITHUB
             exit(); // END
         }
         // === handle ===
-        $initGitCommands = self::isGit(DIR::getWorkingDir()) ? [] : [GitHubEnum::INIT_REPOSITORY_COMMAND];
+        $initGitCommands = self::isGit(DirHelper::getWorkingDir()) ? [] : [GitHubEnum::INIT_REPOSITORY_COMMAND];
         $setRemoteOriginUrlCommand = exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND)
             ? sprintf("git remote set-url origin %s", $GIT_URL_WITH_TOKEN)
             : sprintf("git remote add origin %s", $GIT_URL_WITH_TOKEN);
-        (new Process("Set repository remote url and force checkout branch", DIR::getWorkingDir(), array_merge($initGitCommands, [
+        (new Process("Set repository remote url and force checkout branch", DirHelper::getWorkingDir(), array_merge($initGitCommands, [
             $setRemoteOriginUrlCommand,
             GitHubEnum::PULL_COMMAND,
             GitHubEnum::RESET_BRANCH_COMMAND,
@@ -1078,7 +1078,7 @@ class GITHUB
             GitHubEnum::PULL_COMMAND,
         ])))->execMultiInWorkDir(true)->printOutput();
         // === validate result ===
-        (new Process("Validate branch", DIR::getWorkingDir(), [
+        (new Process("Validate branch", DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
     }
@@ -1212,16 +1212,16 @@ class AWS
     {
         $ENVName = $customENVName ?? '.env'; // default
         // remove old file
-        if (is_file(DIR::getWorkingDir($ENVName))) {
-            (new Process("Delete old env file", DIR::getWorkingDir(), [
-                sprintf("rm -f %s", DIR::getWorkingDir($ENVName)),
+        if (is_file(DirHelper::getWorkingDir($ENVName))) {
+            (new Process("Delete old env file", DirHelper::getWorkingDir(), [
+                sprintf("rm -f %s", DirHelper::getWorkingDir($ENVName)),
             ]))
                 ->execMultiInWorkDir()->printOutput();
         }
         // get
         exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output text  > %s", $secretName, $ENVName));
         // validate result
-        $isSuccess = is_file(DIR::getWorkingDir($ENVName)) && trim(file_get_contents(DIR::getWorkingDir($ENVName)));
+        $isSuccess = is_file(DirHelper::getWorkingDir($ENVName)) && trim(file_get_contents(DirHelper::getWorkingDir($ENVName)));
         TEXT::new()->messageCondition($isSuccess,
             "get secret '$secretName' successfully and save at '$ENVName'",
             "get secret '$secretName' failed"
@@ -1271,11 +1271,11 @@ class AWS
             //    vars
             $ENV = getenv('ENV');
             //    handle ELB version dir
-            if (is_dir(DIR::getWorkingDir(self::ELB_TEMP_DIR))) {
-                $commands[] = sprintf("rm -rf '%s'", DIR::getWorkingDir(self::ELB_TEMP_DIR));
+            if (is_dir(DirHelper::getWorkingDir(self::ELB_TEMP_DIR))) {
+                $commands[] = sprintf("rm -rf '%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR));
             }
-            $commands[] = sprintf("mkdir -p '%s/%s'", DIR::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
-            (new Process("handle ELB version directory", DIR::getWorkingDir(), $commands))
+            $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
+            (new Process("handle ELB version directory", DirHelper::getWorkingDir(), $commands))
                 ->execMultiInWorkDir()->printOutput();
             //   handle SSM and get image tag values
             //        SSM tag names
@@ -1283,7 +1283,7 @@ class AWS
             $SSM_ENV_TAG_INVOICE_SERVICE_NAME = "/$ENV/TAG_INVOICE_SERVICE_NAME";
             $SSM_ENV_TAG_PAYMENT_SERVICE_NAME = "/$ENV/TAG_PAYMENT_SERVICE_NAME";
             $SSM_ENV_TAG_INTEGRATION_API_NAME = "/$ENV/TAG_INTEGRATION_API_NAME";
-            $imageTagValues = (new Process("get image tag value from AWS SSM", DIR::getWorkingDir(), [
+            $imageTagValues = (new Process("get image tag value from AWS SSM", DirHelper::getWorkingDir(), [
                 "aws ssm get-parameters --names '$SSM_ENV_TAG_API_NAME' '$SSM_ENV_TAG_INVOICE_SERVICE_NAME' '$SSM_ENV_TAG_PAYMENT_SERVICE_NAME' '$SSM_ENV_TAG_INTEGRATION_API_NAME' --output json"
             ]))->execMulti()->getOutputStrAll();
             foreach (json_decode($imageTagValues, true)['Parameters'] as $paramObj) {
@@ -1352,7 +1352,7 @@ class AWS
             }
             //    create ELB version and update
             $EB_APP_VERSION_LABEL = sprintf("$ENV-$TAG_API_NAME-$TAG_INVOICE_SERVICE_NAME-$TAG_PAYMENT_SERVICE_NAME-$TAG_INTEGRATION_API_NAME-%sZ", (new DateTime())->format('Ymd-His'));
-            (new Process("zip ELB version", DIR::getWorkingDir(self::ELB_TEMP_DIR), [
+            (new Process("zip ELB version", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), [
                 //    create .zip file
                 sprintf("zip -r %s.zip Dockerrun.aws.json .ebextensions", $EB_APP_VERSION_LABEL),
                 //    Copy to s3 and create eb application version | required to run in elb-version directory
@@ -1385,7 +1385,7 @@ class AWS
             //        do check | ELB logs
             for ($i = 1; $i <= 40; $i++) {
                 TEXT::new()->message("Healthcheck the $i time");
-                $lastELBLogs = (new Process("get last ELB logs", DIR::getWorkingDir(), [
+                $lastELBLogs = (new Process("get last ELB logs", DirHelper::getWorkingDir(), [
                     sprintf("aws elasticbeanstalk describe-events --application-name %s --environment-name %s --query 'Events[].Message' --output json --max-items 5",
                         getenv('EB_APP_NAME'),
                         getenv('EB_ENVIRONMENT_NAME')
@@ -1567,7 +1567,7 @@ class DOCKER
                     TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)
                         ->setColor(UIEnum::COLOR_RED)
                         ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
-                    (new Process("Delete Docker Image", DIR::getWorkingDir(), [
+                    (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
                     ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
                         ->execMultiInWorkDir(true)->printOutput();
@@ -1644,7 +1644,7 @@ class DOCKER
     private static function getListImages(): array
     {
         $list = [];
-        $dockerImagesDataArr = (new Process("Get Docker Images Data", DIR::getWorkingDir(), [
+        $dockerImagesDataArr = (new Process("Get Docker Images Data", DirHelper::getWorkingDir(), [
             "docker images --format \"{{json .}}\" || exit 0"
         ]))->execMultiInWorkDir(true)->getOutput();
         foreach ($dockerImagesDataArr as $imageDataJson) {
@@ -1688,7 +1688,7 @@ class DOCKER
                 TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
                     ->setColor(UIEnum::COLOR_RED)
                     ->message("Delete dangling image '%s:%s'", $image->getRepository(), $image->getTag());
-                (new Process("Delete Docker Image", DIR::getWorkingDir(), [
+                (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                     sprintf("docker rmi -f %s", $image->getId())
                 ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
                     ->execMultiInWorkDir(true)->printOutput();
@@ -1775,7 +1775,7 @@ class UI
 // [REMOVED] use app\Enum\ValidationTypeEnum;
 // [REMOVED] use app\Helpers\AppHelper;
 // [REMOVED] use app\Helpers\AWS;
-// [REMOVED] use app\Helpers\DIR;
+// [REMOVED] use app\Helpers\DirHelper;
 // [REMOVED] use app\Helpers\DOCKER;
 // [REMOVED] use app\Helpers\GITHUB;
 // [REMOVED] use app\Helpers\OPS;
@@ -1793,32 +1793,32 @@ class Release
      */
     public static function GET_FILES_LIST():array { return [
         // === Enum ===
-        DIR::getClassPathAndFileName(CommandEnum::class),
-        DIR::getClassPathAndFileName(GitHubEnum::class),
-        DIR::getClassPathAndFileName(IndentLevelEnum::class),
-        DIR::getClassPathAndFileName(IconEnum::class),
-        DIR::getClassPathAndFileName(TagEnum::class),
-        DIR::getClassPathAndFileName(UIEnum::class),
-        DIR::getClassPathAndFileName(DockerEnum::class),
-        DIR::getClassPathAndFileName(ValidationTypeEnum::class),
-        DIR::getClassPathAndFileName(PostWorkEnum::class),
+        DirHelper::getClassPathAndFileName(CommandEnum::class),
+        DirHelper::getClassPathAndFileName(GitHubEnum::class),
+        DirHelper::getClassPathAndFileName(IndentLevelEnum::class),
+        DirHelper::getClassPathAndFileName(IconEnum::class),
+        DirHelper::getClassPathAndFileName(TagEnum::class),
+        DirHelper::getClassPathAndFileName(UIEnum::class),
+        DirHelper::getClassPathAndFileName(DockerEnum::class),
+        DirHelper::getClassPathAndFileName(ValidationTypeEnum::class),
+        DirHelper::getClassPathAndFileName(PostWorkEnum::class),
         // === Helper ===
-        DIR::getClassPathAndFileName(DIR::class),
-        DIR::getClassPathAndFileName(OPS::class),
-        DIR::getClassPathAndFileName(TEXT::class),
-        DIR::getClassPathAndFileName(GITHUB::class),
-        DIR::getClassPathAndFileName(SERVICE::class),
-        DIR::getClassPathAndFileName(AWS::class),
-        DIR::getClassPathAndFileName(AppHelper::class),
-        DIR::getClassPathAndFileName(DOCKER::class),
-        DIR::getClassPathAndFileName(STR::class),
-        DIR::getClassPathAndFileName(UI::class),
+        DirHelper::getClassPathAndFileName(DirHelper::class),
+        DirHelper::getClassPathAndFileName(OPS::class),
+        DirHelper::getClassPathAndFileName(TEXT::class),
+        DirHelper::getClassPathAndFileName(GITHUB::class),
+        DirHelper::getClassPathAndFileName(SERVICE::class),
+        DirHelper::getClassPathAndFileName(AWS::class),
+        DirHelper::getClassPathAndFileName(AppHelper::class),
+        DirHelper::getClassPathAndFileName(DOCKER::class),
+        DirHelper::getClassPathAndFileName(STR::class),
+        DirHelper::getClassPathAndFileName(UI::class),
         // === Objects ===
-        DIR::getClassPathAndFileName(Release::class),
-        DIR::getClassPathAndFileName(Process::class),
-        DIR::getClassPathAndFileName(Version::class),
-        DIR::getClassPathAndFileName(DockerImage::class),
-        DIR::getClassPathAndFileName(TextLine::class),
+        DirHelper::getClassPathAndFileName(Release::class),
+        DirHelper::getClassPathAndFileName(Process::class),
+        DirHelper::getClassPathAndFileName(Version::class),
+        DirHelper::getClassPathAndFileName(DockerImage::class),
+        DirHelper::getClassPathAndFileName(TextLine::class),
         // always on bottom
         'app/app',
     ];}
@@ -1837,7 +1837,7 @@ class Release
      */
     private function validate(): bool
     {
-        switch (basename(DIR::getScriptDir())) {
+        switch (basename(DirHelper::getScriptDir())) {
             case 'app':
                 return true;
             case '_ops':
@@ -1872,7 +1872,7 @@ class Release
         $this->handleAppClass();
         TEXT::tagMultiple([__CLASS__, __FUNCTION__])->message("DONE");
         //    push new release to GitHub
-        (new Process("PUSH NEW RELEASE TO GITHUB", DIR::getWorkingDir(), [
+        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
             sprintf("git commit -m 'release %s on %s UTC'", app::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,
@@ -1961,7 +1961,7 @@ class Release
 // [REMOVED] use app\Enum\IconEnum;
 // [REMOVED] use app\Enum\IndentLevelEnum;
 // [REMOVED] use app\Enum\TagEnum;
-// [REMOVED] use app\Helpers\DIR;
+// [REMOVED] use app\Helpers\DirHelper;
 // [REMOVED] use app\Helpers\GITHUB;
 // [REMOVED] use app\Helpers\TEXT;
 
@@ -2137,12 +2137,12 @@ class Process
                 "rm -rf /",
                 "rm -rf '/'",
                 "rm -rf \"/\"",
-                sprintf("rm -rf %s", DIR::getHomeDir()),
-                sprintf("rm -rf '%s'", DIR::getHomeDir()),
-                sprintf("rm -rf \"%s\"", DIR::getHomeDir()),
-                sprintf("rm -rf %s/", DIR::getHomeDir()),
-                sprintf("rm -rf '%s/'", DIR::getHomeDir()),
-                sprintf("rm -rf \"%s/\"", DIR::getHomeDir()),
+                sprintf("rm -rf %s", DirHelper::getHomeDir()),
+                sprintf("rm -rf '%s'", DirHelper::getHomeDir()),
+                sprintf("rm -rf \"%s\"", DirHelper::getHomeDir()),
+                sprintf("rm -rf %s/", DirHelper::getHomeDir()),
+                sprintf("rm -rf '%s/'", DirHelper::getHomeDir()),
+                sprintf("rm -rf \"%s/\"", DirHelper::getHomeDir()),
             ])) {
                 TEXT::tag(TagEnum::ERROR)->message("detect dangerous command: $command  , exit app");
                 exit(1); // END
@@ -2812,7 +2812,7 @@ class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.18.11';
+    const APP_VERSION = '2.18.12';
 
     const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKHBocCBfb3BzL2xpYiBicmFuY2gpCmV4cG9ydCBSRVBPU0lUT1JZPSQocGhwIF9vcHMvbGliIHJlcG9zaXRvcnkpCmV4cG9ydCBIRUFEX0NPTU1JVF9JRD0kKHBocCBfb3BzL2xpYiBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBoYW5kbGUgYnJhbmNoZXMgdmFycyA9PT0KaWYgWyAiJHtCUkFOQ0h9IiA9ICJkZXZlbG9wIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1kZXYKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9ZGV2ZWxvcC1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0iZGV2ZWxvcC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAwCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJzdGFnaW5nIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1zdGcKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9c3RhZ2luZy1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0ic3RhZ2luZy1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAxCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjEwMCIKICBleHBvcnQgRUJfTUFJTF9DQVRDSEVSX1BPUlQ9IiAgICAiICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UgfCA0IHNwYWNlcyB0byBwYXNzIGVtcHR5IHN0cmluZwogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAyCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKIyA9PT0gRU5EID09PQoKIyA9PT0gQVdTIEFjY291bnQgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEFXU19BQ0NPVU5UX0lEPSI5ODIwODA2NzI5ODMiCmV4cG9ydCBSRUdJT049ImFwLWVhc3QtMSIKIyAgICBFQ1IgY29uZmlndXJhdGlvbgojICAgICAgICBiYXNlIGFuZCBjYWNoZXMgcmVwb3NpdG9yaWVzCmV4cG9ydCBFQ1JfUkVQT19BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19QQVlNRU5UX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtcGF5bWVudC1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlZPSUNFX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW52b2ljZS1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlRFR1JBVElPTl9BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW50ZWdyYXRpb24tYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19FTUFJTF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWVtYWlsLXNlcnZpY2UtcmVwb3NpdG9yeSIKIyAgICAgICAgbm9ybWFsIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgRWxhc3RpYyBCZWFuc3RhbGsgY29uZmlndXJhdGlvbgpleHBvcnQgUzNfRUJfQVBQX1ZFUlNJT05fQlVDS0VUX05BTUU9ImVsYXN0aWNiZWFuc3RhbGstJHtSRUdJT059LSR7QVdTX0FDQ09VTlRfSUR9IgpleHBvcnQgRUJfQVBQX1ZFUlNJT05fRk9MREVSX05BTUU9ImVuZ2FnZXBsdXMiCmV4cG9ydCBFQl9BUFBfTkFNRT0iZW5nYWdlcGx1cyIKIyA9PT0gRU5EID09PQoKIyA9PT0gRW5nYWdlUGx1cyBjb25maWd1cmF0aW9uID09PQpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRk9MREVSPSIuY2FjaGVzX2VuZ2FnZXBsdXMiCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19ESVI9IiQocGhwIF9vcHMvbGliIGhvbWUtZGlyKS8ke0VOR0FHRVBMVVNfQ0FDSEVTX0ZPTERFUn0iCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19SRVBPU0lUT1JZX0RJUj0iJHtFTkdBR0VQTFVTX0NBQ0hFU19ESVJ9LyR7UkVQT1NJVE9SWX0iCiMgPT09IEVORCA9PT0KCiMgPT09IGdldCBERVZJQ0UgZnJvbSBwYXJhbSAxID09PQpleHBvcnQgREVWSUNFPSIkMSIKIyA9PT0gRU5EID09PQo=';
 
@@ -2920,13 +2920,13 @@ class app
                 break;
             // === utils ===
             case CommandEnum::HOME_DIR:
-                echo DIR::getHomeDir();
+                echo DirHelper::getHomeDir();
                 break;
             case  CommandEnum::SCRIPT_DIR:
-                echo DIR::getScriptDir();
+                echo DirHelper::getScriptDir();
                 break;
             case CommandEnum::WORKING_DIR:
-                echo DIR::getWorkingDir();
+                echo DirHelper::getWorkingDir();
                 break;
             case CommandEnum::REPLACE_TEXT_IN_FILE:
                 TEXT::replaceTextInFile($argv);
@@ -2935,7 +2935,7 @@ class app
                 SERVICE::SlackMessage($argv);
                 break;
             case CommandEnum::TMP:
-                DIR::tmp($argv);
+                DirHelper::tmp($argv);
                 break;
             case CommandEnum::POST_WORK:
                 OPS::postWork($argv);

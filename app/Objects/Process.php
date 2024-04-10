@@ -6,7 +6,7 @@ use app\Enum\GitHubEnum;
 use app\Enum\IconEnum;
 use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
-use app\Helpers\DIR;
+use app\Helpers\DirHelper;
 use app\Helpers\GITHUB;
 use app\Helpers\TEXT;
 
@@ -182,12 +182,12 @@ class Process
                 "rm -rf /",
                 "rm -rf '/'",
                 "rm -rf \"/\"",
-                sprintf("rm -rf %s", DIR::getHomeDir()),
-                sprintf("rm -rf '%s'", DIR::getHomeDir()),
-                sprintf("rm -rf \"%s\"", DIR::getHomeDir()),
-                sprintf("rm -rf %s/", DIR::getHomeDir()),
-                sprintf("rm -rf '%s/'", DIR::getHomeDir()),
-                sprintf("rm -rf \"%s/\"", DIR::getHomeDir()),
+                sprintf("rm -rf %s", DirHelper::getHomeDir()),
+                sprintf("rm -rf '%s'", DirHelper::getHomeDir()),
+                sprintf("rm -rf \"%s\"", DirHelper::getHomeDir()),
+                sprintf("rm -rf %s/", DirHelper::getHomeDir()),
+                sprintf("rm -rf '%s/'", DirHelper::getHomeDir()),
+                sprintf("rm -rf \"%s/\"", DirHelper::getHomeDir()),
             ])) {
                 TEXT::tag(TagEnum::ERROR)->message("detect dangerous command: $command  , exit app");
                 exit(1); // END

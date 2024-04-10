@@ -64,7 +64,7 @@ class DOCKER
                     TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)
                         ->setColor(UIEnum::COLOR_RED)
                         ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
-                    (new Process("Delete Docker Image", DIR::getWorkingDir(), [
+                    (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
                     ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
                         ->execMultiInWorkDir(true)->printOutput();
@@ -141,7 +141,7 @@ class DOCKER
     private static function getListImages(): array
     {
         $list = [];
-        $dockerImagesDataArr = (new Process("Get Docker Images Data", DIR::getWorkingDir(), [
+        $dockerImagesDataArr = (new Process("Get Docker Images Data", DirHelper::getWorkingDir(), [
             "docker images --format \"{{json .}}\" || exit 0"
         ]))->execMultiInWorkDir(true)->getOutput();
         foreach ($dockerImagesDataArr as $imageDataJson) {
@@ -185,7 +185,7 @@ class DOCKER
                 TEXT::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
                     ->setColor(UIEnum::COLOR_RED)
                     ->message("Delete dangling image '%s:%s'", $image->getRepository(), $image->getTag());
-                (new Process("Delete Docker Image", DIR::getWorkingDir(), [
+                (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                     sprintf("docker rmi -f %s", $image->getId())
                 ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
                     ->execMultiInWorkDir(true)->printOutput();

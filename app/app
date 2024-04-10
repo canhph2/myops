@@ -4,7 +4,7 @@
 namespace app;
 
 require_once 'app/Helpers/AppHelper.php';
-require_once 'app/Helpers/DIR.php';
+require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
 use app\Enum\CommandEnum;
@@ -15,7 +15,7 @@ use app\Enum\TagEnum;
 use app\Enum\UIEnum;
 use app\Helpers\AppHelper;
 use app\Helpers\AWS;
-use app\Helpers\DIR;
+use app\Helpers\DirHelper;
 use app\Helpers\DOCKER;
 use app\Helpers\GITHUB;
 use app\Helpers\OPS;
@@ -25,13 +25,13 @@ use app\Helpers\UI;
 use app\Objects\Release;
 use app\Objects\Version;
 
-AppHelper::requireOneAllPHPFilesInDir(DIR::getWorkingDir('app'));
+AppHelper::requireOneAllPHPFilesInDir(DirHelper::getWorkingDir('app'));
 
 class app
 {
     const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
     /**  @var string */
-    const APP_VERSION = '2.18.11';
+    const APP_VERSION = '2.18.12';
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -139,13 +139,13 @@ class app
                 break;
             // === utils ===
             case CommandEnum::HOME_DIR:
-                echo DIR::getHomeDir();
+                echo DirHelper::getHomeDir();
                 break;
             case  CommandEnum::SCRIPT_DIR:
-                echo DIR::getScriptDir();
+                echo DirHelper::getScriptDir();
                 break;
             case CommandEnum::WORKING_DIR:
-                echo DIR::getWorkingDir();
+                echo DirHelper::getWorkingDir();
                 break;
             case CommandEnum::REPLACE_TEXT_IN_FILE:
                 TEXT::replaceTextInFile($argv);
@@ -154,7 +154,7 @@ class app
                 SERVICE::SlackMessage($argv);
                 break;
             case CommandEnum::TMP:
-                DIR::tmp($argv);
+                DirHelper::tmp($argv);
                 break;
             case CommandEnum::POST_WORK:
                 OPS::postWork($argv);

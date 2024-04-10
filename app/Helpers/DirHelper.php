@@ -8,7 +8,7 @@ use app\Objects\Process;
 /**
  * this is a DIRectory helper / folder helper
  */
-class DIR
+class DirHelper
 {
     /**
      * get home directory / get root directory of user

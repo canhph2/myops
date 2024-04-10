@@ -96,12 +96,12 @@ class OPS
         ]);
         // sync new lib
         $EngagePlusCachesRepositoryOpsLibDir = sprintf("%s/ops-lib", getenv('ENGAGEPLUS_CACHES_DIR'));
-        (new Process("SYNC OPS LIB", DIR::getWorkingDir(), [
+        (new Process("SYNC OPS LIB", DirHelper::getWorkingDir(), [
             'rm _ops/lib',
             sprintf(
                 "cp -f '%s/_ops/lib' '%s/_ops/lib'",
                 $EngagePlusCachesRepositoryOpsLibDir,
-                DIR::getWorkingDir()
+                DirHelper::getWorkingDir()
             ),
         ]))->execMultiInWorkDir()->printOutput();
         //
@@ -109,7 +109,7 @@ class OPS
             ->setTag(TagEnum::SUCCESS)->message("sync done");
         TEXT::new()->messageSeparate();
         // show open new session to show right version
-        (new Process("CHECK A NEW VERSION", DIR::getWorkingDir(), [
+        (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
             'php _ops/lib version'
         ]))->execMultiInWorkDir(true)->printOutput();
         //
@@ -139,7 +139,7 @@ class OPS
             }
         }
         //
-        putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DIR::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
+        putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DirHelper::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
     }
 
     /**
@@ -162,38 +162,38 @@ class OPS
         // === cleanup ===
         //    clear .env, .conf-ryt
         if (getenv('ENGAGEPLUS_CACHES_FOLDER')
-            && STR::contains(DIR::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))) {
+            && STR::contains(DirHelper::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))) {
             //        .env
-            if (is_file(DIR::getWorkingDir('.env'))) {
-                (new Process("Remove .env", DIR::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DIR::getWorkingDir('.env'))
+            if (is_file(DirHelper::getWorkingDir('.env'))) {
+                (new Process("Remove .env", DirHelper::getWorkingDir(), [
+                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.env'))
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DIR::getWorkingDir()));
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DirHelper::getWorkingDir()));
                 TEXT::new()->messageCondition(!$checkTmpDir,
                     "remove '.env' file successfully", "remove '.env' file failed");
                 //
                 $isDoNothing = false;
             }
             //        .conf-ryt
-            if (is_file(DIR::getWorkingDir('.conf-ryt'))) {
-                (new Process("Remove .conf-ryt", DIR::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DIR::getWorkingDir('.conf-ryt'))
+            if (is_file(DirHelper::getWorkingDir('.conf-ryt'))) {
+                (new Process("Remove .conf-ryt", DirHelper::getWorkingDir(), [
+                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.conf-ryt'))
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.conf-ryt'", DIR::getWorkingDir()));
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.conf-ryt'", DirHelper::getWorkingDir()));
                 TEXT::new()->messageCondition(!$checkTmpDir,
                     "remove a '.conf-ryt' file successfully", "remove a '.conf-ryt' file failed");
                 //
                 $isDoNothing = false;
             }
             //        [payment-service] payment-credentials.json
-            if (is_file(DIR::getWorkingDir('payment-credentials.json'))) {
-                (new Process("Remove 'payment-credentials.json'", DIR::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DIR::getWorkingDir('payment-credentials.json'))
+            if (is_file(DirHelper::getWorkingDir('payment-credentials.json'))) {
+                (new Process("Remove 'payment-credentials.json'", DirHelper::getWorkingDir(), [
+                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('payment-credentials.json'))
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'payment-credentials.json'", DIR::getWorkingDir()));
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'payment-credentials.json'", DirHelper::getWorkingDir()));
                 TEXT::new()->messageCondition(!$checkTmpDir,
                     "remove a 'payment-credentials.json' file successfully", "remove a 'payment-credentials.json' file failed");
                 //
@@ -201,38 +201,38 @@ class OPS
             }
         }
         //    tmp dir (PHP project)
-        if (is_dir(DIR::getWorkingDir('tmp'))) {
-            (new Process("Remove tmp dir", DIR::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DIR::getWorkingDir('tmp'))
+        if (is_dir(DirHelper::getWorkingDir('tmp'))) {
+            (new Process("Remove tmp dir", DirHelper::getWorkingDir(), [
+                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('tmp'))
             ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
             // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DIR::getWorkingDir()));
+            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DirHelper::getWorkingDir()));
             TEXT::new()->messageCondition(!$checkTmpDir,
                 'remove a tmp dir successfully', 'remove a tmp dir failure');
             //
             $isDoNothing = false;
         }
         //    dist dir (Angular project)
-        if (is_dir(DIR::getWorkingDir('dist'))) {
-            (new Process("Remove dist dir", DIR::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DIR::getWorkingDir('dist'))
+        if (is_dir(DirHelper::getWorkingDir('dist'))) {
+            (new Process("Remove dist dir", DirHelper::getWorkingDir(), [
+                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('dist'))
             ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
             // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DIR::getWorkingDir()));
+            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DirHelper::getWorkingDir()));
             TEXT::new()->messageCondition(!$checkTmpDir,
                 'remove a dist dir successfully', 'remove a dist dir failure');
             //
             $isDoNothing = false;
         }
         //    composer config file: auth.json
-        if (is_file(DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))) {
-            $authJsonContent = file_get_contents(DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
+        if (is_file(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))) {
+            $authJsonContent = file_get_contents(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
             if (STR::contains($authJsonContent, "github-oauth") && STR::contains($authJsonContent, "github.com")) {
-                (new Process("Remove composer config file", DIR::getWorkingDir(), [
-                    sprintf("rm -f '%s'", DIR::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
+                (new Process("Remove composer config file", DirHelper::getWorkingDir(), [
+                    sprintf("rm -f '%s'", DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DIR::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
+                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DirHelper::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
                 TEXT::new()->messageCondition(
                     !$checkTmpDir,
                     sprintf("remove file '%s' successfully", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE),
@@ -262,11 +262,11 @@ class OPS
     public static function clearOpsDir(): void
     {
         TEXT::new()->messageTitle("Clear _ops directory");
-        (new Process("Clear _ops directory", DIR::getWorkingDir(), [
-            sprintf("rm -rf '%s'", DIR::getWorkingDir('_ops'))
+        (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
+            sprintf("rm -rf '%s'", DirHelper::getWorkingDir('_ops'))
         ]))->execMultiInWorkDir(true)->printOutput();
         // validate result
-        $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DIR::getWorkingDir()));
+        $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
         TEXT::new()->messageCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
     }
 
