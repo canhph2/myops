@@ -3,8 +3,9 @@
 namespace app\Helpers;
 
 use app\app;
-use app\Enum\TagEnum;
 use app\Classes\Process;
+use app\Enum\TagEnum;
+use app\Services\SlackService;
 use DateTime;
 use Exception;
 
@@ -42,7 +43,7 @@ class AWSHelper
             "get secret '$secretName' successfully and save at '$ENVName'",
             "get secret '$secretName' failed"
         );
-        if(!$isSuccess) exit(1);
+        if (!$isSuccess) exit(1);
     }
 
     /**
@@ -63,18 +64,19 @@ class AWSHelper
      * required:
      * - data store in SecretManager > env-ops > field GITHUB_PERSONAL_ACCESS_TOKEN
      * - AWS credential have permission to get env-ops
+     * @param string $fieldName
      * @return string|null
      */
-    public static function getGitHubTokenFromEnvOpsSecretManager(): ?string
+    public static function getValueEnvOpsSecretManager(string $fieldName): ?string
     {
         $opsEnvSecretName = 'env-ops';
         $opsEnvData = json_decode(exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output json", $opsEnvSecretName)));
         //
         $opsEnvDataArr = explode(PHP_EOL, $opsEnvData);
-        $tokenRow = array_filter($opsEnvDataArr, function ($item){
-            return StrHelper::contains($item, 'GITHUB_PERSONAL_ACCESS_TOKEN');
+        $line = array_filter($opsEnvDataArr, function ($item) use ($fieldName) {
+            return StrHelper::contains($item, $fieldName);
         });
-        return str_replace('export GITHUB_PERSONAL_ACCESS_TOKEN=', '', reset($tokenRow));
+        return trim(str_replace("export $fieldName=", '', reset($line)), "'\"");
     }
 
     /**
@@ -227,14 +229,14 @@ class AWSHelper
                 ]))->execMulti()->getOutputStrAll();
                 if (in_array(self::ELB_LOG_UPDATE_SUCCESSFULLY, json_decode($lastELBLogs))) {
                     TextHelper::tag(TagEnum::SUCCESS)->message(self::ELB_LOG_UPDATE_SUCCESSFULLY);
-                    SlackService::SlackMessage(['script path', 'slack', sprintf(
+                    SlackService::sendMessage(['script path', 'slack', sprintf(
                         "[FINISH] [SUCCESS] %s just finished building and deploying the project %s",
                         getenv('DEVICE'), getenv('REPOSITORY')
                     )]);
                     exit(0); // END | successful
                 } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
                     TextHelper::tag(TagEnum::ERROR)->message(self::ELB_LOG_UPDATE_FAILED);
-                    SlackService::SlackMessage(['script path', 'slack', sprintf(
+                    SlackService::sendMessage(['script path', 'slack', sprintf(
                         "[FINISH] [FAILURE 1 | Deploy failed] %s just finished building and deploying the project %s",
                         getenv('DEVICE'), getenv('REPOSITORY')
                     )]);
@@ -247,7 +249,7 @@ class AWSHelper
             }
             //             case timeout
             TextHelper::tag(TagEnum::ERROR)->message("Deployment got a timeout result");
-            SlackService::SlackMessage(['script path', 'slack', sprintf(
+            SlackService::sendMessage(['script path', 'slack', sprintf(
                 "[FINISH] [FAILURE 2 | Timeout] %s just finished building and deploying the project %s",
                 getenv('DEVICE'), getenv('REPOSITORY')
             )]);

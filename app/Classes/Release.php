@@ -18,10 +18,10 @@ use app\Helpers\DirHelper;
 use app\Helpers\DockerHelper;
 use app\Helpers\GitHubHelper;
 use app\Helpers\OPSHelper;
-use app\Helpers\SlackService;
 use app\Helpers\StrHelper;
 use app\Helpers\TextHelper;
 use app\Helpers\UIHelper;
+use app\Services\SlackService;
 use DateTime;
 
 class Release
@@ -55,12 +55,13 @@ class Release
             DirHelper::getClassPathAndFileName(OPSHelper::class),
             DirHelper::getClassPathAndFileName(TextHelper::class),
             DirHelper::getClassPathAndFileName(GitHubHelper::class),
-            DirHelper::getClassPathAndFileName(SlackService::class),
             DirHelper::getClassPathAndFileName(AWSHelper::class),
             DirHelper::getClassPathAndFileName(AppHelper::class),
             DirHelper::getClassPathAndFileName(DockerHelper::class),
             DirHelper::getClassPathAndFileName(StrHelper::class),
             DirHelper::getClassPathAndFileName(UIHelper::class),
+            // === Services ===
+            DirHelper::getClassPathAndFileName(SlackService::class),
             // always on bottom
             'app/app',
         ];

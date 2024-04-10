@@ -83,7 +83,7 @@ class CommandEnum
             '.e.g to test source code in the server'
         ],
         //        GitHub Actions
-        self::BUILD_ALL_PROJECTS => ['[GitHub Actions] build all projects to keep the GitHub runner token connecting (ES-2381)'],
+        self::BUILD_ALL_PROJECTS => ['[GitHub Actions] build all projects to keep the GitHub runner token connecting'], // ES-2381
         // group title
         "DOCKER" => [],
         self::DOCKER_KEEP_IMAGE_BY => ['Keep image by repository and tag, use for keep latest image. Required:  imageRepository imageTag'],

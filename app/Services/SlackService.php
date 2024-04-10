@@ -1,9 +1,11 @@
 <?php
 
-namespace app\Helpers;
+namespace app\Services;
 
 use app\Enum\GitHubEnum;
 use app\Enum\TagEnum;
+use app\Helpers\AWSHelper;
+use app\Helpers\TextHelper;
 
 class SlackService
 {
@@ -39,7 +41,7 @@ class SlackService
      * @param array $argv
      * @return void
      */
-    public static function SlackMessage(array $argv)
+    public static function sendMessage(array $argv)
     {
         // === validate ===
         //    validate a message
@@ -85,6 +87,25 @@ class SlackService
                 TextHelper::tagMultiple([TagEnum::SLACK, TagEnum::ERROR])->message("Error sending message | HTTP code $responseCode");
             }
         }
+    }
 
+    /**
+     * required AWS credential have access to env-ops (Secret Manager)
+     * use internal lib
+     * @return void
+     */
+    public static function sendMessageInternalUsing(
+        string $message,
+        string $repository = 'unknown_repository',
+        string $branch = 'unknown_branch'
+    )
+    {
+        // handle
+        //    prepare envs
+        putenv('REPOSITORY=' . $repository);
+        putenv('BRANCH=' . $branch);
+        putenv('SLACK_BOT_TOKEN=' . AWSHelper::getValueEnvOpsSecretManager('SLACK_BOT_TOKEN'));
+        putenv('SLACK_CHANNEL=' . AWSHelper::getValueEnvOpsSecretManager('SLACK_CHANNEL'));
+        self::sendMessage(['script path', 'slack', $message]);
     }
 }

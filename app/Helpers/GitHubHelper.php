@@ -3,11 +3,13 @@
 namespace app\Helpers;
 
 use app\Classes\GitHubRepositoryInfo;
+use app\Classes\Process;
+use app\Enum\CommandEnum;
 use app\Enum\GitHubEnum;
 use app\Enum\IconEnum;
 use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
-use app\Classes\Process;
+use app\Services\SlackService;
 
 /**
  * This is a GitHub helper
@@ -211,12 +213,14 @@ class GitHubHelper
         $branchToBuild = GitHubEnum::DEVELOP;
         TextHelper::new()->messageTitle("Build all projects to keep the GitHub runner token connecting (develop env)");
         // validate
-        $GitHubToken = AWSHelper::getGitHubTokenFromEnvOpsSecretManager();
+        $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
         if (!$GitHubToken) {
             TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->message("GitHub token not found (in Secret Manager)");
             return; //END
         }
         // handle
+        //    notify
+        SlackService::sendMessageInternalUsing(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
         //    get GitHub token and login gh
         TextHelper::new()->messageSubTitle("login gh (GitHub CLI)");
         (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
@@ -248,5 +252,7 @@ class GitHubHelper
                 }
             }
         } // end loop
+        //    notify
+        SlackService::sendMessageInternalUsing(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
     }
 }

@@ -35,6 +35,14 @@ class DirHelper
     }
 
     /**
+     * @return string
+     */
+    public static function getProjectDirName(): string
+    {
+        return basename(self::getWorkingDir());
+    }
+
+    /**
      * get current working directory of script
      * @return string
      */
@@ -101,4 +109,6 @@ class DirHelper
     {
         return sprintf("%s.php", str_replace("\\", "/", $ClassDotClass));
     }
+
+
 }
