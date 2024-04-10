@@ -1,6 +1,6 @@
 <?php
 
-namespace app\Objects;
+namespace app\Classes;
 
 use app\app;
 use app\Enum\CommandEnum;
@@ -13,15 +13,15 @@ use app\Enum\TagEnum;
 use app\Enum\UIEnum;
 use app\Enum\ValidationTypeEnum;
 use app\Helpers\AppHelper;
-use app\Helpers\AWS;
+use app\Helpers\AWSHelper;
 use app\Helpers\DirHelper;
-use app\Helpers\DOCKER;
-use app\Helpers\GITHUB;
-use app\Helpers\OPS;
-use app\Helpers\SERVICE;
-use app\Helpers\STR;
-use app\Helpers\TEXT;
-use app\Helpers\UI;
+use app\Helpers\DockerHelper;
+use app\Helpers\GitHubHelper;
+use app\Helpers\OPSHelper;
+use app\Helpers\SlackService;
+use app\Helpers\StrHelper;
+use app\Helpers\TextHelper;
+use app\Helpers\UIHelper;
 use DateTime;
 
 class Release
@@ -43,15 +43,15 @@ class Release
         DirHelper::getClassPathAndFileName(PostWorkEnum::class),
         // === Helper ===
         DirHelper::getClassPathAndFileName(DirHelper::class),
-        DirHelper::getClassPathAndFileName(OPS::class),
-        DirHelper::getClassPathAndFileName(TEXT::class),
-        DirHelper::getClassPathAndFileName(GITHUB::class),
-        DirHelper::getClassPathAndFileName(SERVICE::class),
-        DirHelper::getClassPathAndFileName(AWS::class),
+        DirHelper::getClassPathAndFileName(OPSHelper::class),
+        DirHelper::getClassPathAndFileName(TextHelper::class),
+        DirHelper::getClassPathAndFileName(GitHubHelper::class),
+        DirHelper::getClassPathAndFileName(SlackService::class),
+        DirHelper::getClassPathAndFileName(AWSHelper::class),
         DirHelper::getClassPathAndFileName(AppHelper::class),
-        DirHelper::getClassPathAndFileName(DOCKER::class),
-        DirHelper::getClassPathAndFileName(STR::class),
-        DirHelper::getClassPathAndFileName(UI::class),
+        DirHelper::getClassPathAndFileName(DockerHelper::class),
+        DirHelper::getClassPathAndFileName(StrHelper::class),
+        DirHelper::getClassPathAndFileName(UIHelper::class),
         // === Objects ===
         DirHelper::getClassPathAndFileName(Release::class),
         DirHelper::getClassPathAndFileName(Process::class),
@@ -80,10 +80,10 @@ class Release
             case 'app':
                 return true;
             case '_ops':
-                TEXT::tag(TagEnum::ERROR)->message("release in directory / another project, stop release job");
+                TextHelper::tag(TagEnum::ERROR)->message("release in directory / another project, stop release job");
                 return false;
             default:
-                TEXT::tag(TagEnum::ERROR)->message("unknown error");
+                TextHelper::tag(TagEnum::ERROR)->message("unknown error");
                 return false;
         }
     }
@@ -97,19 +97,19 @@ class Release
         //    validate version part
         $part = $argv[2] ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
-            TEXT::tag(TagEnum::ERROR)->message("invalid part of version, should be: %s", join(', ', Version::PARTS));
+            TextHelper::tag(TagEnum::ERROR)->message("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END
         }
         // handle
-        TEXT::new()->messageTitle("release");
+        TextHelper::new()->messageTitle("release");
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
         //    generate files
-        TEXT::tagMultiple([__CLASS__, __FUNCTION__])->message("init ops/lib file");
+        TextHelper::tagMultiple([__CLASS__, __FUNCTION__])->message("init ops/lib file");
         file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", app::version($newVersion))); // init file
         $this->handleLibrariesClass();
         $this->handleAppClass();
-        TEXT::tagMultiple([__CLASS__, __FUNCTION__])->message("DONE");
+        TextHelper::tagMultiple([__CLASS__, __FUNCTION__])->message("DONE");
         //    push new release to GitHub
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
@@ -117,7 +117,7 @@ class Release
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
         //
-        TEXT::new()->messageSeparate()
+        TextHelper::new()->messageSeparate()
             ->setTag(TagEnum::SUCCESS)->message("Release successful %s", app::version($newVersion));
     }
 

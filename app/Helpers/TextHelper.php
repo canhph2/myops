@@ -4,7 +4,7 @@ namespace app\Helpers;
 
 use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
-use app\Objects\TextLine;
+use app\Classes\TextLine;
 
 /**
  * This is TEXT Helper
@@ -12,7 +12,7 @@ use app\Objects\TextLine;
  *     - TEXT::message("simple_text");
  *     - TEXT::indent(IndentLevelEnum)->icon(IconEnum)->tag(TagEnum)->message("format %s %a", params)->message("next line");
  */
-class TEXT
+class TextHelper
 {
     /**
      * get new instance of Text Line
@@ -78,7 +78,7 @@ class TEXT
         $replaceText = $argv[3] ?? null;
         $filePath = $argv[4] ?? null;
         if (!$searchText || is_null($replaceText) || !$filePath) {
-            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                 ->message("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
             exit(); // END
         }
@@ -105,7 +105,7 @@ class TEXT
     public static function hideSensitiveInformation(string $line): string
     {
         // detect GitHub token
-        if (STR::contains($line, "https://") && STR::contains($line, "@github.com")) {
+        if (StrHelper::contains($line, "https://") && StrHelper::contains($line, "@github.com")) {
             // handle hide GitHub token: show last X letter of token
             $tempArr  = explode("https://", $line);
             $tempArr2 = explode("@github.com", $tempArr[1]);

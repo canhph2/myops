@@ -3,7 +3,7 @@
 namespace app\Helpers;
 
 use app\Enum\TagEnum;
-use app\Objects\Process;
+use app\Classes\Process;
 
 /**
  * this is a DIRectory helper / folder helper
@@ -69,7 +69,7 @@ class DirHelper
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
                     ->execMultiInWorkDir()->printOutput();
                 // validate result
-                TEXT::new()->messageCondition(is_dir(self::getWorkingDir('tmp')),
+                TextHelper::new()->messageCondition(is_dir(self::getWorkingDir('tmp')),
                     'create a tmp dir successfully', 'create a tmp dir failure');
                 break;
             case 'remove':
@@ -79,14 +79,14 @@ class DirHelper
                         ->execMultiInWorkDir()->printOutput();
                     // validate result
                     $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", self::getWorkingDir()));
-                    TEXT::new()->messageCondition(!$checkTmpDir,
+                    TextHelper::new()->messageCondition(!$checkTmpDir,
                         'remove a tmp dir successfully', 'remove a tmp dir failure');
                 } else {
-                    TEXT::new()->message("tmp directory doesn't exist, do nothing");
+                    TextHelper::new()->message("tmp directory doesn't exist, do nothing");
                 }
                 break;
             default:
-                TEXT::tag(TagEnum::ERROR)->message("missing action, action should be 'add' or 'remove'");
+                TextHelper::tag(TagEnum::ERROR)->message("missing action, action should be 'add' or 'remove'");
                 break;
         }
     }

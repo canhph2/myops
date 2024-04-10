@@ -7,7 +7,7 @@ use app\Enum\UIEnum;
 /**
  * This is a UI Console helper
  */
-class UI
+class UIHelper
 {
     public static function color(string $text, int $color): string
     {

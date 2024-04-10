@@ -4,12 +4,12 @@ namespace app\Helpers;
 
 use app\Enum\GitHubEnum;
 use app\Enum\TagEnum;
-use app\Objects\Process;
+use app\Classes\Process;
 
 /**
  * This is a GitHub helper
  */
-class GITHUB
+class GitHubHelper
 {
     /**
      * get current GitHub info, will return
@@ -110,26 +110,26 @@ class GITHUB
         $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
 
         if (!$repository || !$branch || !$engagePlusCachesDir || !$GitHubPersonalAccessToken) {
-            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
+            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
                 ->message("missing a REPOSITORY or BRANCH or ENGAGEPLUS_CACHES_DIR or GITHUB_PERSONAL_ACCESS_TOKEN");
             exit(); // END
         }
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        TEXT::tag($param2 ? 'CUSTOM' : 'ENV')->message("REPOSITORY = %s", $repository)
+        TextHelper::tag($param2 ? 'CUSTOM' : 'ENV')->message("REPOSITORY = %s", $repository)
             ->setTag($param3 ? 'CUSTOM' : 'ENV')->message("BRANCH = %s", $branch)
             ->message("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
-        TEXT::tag(TagEnum::GIT)->messageTitle("Handle Caches and Git");
+        TextHelper::tag(TagEnum::GIT)->messageTitle("Handle Caches and Git");
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
-            TEXT::new()->message("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
+            TextHelper::new()->message("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
             //
             // case clone
         } else {
-            TEXT::tag(TagEnum::ERROR)->message("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
+            TextHelper::tag(TagEnum::ERROR)->message("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
             //
             (new Process("Remove old directory", null, [
                 sprintf("rm -rf \"%s\"", $EngagePlusCachesRepositoryDir),
@@ -153,24 +153,24 @@ class GITHUB
 
     public static function forceCheckout()
     {
-        TEXT::new()->messageTitle("Force checkout a GitHub repository with specific branch");
+        TextHelper::new()->messageTitle("Force checkout a GitHub repository with specific branch");
         // === input ===
         $GIT_URL_WITH_TOKEN = readline("Please input GIT_URL_WITH_TOKEN? ");
         if (!$GIT_URL_WITH_TOKEN) {
-            TEXT::tag(TagEnum::ERROR)->message("GitHub repository url with Token should be string");
+            TextHelper::tag(TagEnum::ERROR)->message("GitHub repository url with Token should be string");
             exit(); // END
         }
         $BRANCH_TO_FORCE_CHECKOUT = readline("Please input BRANCH_TO_FORCE_CHECKOUT? ");
         if (!$BRANCH_TO_FORCE_CHECKOUT) {
-            TEXT::tag(TagEnum::ERROR)->message("branch to force checkout should be string");
+            TextHelper::tag(TagEnum::ERROR)->message("branch to force checkout should be string");
             exit(); // END
         }
         // === validation ===
-        if (!(STR::contains($GIT_URL_WITH_TOKEN, 'https://')
-            && STR::contains($GIT_URL_WITH_TOKEN, '@github.com')
-            && STR::contains($GIT_URL_WITH_TOKEN, '.git')
+        if (!(StrHelper::contains($GIT_URL_WITH_TOKEN, 'https://')
+            && StrHelper::contains($GIT_URL_WITH_TOKEN, '@github.com')
+            && StrHelper::contains($GIT_URL_WITH_TOKEN, '.git')
         )) {
-            TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::FORMAT])
+            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::FORMAT])
                 ->message("invalid GitHub repository url with Token format, should be 'https://TOKEN_TOKEN@@github.com/USER_NAME/REPOSITORY.git'");
             exit(); // END
         }

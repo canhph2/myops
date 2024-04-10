@@ -1,10 +1,19 @@
 # ops-lib v2.18.13
 *DevOps | CICD | DevOps Shared Library*
 
----
 ## === Usage ===
 - *Add this and the other project's README.MD (should be in the DevOps Notes section):*
 
+---
+## === DevOps Notes ===
+- Tech stacks: `Mac 14`/`Ubuntu 18`, `Docker 20.x`, `nvm` and `node 12` (Angular), `php 7.2`, `aws 2.x`, `gh 2.4` | all (or above).
+### Manual Build And Deploy
+- Manual Build And Deploy
+    - Checkout branch: ``develop``, ``staging``, ``master``
+    - Run command:
+```shell
+sh _ops/build-and-deploy-with-caches.sh 'Developer (manual)'
+```
 ---
 ### ops-lib | to sync new code (manually)
 ```shell

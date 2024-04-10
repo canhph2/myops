@@ -1,11 +1,11 @@
 <?php
 
-namespace app\Objects;
+namespace app\Classes;
 
 use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
 use app\Enum\UIEnum;
-use app\Helpers\UI;
+use app\Helpers\UIHelper;
 
 class TextLine
 {
@@ -203,11 +203,11 @@ class TextLine
         $finalText = sprintf("%s\n", $this->toString());
         //     case 1: set both color and format
         if ($this->color !== UIEnum::COLOR_NO_SET && $this->format !== UIEnum::FORMAT_NO_SET) {
-            echo UI::colorFormat($finalText, $this->color, $this->format);
+            echo UIHelper::colorFormat($finalText, $this->color, $this->format);
             //
             // case 2: set color only
         } else if ($this->color !== UIEnum::COLOR_NO_SET) {
-            echo UI::color($finalText, $this->color);
+            echo UIHelper::color($finalText, $this->color);
             //
             // case 3: no set both color and format
         } else {
@@ -222,7 +222,7 @@ class TextLine
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
-        echo UI::colorFormat(sprintf("=== %s ===\n", $this->toString()),
+        echo UIHelper::colorFormat(sprintf("=== %s ===\n", $this->toString()),
             UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD);
         //
         return $this;
@@ -233,7 +233,7 @@ class TextLine
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
-        echo UI::color(sprintf("-- %s --\n", $this->toString()), UIEnum::COLOR_BLUE);
+        echo UIHelper::color(sprintf("-- %s --\n", $this->toString()), UIEnum::COLOR_BLUE);
         //
         return $this;
     }

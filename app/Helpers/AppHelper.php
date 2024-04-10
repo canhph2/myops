@@ -3,8 +3,8 @@
 namespace app\Helpers;
 
 use app\app;
-use app\Objects\Release;
-use app\Objects\Version;
+use app\Classes\Release;
+use app\Classes\Version;
 
 class AppHelper
 {

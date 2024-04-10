@@ -14,16 +14,16 @@ use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
 use app\Enum\UIEnum;
 use app\Helpers\AppHelper;
-use app\Helpers\AWS;
+use app\Helpers\AWSHelper;
 use app\Helpers\DirHelper;
-use app\Helpers\DOCKER;
-use app\Helpers\GITHUB;
-use app\Helpers\OPS;
-use app\Helpers\SERVICE;
-use app\Helpers\TEXT;
-use app\Helpers\UI;
-use app\Objects\Release;
-use app\Objects\Version;
+use app\Helpers\DockerHelper;
+use app\Helpers\GitHubHelper;
+use app\Helpers\OPSHelper;
+use app\Helpers\SlackService;
+use app\Helpers\TextHelper;
+use app\Helpers\UIHelper;
+use app\Classes\Release;
+use app\Classes\Version;
 
 AppHelper::requireOneAllPHPFilesInDir(DirHelper::getWorkingDir('app'));
 
@@ -68,12 +68,12 @@ class app
 
         // === validation ===
         if (!$command) {
-            TEXT::tag(TagEnum::ERROR)->message("missing command, should be 'php _ops/lib COMMAND'");
+            TextHelper::tag(TagEnum::ERROR)->message("missing command, should be 'php _ops/lib COMMAND'");
             $this->help();
             exit(); // END
         }
         if (!array_key_exists($command, CommandEnum::SUPPORT_COMMANDS)) {
-            TEXT::tag(TagEnum::ERROR)->message("do not support this command '%s'", $command);
+            TextHelper::tag(TagEnum::ERROR)->message("do not support this command '%s'", $command);
             $this->help();
             exit(); // END
         }
@@ -88,27 +88,27 @@ class app
                 (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
-                TEXT::new()->message(app::version());
+                TextHelper::new()->message(app::version());
                 break;
             case CommandEnum::SYNC:
-                OPS::sync();
+                OPSHelper::sync();
                 break;
             // === AWS related ===
             case CommandEnum::LOAD_ENV_OPS:
-                echo AWS::loadOpsEnvAndHandleMore();
+                echo AWSHelper::loadOpsEnvAndHandleMore();
                 break;
             case CommandEnum::GET_SECRET_ENV:
                 // validate
                 if (!$param1) {
-                    TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                    TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->message("required secret name");
                     exit(); // END
                 }
                 // handle
-                AWS::getSecretEnv($param1, $param2);
+                AWSHelper::getSecretEnv($param1, $param2);
                 break;
             case CommandEnum::ELB_UPDATE_VERSION:
-                AWS::ELBUpdateVersion();
+                AWSHelper::ELBUpdateVersion();
                 break;
             // === Git / GitHub ===
             case CommandEnum::BRANCH:
@@ -121,21 +121,21 @@ class app
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
                 break;
             case CommandEnum::HANDLE_CACHES_AND_GIT:
-                GITHUB::handleCachesAndGit($argv);
+                GitHubHelper::handleCachesAndGit($argv);
                 break;
             case CommandEnum::FORCE_CHECKOUT:
-                GITHUB::forceCheckout();
+                GitHubHelper::forceCheckout();
                 break;
             //        GitHub Actions
             case CommandEnum::BUILD_ALL_PROJECTS:
-                GITHUB::buildAllProject();
+                GitHubHelper::buildAllProject();
                 break;
             // === Docker ===
             case CommandEnum::DOCKER_KEEP_IMAGE_BY:
-                DOCKER::keepImageBy($argv);
+                DockerHelper::keepImageBy($argv);
                 break;
             case CommandEnum::DOCKER_FILE_ADD_ENVS:
-                DOCKER::DockerfileAddEnvs($argv);
+                DockerHelper::DockerfileAddEnvs($argv);
                 break;
             // === utils ===
             case CommandEnum::HOME_DIR:
@@ -148,51 +148,51 @@ class app
                 echo DirHelper::getWorkingDir();
                 break;
             case CommandEnum::REPLACE_TEXT_IN_FILE:
-                TEXT::replaceTextInFile($argv);
+                TextHelper::replaceTextInFile($argv);
                 break;
             case CommandEnum::SLACK:
-                SERVICE::SlackMessage($argv);
+                SlackService::SlackMessage($argv);
                 break;
             case CommandEnum::TMP:
                 DirHelper::tmp($argv);
                 break;
             case CommandEnum::POST_WORK:
-                OPS::postWork($argv);
+                OPSHelper::postWork($argv);
                 break;
             case CommandEnum::CLEAR_OPS_DIR:
-                OPS::clearOpsDir();
+                OPSHelper::clearOpsDir();
                 break;
             // === private ===
             case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
-                echo OPS::getS3WhiteListIpsDevelopment();
+                echo OPSHelper::getS3WhiteListIpsDevelopment();
                 break;
             case CommandEnum::UPDATE_GITHUB_TOKEN_ALL_PROJECT:
-                OPS::updateGitHubTokenAllProjects();
+                OPSHelper::updateGitHubTokenAllProjects();
                 break;
             // === validation ===
             case CommandEnum::VALIDATE:
-                OPS::validate($argv);
+                OPSHelper::validate($argv);
                 break;
             // === UI/Text ===
             case CommandEnum::TITLE:
                 // validate
                 if (!$param1) {
-                    TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                    TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->message("required title text");
                     exit(); // END
                 }
                 // handle
-               TEXT::new()->messageTitle($param1);
+               TextHelper::new()->messageTitle($param1);
                 break;
             case CommandEnum::SUB_TITLE:
                 // validate
                 if (!$param1) {
-                    TEXT::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                    TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->message("required sub title text");
                     exit(); // END
                 }
                 // handle
-                TEXT::new()->messageSubTitle($param1);
+                TextHelper::new()->messageSubTitle($param1);
                 break;
             // === other ===
             default:
@@ -203,7 +203,7 @@ class app
 
     private function help()
     {
-        TEXT::new()->message('')
+        TextHelper::new()->message('')
             ->messageTitle("%s v%s", self::APP_NAME, self::APP_VERSION)
             ->setTag(TagEnum::INFO)->message("usage:  php _ops/lib COMMAND")
             ->setTag(TagEnum::NONE)->message("               php _ops/lib COMMAND PARAM1 PARAM2 ...")
@@ -216,26 +216,26 @@ class app
         foreach (CommandEnum::SUPPORT_COMMANDS as $command => $descriptionArr) {
             switch (count($descriptionArr)) {
                 case 0: // group command's title
-                    TEXT::new()->messageSubTitle($command);
+                    TextHelper::new()->messageSubTitle($command);
                     break;
                 case 1: // group command's items - single line description
-                    TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)
+                    TextHelper::indent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)
                         ->message("%s     : %s", $command, $descriptionArr[0]);
                     break;
                 default: // group command's items - multiple line description
-                    TEXT::indent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->message($command);
+                    TextHelper::indent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->message($command);
                     foreach ($descriptionArr as $descriptionLine) {
-                        TEXT::indent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->message($descriptionLine);
+                        TextHelper::indent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->message($descriptionLine);
                     }
                     break;
             }
         }
-        TEXT::new()->messageSeparate();
+        TextHelper::new()->messageSeparate();
     }
 
     public static function version(Version $newVersion = null): string
     {
-        return UI::colorFormat(
+        return UIHelper::colorFormat(
             sprintf("%s v%s", self::APP_NAME, $newVersion ? $newVersion->toString() : self::APP_VERSION),
             UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD
         );

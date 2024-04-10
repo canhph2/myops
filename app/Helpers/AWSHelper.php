@@ -4,14 +4,14 @@ namespace app\Helpers;
 
 use app\app;
 use app\Enum\TagEnum;
-use app\Objects\Process;
+use app\Classes\Process;
 use DateTime;
 use Exception;
 
 /**
  * this is an AWS Helper
  */
-class AWS
+class AWSHelper
 {
     const ELB_TEMP_DIR = "tmp/elb-version";
     const ELB_EBEXTENSIONS_DIR = ".ebextensions"; // should place at inside elb version dir
@@ -38,7 +38,7 @@ class AWS
         exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output text  > %s", $secretName, $ENVName));
         // validate result
         $isSuccess = is_file(DirHelper::getWorkingDir($ENVName)) && trim(file_get_contents(DirHelper::getWorkingDir($ENVName)));
-        TEXT::new()->messageCondition($isSuccess,
+        TextHelper::new()->messageCondition($isSuccess,
             "get secret '$secretName' successfully and save at '$ENVName'",
             "get secret '$secretName' failed"
         );
@@ -71,7 +71,7 @@ class AWS
     {
         try {
             // === validate ===
-            if (!OPS::validateEnvVars([
+            if (!OPSHelper::validateEnvVars([
                 'BRANCH', "REPOSITORY",
                 'ENV', 'ECR_REPO_API', 'S3_EB_APP_VERSION_BUCKET_NAME',
                 'EB_APP_VERSION_FOLDER_NAME', 'EB_ENVIRONMENT_NAME',
@@ -81,7 +81,7 @@ class AWS
                 exit(1); // END
             }
             // === handle ===
-            TEXT::new()->messageSeparate()
+            TextHelper::new()->messageSeparate()
                 ->setTagMultiple([getenv('REPOSITORY'), getenv('BRANCH')])
                 ->messageTitle("Handle ELB version - ELASTIC BEANSTALK");
             //    vars
@@ -146,24 +146,24 @@ class AWS
             //    validate configs files again
             //        .ebextensions/blockdevice-xvdcz.config
             $blockdeviceConfigContent = file_get_contents(sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME));
-            TEXT::new()->message(".ebextensions/blockdevice-xvdcz.config")->message($blockdeviceConfigContent);
-            if (!STR::contains($blockdeviceConfigContent, getenv('EB_2ND_DISK_SIZE'))) {
-                TEXT::tag(TagEnum::ERROR)->message(".ebextensions/blockdevice-xvdcz.config got an error");
+            TextHelper::new()->message(".ebextensions/blockdevice-xvdcz.config")->message($blockdeviceConfigContent);
+            if (!StrHelper::contains($blockdeviceConfigContent, getenv('EB_2ND_DISK_SIZE'))) {
+                TextHelper::tag(TagEnum::ERROR)->message(".ebextensions/blockdevice-xvdcz.config got an error");
                 exit(1); // END
             }
             //        Dockerrun.aws.json
             $DockerrunContentToCheckAgain = file_get_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME));
-            TEXT::new()->message("Dockerrun.aws.json")->message($DockerrunContentToCheckAgain);
-            if (!STR::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_API'))
-                || !STR::contains($DockerrunContentToCheckAgain, $TAG_API_NAME)
-                || !STR::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INVOICE_SERVICE'))
-                || !STR::contains($DockerrunContentToCheckAgain, $TAG_INVOICE_SERVICE_NAME)
-                || !STR::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_PAYMENT_SERVICE'))
-                || !STR::contains($DockerrunContentToCheckAgain, $TAG_PAYMENT_SERVICE_NAME)
-                || !STR::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INTEGRATION_API'))
-                || !STR::contains($DockerrunContentToCheckAgain, $TAG_INTEGRATION_API_NAME)
+            TextHelper::new()->message("Dockerrun.aws.json")->message($DockerrunContentToCheckAgain);
+            if (!StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_API'))
+                || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_API_NAME)
+                || !StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INVOICE_SERVICE'))
+                || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_INVOICE_SERVICE_NAME)
+                || !StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_PAYMENT_SERVICE'))
+                || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_PAYMENT_SERVICE_NAME)
+                || !StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INTEGRATION_API'))
+                || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_INTEGRATION_API_NAME)
             ) {
-                TEXT::tag(TagEnum::ERROR)->message("Dockerrun.aws.json got an error");
+                TextHelper::tag(TagEnum::ERROR)->message("Dockerrun.aws.json got an error");
                 exit(1); // END
             }
             //    create ELB version and update
@@ -195,12 +195,12 @@ class AWS
             //    Check new service healthy every X seconds | timeout = 20 minutes
             //        08/28/2023: Elastic Beanstalk environment update about 4 - 7 minutes
             for ($minute = 3; $minute >= 1; $minute--) {
-                TEXT::new()->message("Wait $minute minutes for the ELB environment does the update, and add some lines of logs...");
+                TextHelper::new()->message("Wait $minute minutes for the ELB environment does the update, and add some lines of logs...");
                 sleep(60);
             }
             //        do check | ELB logs
             for ($i = 1; $i <= 40; $i++) {
-                TEXT::new()->message("Healthcheck the $i time");
+                TextHelper::new()->message("Healthcheck the $i time");
                 $lastELBLogs = (new Process("get last ELB logs", DirHelper::getWorkingDir(), [
                     sprintf("aws elasticbeanstalk describe-events --application-name %s --environment-name %s --query 'Events[].Message' --output json --max-items 5",
                         getenv('EB_APP_NAME'),
@@ -208,34 +208,34 @@ class AWS
                     ),
                 ]))->execMulti()->getOutputStrAll();
                 if (in_array(self::ELB_LOG_UPDATE_SUCCESSFULLY, json_decode($lastELBLogs))) {
-                    TEXT::tag(TagEnum::SUCCESS)->message(self::ELB_LOG_UPDATE_SUCCESSFULLY);
-                    SERVICE::SlackMessage(['script path', 'slack', sprintf(
+                    TextHelper::tag(TagEnum::SUCCESS)->message(self::ELB_LOG_UPDATE_SUCCESSFULLY);
+                    SlackService::SlackMessage(['script path', 'slack', sprintf(
                         "[FINISH] [SUCCESS] %s just finished building and deploying the project %s",
                         getenv('DEVICE'), getenv('REPOSITORY')
                     )]);
                     exit(0); // END | successful
                 } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
-                    TEXT::tag(TagEnum::ERROR)->message(self::ELB_LOG_UPDATE_FAILED);
-                    SERVICE::SlackMessage(['script path', 'slack', sprintf(
+                    TextHelper::tag(TagEnum::ERROR)->message(self::ELB_LOG_UPDATE_FAILED);
+                    SlackService::SlackMessage(['script path', 'slack', sprintf(
                         "[FINISH] [FAILURE 1 | Deploy failed] %s just finished building and deploying the project %s",
                         getenv('DEVICE'), getenv('REPOSITORY')
                     )]);
                     exit(1); // END | failed
                 } else {
-                    TEXT::new()->message("Environment is still not healthy");
+                    TextHelper::new()->message("Environment is still not healthy");
                     // check again after X seconds
                     sleep(30);
                 }
             }
             //             case timeout
-            TEXT::tag(TagEnum::ERROR)->message("Deployment got a timeout result");
-            SERVICE::SlackMessage(['script path', 'slack', sprintf(
+            TextHelper::tag(TagEnum::ERROR)->message("Deployment got a timeout result");
+            SlackService::SlackMessage(['script path', 'slack', sprintf(
                 "[FINISH] [FAILURE 2 | Timeout] %s just finished building and deploying the project %s",
                 getenv('DEVICE'), getenv('REPOSITORY')
             )]);
             exit(1); // END | failed
         } catch (Exception $ex) {
-            TEXT::tag(TagEnum::ERROR)->message($ex->getMessage());
+            TextHelper::tag(TagEnum::ERROR)->message($ex->getMessage());
             exit(1); // END | exception error
         }
     }

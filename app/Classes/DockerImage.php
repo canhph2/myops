@@ -1,6 +1,6 @@
 <?php
 
-namespace app\Objects;
+namespace app\Classes;
 
 class DockerImage
 {

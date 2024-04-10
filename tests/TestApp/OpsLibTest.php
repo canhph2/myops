@@ -2,9 +2,9 @@
 
 namespace TestApp;
 
-require_once 'app/Objects/Version.php';
-require_once 'app/Objects/Process.php';
-require_once 'app/Objects/TextLine.php';
+require_once 'app/Classes/Version.php';
+require_once 'app/Classes/Process.php';
+require_once 'app/Classes/TextLine.php';
 require_once 'app/Enum/IndentLevelEnum.php';
 require_once 'app/Enum/TagEnum.php';
 require_once 'app/Enum/UIEnum.php';
@@ -18,8 +18,8 @@ require_once 'tests/TestApp/BaseTestCase.php';
 
 use app\Enum\TagEnum;
 use app\Helpers\DirHelper;
-use app\Objects\Process;
-use app\Objects\Version;
+use app\Classes\Process;
+use app\Classes\Version;
 
 
 class OpsLibTest extends BaseTestCase
