@@ -2,7 +2,10 @@
 
 namespace app\Helpers;
 
+use app\Classes\GitHubRepositoryInfo;
 use app\Enum\GitHubEnum;
+use app\Enum\IconEnum;
+use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
 use app\Classes\Process;
 
@@ -194,9 +197,56 @@ class GitHubHelper
 
     /**
      * [GitHub Actions]
+     * build strategy:
+     *  #1 20 minutes per project, 8 projects x 20 ~ 3 hours per command : not good | run weekly
+     *  #2 run every 3 minutes, 1 project, rebuild after 7 days | run every 30 minutes | need saved data
+     * steps:
+     *    1. get token from Secret (require aws credential)
+     *    2. login gh with token
+     *    3. run workflow
      * @return void
      */
-    public static function buildAllProject(){
-        // todo build All project
+    public static function buildAllProject()
+    {
+        $branchToBuild = GitHubEnum::DEVELOP;
+        TextHelper::new()->messageTitle("Build all projects to keep the GitHub runner token connecting (develop env)");
+        // validate
+        $GitHubToken = AWSHelper::getGitHubTokenFromEnvOpsSecretManager();
+        if (!$GitHubToken) {
+            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->message("GitHub token not found (in Secret Manager)");
+            return; //END
+        }
+        // handle
+        //    get GitHub token and login gh
+        TextHelper::new()->messageSubTitle("login gh (GitHub CLI)");
+        (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
+            sprintf("echo %s | gh auth login --with-token", $GitHubToken),
+        ]))->execMultiInWorkDir();
+        //    send command to build all projects
+        TextHelper::new()->messageSubTitle("send command to build all projects");
+        $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
+        TextHelper::new()->message("WORKSPACE DIR = $workspaceDir");
+        /** @var GitHubRepositoryInfo $repoInfo */
+        foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {
+            $projectDir = sprintf("%s/%s", $workspaceDir, $repoInfo->getRepositoryName());
+            if (is_dir($projectDir)) {
+                // show info
+                TextHelper::icon(IconEnum::PLUS)->message("Project '%s > %s'(%s): %s",
+                    $repoInfo->getUsername(), $repoInfo->getRepositoryName(), $branchToBuild,
+                    $repoInfo->isGitHubAction() ? "✔" : "X"
+                );
+                // handle send command to build
+                if ($repoInfo->isGitHubAction()) {
+                    (new Process("build project " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
+                        sprintf("cd '%s'", $projectDir),
+                        sprintf('gh workflow run workflow--%s--%s -r %s', $repoInfo->getRepositoryName(), $branchToBuild, $branchToBuild)
+                    ]))->execMultiInWorkDir();
+                    // wait to send next command
+                    TextHelper::icon(IconEnum::DOT)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
+                        ->message("wait %s minute...", $repoInfo->getAmountBuildTimeInMinute());
+                    sleep($repoInfo->getAmountBuildTimeInSecond());
+                }
+            }
+        } // end loop
     }
 }

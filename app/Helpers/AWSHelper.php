@@ -60,6 +60,24 @@ class AWSHelper
     }
 
     /**
+     * required:
+     * - data store in SecretManager > env-ops > field GITHUB_PERSONAL_ACCESS_TOKEN
+     * - AWS credential have permission to get env-ops
+     * @return string|null
+     */
+    public static function getGitHubTokenFromEnvOpsSecretManager(): ?string
+    {
+        $opsEnvSecretName = 'env-ops';
+        $opsEnvData = json_decode(exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output json", $opsEnvSecretName)));
+        //
+        $opsEnvDataArr = explode(PHP_EOL, $opsEnvData);
+        $tokenRow = array_filter($opsEnvDataArr, function ($item){
+            return StrHelper::contains($item, 'GITHUB_PERSONAL_ACCESS_TOKEN');
+        });
+        return str_replace('export GITHUB_PERSONAL_ACCESS_TOKEN=', '', reset($tokenRow));
+    }
+
+    /**
      * works:
      * - get tags name from SSM
      * - build a version file (.zip)

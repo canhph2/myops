@@ -30,37 +30,41 @@ class Release
      * @return array
      * to release
      */
-    public static function GET_FILES_LIST():array { return [
-        // === Enum ===
-        DirHelper::getClassPathAndFileName(CommandEnum::class),
-        DirHelper::getClassPathAndFileName(GitHubEnum::class),
-        DirHelper::getClassPathAndFileName(IndentLevelEnum::class),
-        DirHelper::getClassPathAndFileName(IconEnum::class),
-        DirHelper::getClassPathAndFileName(TagEnum::class),
-        DirHelper::getClassPathAndFileName(UIEnum::class),
-        DirHelper::getClassPathAndFileName(DockerEnum::class),
-        DirHelper::getClassPathAndFileName(ValidationTypeEnum::class),
-        DirHelper::getClassPathAndFileName(PostWorkEnum::class),
-        // === Helper ===
-        DirHelper::getClassPathAndFileName(DirHelper::class),
-        DirHelper::getClassPathAndFileName(OPSHelper::class),
-        DirHelper::getClassPathAndFileName(TextHelper::class),
-        DirHelper::getClassPathAndFileName(GitHubHelper::class),
-        DirHelper::getClassPathAndFileName(SlackService::class),
-        DirHelper::getClassPathAndFileName(AWSHelper::class),
-        DirHelper::getClassPathAndFileName(AppHelper::class),
-        DirHelper::getClassPathAndFileName(DockerHelper::class),
-        DirHelper::getClassPathAndFileName(StrHelper::class),
-        DirHelper::getClassPathAndFileName(UIHelper::class),
-        // === Objects ===
-        DirHelper::getClassPathAndFileName(Release::class),
-        DirHelper::getClassPathAndFileName(Process::class),
-        DirHelper::getClassPathAndFileName(Version::class),
-        DirHelper::getClassPathAndFileName(DockerImage::class),
-        DirHelper::getClassPathAndFileName(TextLine::class),
-        // always on bottom
-        'app/app',
-    ];}
+    public static function GET_FILES_LIST(): array
+    {
+        return [
+            // === Classes ===
+            DirHelper::getClassPathAndFileName(Release::class),
+            DirHelper::getClassPathAndFileName(Process::class),
+            DirHelper::getClassPathAndFileName(Version::class),
+            DirHelper::getClassPathAndFileName(DockerImage::class),
+            DirHelper::getClassPathAndFileName(TextLine::class),
+            DirHelper::getClassPathAndFileName(GitHubRepositoryInfo::class),
+            // === Enum ===
+            DirHelper::getClassPathAndFileName(CommandEnum::class),
+            DirHelper::getClassPathAndFileName(GitHubEnum::class),
+            DirHelper::getClassPathAndFileName(IndentLevelEnum::class),
+            DirHelper::getClassPathAndFileName(IconEnum::class),
+            DirHelper::getClassPathAndFileName(TagEnum::class),
+            DirHelper::getClassPathAndFileName(UIEnum::class),
+            DirHelper::getClassPathAndFileName(DockerEnum::class),
+            DirHelper::getClassPathAndFileName(ValidationTypeEnum::class),
+            DirHelper::getClassPathAndFileName(PostWorkEnum::class),
+            // === Helper ===
+            DirHelper::getClassPathAndFileName(DirHelper::class),
+            DirHelper::getClassPathAndFileName(OPSHelper::class),
+            DirHelper::getClassPathAndFileName(TextHelper::class),
+            DirHelper::getClassPathAndFileName(GitHubHelper::class),
+            DirHelper::getClassPathAndFileName(SlackService::class),
+            DirHelper::getClassPathAndFileName(AWSHelper::class),
+            DirHelper::getClassPathAndFileName(AppHelper::class),
+            DirHelper::getClassPathAndFileName(DockerHelper::class),
+            DirHelper::getClassPathAndFileName(StrHelper::class),
+            DirHelper::getClassPathAndFileName(UIHelper::class),
+            // always on bottom
+            'app/app',
+        ];
+    }
 
     const RELEASE_PATH = '_ops/lib';
 

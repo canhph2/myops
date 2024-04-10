@@ -2,6 +2,8 @@
 
 namespace app\Enum;
 
+use app\Classes\GitHubRepositoryInfo;
+
 class GitHubEnum
 {
     // === GitHub commands ===
@@ -22,23 +24,26 @@ class GitHubEnum
     public const DEVELOP = 'develop';
 
     /**
-     * key => value  | key = GitHub project name, value =  GitHub username
+     * @return array
      */
-    public const GITHUB_REPOSITORIES = [
-        'engage-api' => 'infohkengage',
-        'engage-spa' => 'infohkengage',
-        'engage-booking-api' => 'infohkengage',
-        'engage-booking-spa' => 'infohkengage',
-        'invoice-service' => 'infohkengage',
-        'payment-service' => 'infohkengage',
-        'integration-api' => 'infohkengage',
-        'email-service' => 'infohkengage',
-        //
-        'engage-api-deploy' => 'infohkengage',
-        //
-        'engage-database-utils' => 'congnqnexlesoft',
-        'ops-lib' => 'congnqnexlesoft',
-        'docker-base-images' => 'congnqnexlesoft',
-        'engage-selenium-test-1' => 'congnqnexlesoft',
-    ];
+    public static function GET_REPOSITORIES_INFO(): array
+    {
+        return [
+            new GitHubRepositoryInfo('engage-api', 'infohkengage', true, 20),
+            new GitHubRepositoryInfo('engage-spa', 'infohkengage', true, 20),
+            new GitHubRepositoryInfo('engage-booking-api', 'infohkengage', true, 20),
+            new GitHubRepositoryInfo('engage-booking-spa', 'infohkengage', true, 12),
+            new GitHubRepositoryInfo('invoice-service', 'infohkengage', true, 15),
+            new GitHubRepositoryInfo('payment-service', 'infohkengage', true, 15),
+            new GitHubRepositoryInfo('integration-api', 'infohkengage', true, 15),
+            new GitHubRepositoryInfo('email-service', 'infohkengage', true, 15),
+            //
+            new GitHubRepositoryInfo('engage-api-deploy', 'infohkengage'),
+            //
+            new GitHubRepositoryInfo('engage-database-utils', 'congnqnexlesoft'),
+            new GitHubRepositoryInfo('ops-lib', 'congnqnexlesoft'),
+            new GitHubRepositoryInfo('docker-base-images', 'congnqnexlesoft'),
+            new GitHubRepositoryInfo('engage-selenium-test-1', 'congnqnexlesoft'),
+        ];
+    }
 }

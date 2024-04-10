@@ -2,6 +2,7 @@
 
 namespace app\Helpers;
 
+use app\Classes\GitHubRepositoryInfo;
 use app\Enum\GitHubEnum;
 use app\Enum\IconEnum;
 use app\Enum\IndentLevelEnum;
@@ -51,22 +52,23 @@ class OPSHelper
 //
         $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
         TextHelper::new()->message("WORKSPACE DIR = $workspaceDir");
-        foreach (GitHubEnum::GITHUB_REPOSITORIES as $projectName => $GitHubUsername) {
+//        foreach (GitHubEnum::GITHUB_REPOSITORIES as $projectName => $GitHubUsername) {
+        /** @var GitHubRepositoryInfo $repoInfo */
+        foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {
             TextHelper::icon(IconEnum::PLUS)->message("Project '%s > %s': %s",
-                $GitHubUsername,
-                $projectName,
-                is_dir(sprintf("%s/%s", $workspaceDir, $projectName)) ? "✔" : "X"
+                $repoInfo->getUsername(), $repoInfo->getRepositoryName(),
+                is_dir(sprintf("%s/%s", $workspaceDir, $repoInfo->getRepositoryName())) ? "✔" : "X"
             );
         }
 // update token
-        foreach (GitHubEnum::GITHUB_REPOSITORIES as $projectName => $GitHubUsername) {
-            $projectDir = sprintf("%s/%s", $workspaceDir, $projectName);
+        foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {
+            $projectDir = sprintf("%s/%s", $workspaceDir, $repoInfo->getRepositoryName());
             if (is_dir($projectDir)) {
                 $output = null;
                 $resultCode = null;
                 exec(join(';', [
                     sprintf("cd \"%s\"", $projectDir), # jump into this directory
-                    sprintf("git remote set-url origin https://%s@github.com/%s/%s.git", $GITHUB_PERSONAL_ACCESS_TOKEN_NEW, $GitHubUsername, $projectName),
+                    sprintf("git remote set-url origin https://%s@github.com/%s/%s.git", $GITHUB_PERSONAL_ACCESS_TOKEN_NEW, $repoInfo->getUsername(), $repoInfo->getRepositoryName()),
                 ]), $output, $resultCode);
                 // print output
                 foreach ($output as $line) {
