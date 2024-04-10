@@ -17,6 +17,19 @@ use app\Services\SlackService;
 class GitHubHelper
 {
     /**
+     * @param string $name
+     * @return false|GitHubRepositoryInfo|null
+     */
+    public static function getRepositoryInfoByName(string $name)
+    {
+        $repoArr = array_filter(GitHubEnum::GET_REPOSITORIES_INFO(), function ($repository) use ($name) {
+            /** @var GitHubRepositoryInfo $repository */
+            return $repository->getRepositoryName() === $name;
+        });
+        return reset($repoArr);
+    }
+
+    /**
      * get current GitHub info, will return
      * [REMOTE_ORIGIN_URL, GITHUB_PERSONAL_TOKEN, USERNAME, REPOSITORY_NAME]
      *
@@ -42,15 +55,15 @@ class GitHubHelper
     }
 
     /**
-     * @param string $repository
+     * @param string $repositoryName
      * @param string|null $GitHubPersonalAccessToken
      * @return string
      */
-    public static function getRemoteOriginUrl_Custom(string $repository, string $GitHubPersonalAccessToken = null): string
+    public static function getRemoteOriginUrl_Custom(string $repositoryName, string $GitHubPersonalAccessToken = null): string
     {
         return $GitHubPersonalAccessToken
-            ? sprintf("https://%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, GitHubEnum::GITHUB_REPOSITORIES[$repository], $repository)
-            : sprintf("https://github.com/%s/%s.git", GitHubEnum::GITHUB_REPOSITORIES[$repository], $repository);
+            ? sprintf("https://%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, self::getRepositoryInfoByName($repositoryName)->getUsername(), $repositoryName)
+            : sprintf("https://github.com/%s/%s.git", self::getRepositoryInfoByName($repositoryName)->getUsername(), $repositoryName);
     }
 
     public static function setRemoteOriginUrl(string $remoteOriginUrl, string $workingDir = null, bool $isCheckResult = false): void

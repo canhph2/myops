@@ -52,7 +52,6 @@ class OPSHelper
 //
         $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
         TextHelper::new()->message("WORKSPACE DIR = $workspaceDir");
-//        foreach (GitHubEnum::GITHUB_REPOSITORIES as $projectName => $GitHubUsername) {
         /** @var GitHubRepositoryInfo $repoInfo */
         foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {
             TextHelper::icon(IconEnum::PLUS)->message("Project '%s > %s': %s",
