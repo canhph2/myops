@@ -86,7 +86,7 @@ class Release
             case 'app':
                 return true;
             case '.release':
-            case DirHelper::getScriptDir():
+            case basename(DirHelper::getHomeDir()):
                 TextHelper::tag(TagEnum::ERROR)->message("release in directory / another project, stop release job");
                 return false;
             default:
