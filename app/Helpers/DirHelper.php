@@ -80,7 +80,7 @@ class DirHelper
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
                     ->execMultiInWorkDir()->printOutput();
                 // validate result
-                self::LineNew()->messageCondition(is_dir(self::getWorkingDir('tmp')),
+                self::LineNew()->printCondition(is_dir(self::getWorkingDir('tmp')),
                     'create a tmp dir successfully', 'create a tmp dir failure');
                 break;
             case 'remove':
@@ -90,14 +90,14 @@ class DirHelper
                         ->execMultiInWorkDir()->printOutput();
                     // validate result
                     $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", self::getWorkingDir()));
-                    self::LineNew()->messageCondition(!$checkTmpDir,
+                    self::LineNew()->printCondition(!$checkTmpDir,
                         'remove a tmp dir successfully', 'remove a tmp dir failure');
                 } else {
-                    self::LineNew()->message("tmp directory doesn't exist, do nothing");
+                    self::LineNew()->print("tmp directory doesn't exist, do nothing");
                 }
                 break;
             default:
-                self::LineTag(TagEnum::ERROR)->message("missing action, action should be 'add' or 'remove'");
+                self::LineTag(TagEnum::ERROR)->print("missing action, action should be 'add' or 'remove'");
                 break;
         }
     }

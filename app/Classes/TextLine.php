@@ -195,7 +195,7 @@ class TextLine
         );
     }
 
-    public function message(string $format, ...$values): TextLine
+    public function print(string $format, ...$values): TextLine
     {
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
@@ -217,7 +217,7 @@ class TextLine
         return $this;
     }
 
-    public function messageTitle(string $format, ...$values): TextLine
+    public function printTitle(string $format, ...$values): TextLine
     {
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
@@ -228,7 +228,7 @@ class TextLine
         return $this;
     }
 
-    public function messageSubTitle(string $format, ...$values): TextLine
+    public function printSubTitle(string $format, ...$values): TextLine
     {
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
@@ -238,9 +238,10 @@ class TextLine
         return $this;
     }
 
-    public function messageSeparate(): TextLine
+    public function printSeparatorLine(): TextLine
     {
-        $this->message($this->indentLevel === IndentLevelEnum::MAIN_LINE ? '===' : '---');
+        $this->print($this->indentLevel === IndentLevelEnum::MAIN_LINE
+            ? str_repeat("=", 3) : str_repeat("-", 3));
         //
         return $this;
     }
@@ -251,10 +252,10 @@ class TextLine
      * @param string $messageError
      * @return void
      */
-    public function messageCondition(bool $condition, string $messageSuccess, string $messageError): TextLine
+    public function printCondition(bool $condition, string $messageSuccess, string $messageError): TextLine
     {
-        $condition ? $this->setTag(TagEnum::SUCCESS)->message($messageSuccess)
-            : $this->setTag(TagEnum::ERROR)->message($messageError);
+        $condition ? $this->setTag(TagEnum::SUCCESS)->print($messageSuccess)
+            : $this->setTag(TagEnum::ERROR)->print($messageError);
         //
         return $this;
     }

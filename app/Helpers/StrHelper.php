@@ -64,11 +64,11 @@ class StrHelper
         $filePath = $argv[4] ?? null;
         if (!$searchText || is_null($replaceText) || !$filePath) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
-                ->message("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
+                ->print("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
             exit(); // END
         }
         if (!is_file($filePath)) {
-            self::LineTag(TagEnum::ERROR)->message("$filePath does not exist");
+            self::LineTag(TagEnum::ERROR)->print("$filePath does not exist");
             exit(); // END
         }
 
@@ -77,7 +77,7 @@ class StrHelper
         file_put_contents($filePath, str_replace($searchText, $replaceText, $oldText));
         $newText = file_get_contents($filePath);
 //    validate result
-        self::lineNew()->messageCondition($oldText !== $newText,
+        self::lineNew()->printCondition($oldText !== $newText,
             "replace done with successful result", "replace done with failed result");
     }
 

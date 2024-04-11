@@ -42,7 +42,7 @@ class AWSHelper
         exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output text  > %s", $secretName, $ENVName));
         // validate result
         $isSuccess = is_file(DirHelper::getWorkingDir($ENVName)) && trim(file_get_contents(DirHelper::getWorkingDir($ENVName)));
-        self::LineNew()->messageCondition($isSuccess,
+        self::LineNew()->printCondition($isSuccess,
             "get secret '$secretName' successfully and save at '$ENVName'",
             "get secret '$secretName' failed"
         );
@@ -104,9 +104,9 @@ class AWSHelper
                 exit(1); // END
             }
             // === handle ===
-            self::LineNew()->messageSeparate()
+            self::LineNew()->printSeparatorLine()
                 ->setTagMultiple([getenv('REPOSITORY'), getenv('BRANCH')])
-                ->messageTitle("Handle ELB version - ELASTIC BEANSTALK");
+                ->printTitle("Handle ELB version - ELASTIC BEANSTALK");
             //    vars
             $ENV = getenv('ENV');
             //    handle ELB version dir
@@ -169,14 +169,14 @@ class AWSHelper
             //    validate configs files again
             //        .ebextensions/blockdevice-xvdcz.config
             $blockdeviceConfigContent = file_get_contents(sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME));
-            self::LineNew()->message(".ebextensions/blockdevice-xvdcz.config")->message($blockdeviceConfigContent);
+            self::LineNew()->print(".ebextensions/blockdevice-xvdcz.config")->print($blockdeviceConfigContent);
             if (!StrHelper::contains($blockdeviceConfigContent, getenv('EB_2ND_DISK_SIZE'))) {
-                self::LineTag(TagEnum::ERROR)->message(".ebextensions/blockdevice-xvdcz.config got an error");
+                self::LineTag(TagEnum::ERROR)->print(".ebextensions/blockdevice-xvdcz.config got an error");
                 exit(1); // END
             }
             //        Dockerrun.aws.json
             $DockerrunContentToCheckAgain = file_get_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME));
-            self::LineNew()->message("Dockerrun.aws.json")->message($DockerrunContentToCheckAgain);
+            self::LineNew()->print("Dockerrun.aws.json")->print($DockerrunContentToCheckAgain);
             if (!StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_API'))
                 || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_API_NAME)
                 || !StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INVOICE_SERVICE'))
@@ -186,7 +186,7 @@ class AWSHelper
                 || !StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INTEGRATION_API'))
                 || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_INTEGRATION_API_NAME)
             ) {
-                self::LineTag(TagEnum::ERROR)->message("Dockerrun.aws.json got an error");
+                self::LineTag(TagEnum::ERROR)->print("Dockerrun.aws.json got an error");
                 exit(1); // END
             }
             //    create ELB version and update
@@ -218,12 +218,12 @@ class AWSHelper
             //    Check new service healthy every X seconds | timeout = 20 minutes
             //        08/28/2023: Elastic Beanstalk environment update about 4 - 7 minutes
             for ($minute = 3; $minute >= 1; $minute--) {
-                self::LineNew()->message("Wait $minute minutes for the ELB environment does the update, and add some lines of logs...");
+                self::LineNew()->print("Wait $minute minutes for the ELB environment does the update, and add some lines of logs...");
                 sleep(60);
             }
             //        do check | ELB logs
             for ($i = 1; $i <= 40; $i++) {
-                self::LineNew()->message("Healthcheck the $i time");
+                self::LineNew()->print("Healthcheck the $i time");
                 $lastELBLogs = (new Process("get last ELB logs", DirHelper::getWorkingDir(), [
                     sprintf("aws elasticbeanstalk describe-events --application-name %s --environment-name %s --query 'Events[].Message' --output json --max-items 5",
                         getenv('EB_APP_NAME'),
@@ -231,34 +231,34 @@ class AWSHelper
                     ),
                 ]))->execMulti()->getOutputStrAll();
                 if (in_array(self::ELB_LOG_UPDATE_SUCCESSFULLY, json_decode($lastELBLogs))) {
-                    self::LineTag(TagEnum::SUCCESS)->message(self::ELB_LOG_UPDATE_SUCCESSFULLY);
+                    self::LineTag(TagEnum::SUCCESS)->print(self::ELB_LOG_UPDATE_SUCCESSFULLY);
                     SlackService::sendMessage(['script path', 'slack', sprintf(
                         "[FINISH] [SUCCESS] %s just finished building and deploying the project %s",
                         getenv('DEVICE'), getenv('REPOSITORY')
                     )]);
                     exit(0); // END | successful
                 } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
-                    self::LineTag(TagEnum::ERROR)->message(self::ELB_LOG_UPDATE_FAILED);
+                    self::LineTag(TagEnum::ERROR)->print(self::ELB_LOG_UPDATE_FAILED);
                     SlackService::sendMessage(['script path', 'slack', sprintf(
                         "[FINISH] [FAILURE 1 | Deploy failed] %s just finished building and deploying the project %s",
                         getenv('DEVICE'), getenv('REPOSITORY')
                     )]);
                     exit(1); // END | failed
                 } else {
-                    self::LineNew()->message("Environment is still not healthy");
+                    self::LineNew()->print("Environment is still not healthy");
                     // check again after X seconds
                     sleep(30);
                 }
             }
             //             case timeout
-            self::LineTag(TagEnum::ERROR)->message("Deployment got a timeout result");
+            self::LineTag(TagEnum::ERROR)->print("Deployment got a timeout result");
             SlackService::sendMessage(['script path', 'slack', sprintf(
                 "[FINISH] [FAILURE 2 | Timeout] %s just finished building and deploying the project %s",
                 getenv('DEVICE'), getenv('REPOSITORY')
             )]);
             exit(1); // END | failed
         } catch (Exception $ex) {
-            self::LineTag(TagEnum::ERROR)->message($ex->getMessage());
+            self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
             exit(1); // END | exception error
         }
     }

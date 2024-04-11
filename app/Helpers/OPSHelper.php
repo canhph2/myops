@@ -49,15 +49,15 @@ class OPSHelper
     {
         $GITHUB_PERSONAL_ACCESS_TOKEN_NEW = readline("Please input new GITHUB_PERSONAL_ACCESS_TOKEN? ");
         if (!$GITHUB_PERSONAL_ACCESS_TOKEN_NEW) {
-            self::LineTag(TagEnum::ERROR)->message("GitHub Personal Token should be string");
+            self::LineTag(TagEnum::ERROR)->print("GitHub Personal Token should be string");
             exit(); // END
         }
 //
         $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
-        self::LineNew()->message("WORKSPACE DIR = $workspaceDir");
+        self::LineNew()->print("WORKSPACE DIR = $workspaceDir");
         /** @var GitHubRepositoryInfo $repoInfo */
         foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {
-            self::LineIcon(IconEnum::PLUS)->message("Project '%s > %s': %s",
+            self::LineIcon(IconEnum::PLUS)->print("Project '%s > %s': %s",
                 $repoInfo->getUsername(), $repoInfo->getRepositoryName(),
                 is_dir(sprintf("%s/%s", $workspaceDir, $repoInfo->getRepositoryName())) ? "✔" : "X"
             );
@@ -74,7 +74,7 @@ class OPSHelper
                 ]), $output, $resultCode);
                 // print output
                 foreach ($output as $line) {
-                    self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message($line);
+                    self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->print($line);
                 }
             }
         }
@@ -88,7 +88,7 @@ class OPSHelper
      */
     public static function sync()
     {
-        self::LineNew()->messageTitle(__FUNCTION__);
+        self::LineNew()->printTitle(__FUNCTION__);
         // load env into PHP
         self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
         // load caches of this source code
@@ -109,15 +109,15 @@ class OPSHelper
             ),
         ]))->execMultiInWorkDir()->printOutput();
         //
-        self::LineNew()->messageSeparate()
-            ->setTag(TagEnum::SUCCESS)->message("sync done");
-        self::LineNew()->messageSeparate();
+        self::LineNew()->printSeparatorLine()
+            ->setTag(TagEnum::SUCCESS)->print("sync done");
+        self::LineNew()->printSeparatorLine();
         // show open new session to show right version
         (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
             'php ~/ops-app version'
         ]))->execMultiInWorkDir(true)->printOutput();
         //
-        self::LineNew()->messageSeparate();
+        self::LineNew()->printSeparatorLine();
     }
 
     /**
@@ -157,10 +157,10 @@ class OPSHelper
         // === param ===
         $isSkipCheckDir = ($argv[2] ?? null) === PostWorkEnum::SKIP_CHECK_DIR;
         //
-        self::LineNew()->messageTitle("Post works");
+        self::LineNew()->printTitle("Post works");
         if ($isSkipCheckDir) {
             self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)
-                ->message("skip check execution directory");
+                ->print("skip check execution directory");
         }
         $isDoNothing = true;
         // === cleanup ===
@@ -174,7 +174,7 @@ class OPSHelper
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DirHelper::getWorkingDir()));
-                self::LineNew()->messageCondition(!$checkTmpDir,
+                self::LineNew()->printCondition(!$checkTmpDir,
                     "remove '.env' file successfully", "remove '.env' file failed");
                 //
                 $isDoNothing = false;
@@ -186,7 +186,7 @@ class OPSHelper
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.conf-ryt'", DirHelper::getWorkingDir()));
-                self::LineNew()->messageCondition(!$checkTmpDir,
+                self::LineNew()->printCondition(!$checkTmpDir,
                     "remove a '.conf-ryt' file successfully", "remove a '.conf-ryt' file failed");
                 //
                 $isDoNothing = false;
@@ -198,7 +198,7 @@ class OPSHelper
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'payment-credentials.json'", DirHelper::getWorkingDir()));
-                self::LineNew()->messageCondition(!$checkTmpDir,
+                self::LineNew()->printCondition(!$checkTmpDir,
                     "remove a 'payment-credentials.json' file successfully", "remove a 'payment-credentials.json' file failed");
                 //
                 $isDoNothing = false;
@@ -211,7 +211,7 @@ class OPSHelper
             ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
             // validate result
             $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DirHelper::getWorkingDir()));
-            self::LineNew()->messageCondition(!$checkTmpDir,
+            self::LineNew()->printCondition(!$checkTmpDir,
                 'remove a tmp dir successfully', 'remove a tmp dir failure');
             //
             $isDoNothing = false;
@@ -223,7 +223,7 @@ class OPSHelper
             ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
             // validate result
             $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DirHelper::getWorkingDir()));
-            self::LineNew()->messageCondition(!$checkTmpDir,
+            self::LineNew()->printCondition(!$checkTmpDir,
                 'remove a dist dir successfully', 'remove a dist dir failure');
             //
             $isDoNothing = false;
@@ -237,7 +237,7 @@ class OPSHelper
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DirHelper::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
-                self::LineNew()->messageCondition(
+                self::LineNew()->printCondition(
                     !$checkTmpDir,
                     sprintf("remove file '%s' successfully", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE),
                     sprintf("remove file '%s' failed", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE)
@@ -258,20 +258,20 @@ class OPSHelper
         // === end cleanup ===
         //
         if ($isDoNothing) {
-            self::LineNew()->message("do nothing");
+            self::LineNew()->print("do nothing");
         }
-        self::LineNew()->messageSeparate();
+        self::LineNew()->printSeparatorLine();
     }
 
     public static function clearOpsDir(): void
     {
-        self::LineNew()->messageTitle("Clear _ops directory");
+        self::LineNew()->printTitle("Clear _ops directory");
         (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
             sprintf("rm -rf '%s'", DirHelper::getWorkingDir('_ops'))
         ]))->execMultiInWorkDir(true)->printOutput();
         // validate result
         $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
-        self::LineNew()->messageCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
+        self::LineNew()->printCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
     }
 
     /**
@@ -287,7 +287,7 @@ class OPSHelper
             if (!getenv($envVar)) $envVarsMissing[] = $envVar;
         }
         if (count($envVarsMissing) > 0) {
-            self::LineTagMultiple([TagEnum::ERROR, TagEnum::ENV])->message("missing %s", join(" or ", $envVarsMissing));
+            self::LineTagMultiple([TagEnum::ERROR, TagEnum::ENV])->print("missing %s", join(" or ", $envVarsMissing));
             return false; // END | case error
         }
         return true; // END | case OK
@@ -309,8 +309,8 @@ class OPSHelper
                 self::validateFileContainsText($argv);
                 break;
             default:
-                self::LineTag(TagEnum::ERROR)->message("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
-                    ->message("should be like eg:   php ~/ops-lib validate branch");
+                self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
+                    ->print("should be like eg:   php ~/ops-lib validate branch");
                 break;
         }
     }
@@ -324,9 +324,9 @@ class OPSHelper
     private static function validateBranch()
     {
         if (in_array(getenv('BRANCH'), ['develop', 'staging', 'master'])) {
-            self::LineTag(TagEnum::SUCCESS)->message("validation branch got OK result: %s", getenv('BRANCH'));
+            self::LineTag(TagEnum::SUCCESS)->print("validation branch got OK result: %s", getenv('BRANCH'));
         } else {
-            self::LineTag(TagEnum::ERROR)->message("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
+            self::LineTag(TagEnum::ERROR)->print("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
             exit(1); // END app
         }
     }
@@ -340,9 +340,9 @@ class OPSHelper
     {
         $dockerServer = exec("docker version | grep 'Server:'");
         if (trim($dockerServer)) {
-            self::LineTag(TagEnum::SUCCESS)->message("Docker is running: $dockerServer");
+            self::LineTag(TagEnum::SUCCESS)->print("Docker is running: $dockerServer");
         } else {
-            self::LineTag(TagEnum::ERROR)->message("Docker isn't running. Please start Docker app.");
+            self::LineTag(TagEnum::ERROR)->print("Docker isn't running. Please start Docker app.");
             exit(1); // END app
         }
     }
@@ -355,9 +355,9 @@ class OPSHelper
     private static function validateDevice()
     {
         if (getenv('DEVICE')) {
-            self::LineTag(TagEnum::SUCCESS)->message("validation device got OK result: %s", getenv('DEVICE'));
+            self::LineTag(TagEnum::SUCCESS)->print("validation device got OK result: %s", getenv('DEVICE'));
         } else {
-            self::LineTag(TagEnum::ERROR)->message("Invalid device | should pass in your command");
+            self::LineTag(TagEnum::ERROR)->print("Invalid device | should pass in your command");
             exit(1); // END app
         }
     }
@@ -374,11 +374,11 @@ class OPSHelper
                 }
         }
         if (!$filePath || !count($searchTextArr)) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->message("missing filePath or searchText (can path multiple searchText1 searchText2)");
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
             exit(1);
         }
         if (!is_file($filePath)) {
-            self::LineTag(TagEnum::ERROR)->message("'%s' does not exist", $filePath);
+            self::LineTag(TagEnum::ERROR)->print("'%s' does not exist", $filePath);
             exit(1);
         }
         // handle
@@ -394,14 +394,14 @@ class OPSHelper
             return $item['isContains'];
         }));
         if ($amountValidationPass === count($searchTextArr)) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->message("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTextArr));
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTextArr));
         } else {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->message("file '%s' does not contains (some) text(s):", $filePath);
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->print("file '%s' does not contains (some) text(s):", $filePath);
             foreach ($validationResult as $result) {
                 self::LineIndent(IndentLevelEnum::ITEM_LINE)
                     ->setIcon($result['isContains'] ? IconEnum::CHECK : IconEnum::X)
                     ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
-                    ->message($result['searchText']);
+                    ->print($result['searchText']);
             }
             exit(1);
         }

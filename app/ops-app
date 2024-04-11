@@ -72,12 +72,12 @@ class OpsApp
 
         // === validation ===
         if (!$command) {
-            self::LineTag(TagEnum::ERROR)->message("missing command, should be 'php %s COMMAND'", OpsApp::APP_MAIN_COMMAND);
+            self::LineTag(TagEnum::ERROR)->print("missing command, should be 'php %s COMMAND'", OpsApp::APP_MAIN_COMMAND);
             $this->help();
             exit(); // END
         }
         if (!array_key_exists($command, CommandEnum::SUPPORT_COMMANDS())) {
-            self::LineTag(TagEnum::ERROR)->message("do not support this command '%s'", $command);
+            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", $command);
             $this->help();
             exit(); // END
         }
@@ -92,7 +92,7 @@ class OpsApp
                 (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
-                self::LineNew()->message(OpsApp::version());
+                self::LineNew()->print(OpsApp::version());
                 break;
             case CommandEnum::SYNC:
                 OPSHelper::sync();
@@ -105,7 +105,7 @@ class OpsApp
                 // validate
                 if (!$param1) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
-                        ->message("required secret name");
+                        ->print("required secret name");
                     exit(); // END
                 }
                 // handle
@@ -182,21 +182,21 @@ class OpsApp
                 // validate
                 if (!$param1) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
-                        ->message("required title text");
+                        ->print("required title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->messageTitle($param1);
+                self::LineNew()->printTitle($param1);
                 break;
             case CommandEnum::SUB_TITLE:
                 // validate
                 if (!$param1) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
-                        ->message("required sub title text");
+                        ->print("required sub title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->messageSubTitle($param1);
+                self::LineNew()->printSubTitle($param1);
                 break;
             // === other ===
             default:
@@ -207,12 +207,12 @@ class OpsApp
 
     private function help()
     {
-        self::LineNew()->message('')
-            ->messageTitle("%s v%s", self::APP_NAME, self::APP_VERSION)
-            ->setTag(TagEnum::INFO)->message("usage:  php %s COMMAND", OpsApp::APP_MAIN_COMMAND)
-            ->setTag(TagEnum::NONE)->message("               php %s COMMAND PARAM1 PARAM2 ...", OpsApp::APP_MAIN_COMMAND)
-            ->setTag(TagEnum::NONE)->message('')
-            ->setTag(TagEnum::INFO)->message("Support commands:");
+        self::LineNew()->print('')
+            ->printTitle("%s v%s", self::APP_NAME, self::APP_VERSION)
+            ->setTag(TagEnum::INFO)->print("usage:  php %s COMMAND", OpsApp::APP_MAIN_COMMAND)
+            ->setTag(TagEnum::NONE)->print("               php %s COMMAND PARAM1 PARAM2 ...", OpsApp::APP_MAIN_COMMAND)
+            ->setTag(TagEnum::NONE)->print('')
+            ->setTag(TagEnum::INFO)->print("Support commands:");
         /**
          * @var  $command string
          * @var  $descriptionArr array
@@ -220,21 +220,21 @@ class OpsApp
         foreach (CommandEnum::SUPPORT_COMMANDS() as $command => $descriptionArr) {
             switch (count($descriptionArr)) {
                 case 0: // group command's title
-                    self::LineNew()->messageSubTitle($command);
+                    self::LineNew()->printSubTitle($command);
                     break;
                 case 1: // group command's items - single line description
                     self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)
-                        ->message("%s     : %s", $command, $descriptionArr[0]);
+                        ->print("%s     : %s", $command, $descriptionArr[0]);
                     break;
                 default: // group command's items - multiple line description
-                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->message($command);
+                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->print($command);
                     foreach ($descriptionArr as $descriptionLine) {
-                        self::LineIndent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->message($descriptionLine);
+                        self::LineIndent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->print($descriptionLine);
                     }
                     break;
             }
         }
-        self::LineNew()->messageSeparate();
+        self::LineNew()->printSeparatorLine();
     }
 
     public static function version(Version $newVersion = null): string

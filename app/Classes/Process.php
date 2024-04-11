@@ -191,7 +191,7 @@ class Process
                 sprintf("rm -rf '%s/'", DirHelper::getHomeDir()),
                 sprintf("rm -rf \"%s/\"", DirHelper::getHomeDir()),
             ])) {
-                self::LineTag(TagEnum::ERROR)->message("detect dangerous command: $command  , exit app");
+                self::LineTag(TagEnum::ERROR)->print("detect dangerous command: $command  , exit app");
                 exit(1); // END
             }
         }
@@ -201,7 +201,7 @@ class Process
             exec(join(';', $this->commands), $this->output, $exitCode);
             if ($exitCode && $this->isExistOnError) {
                 $this->printOutput();
-                self::LineTag(TagEnum::ERROR)->message("detect execute shell command failed, exit app | exit code = $exitCode");
+                self::LineTag(TagEnum::ERROR)->print("detect execute shell command failed, exit app | exit code = $exitCode");
                 exit($exitCode); // END app
             }
         }
@@ -232,18 +232,18 @@ class Process
 
     public function printOutput(): Process
     {
-        self::LineIndent($this->getOutputParentIndentLevel())->setTag(TagEnum::WORK)->message($this->workName);
-        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Commands:");
+        self::LineIndent($this->getOutputParentIndentLevel())->setTag(TagEnum::WORK)->print($this->workName);
+        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Commands:");
         if ($this->commands) {
             foreach ($this->commands as $command) {
                 self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)
-                    ->setIcon(IconEnum::CHEVRON_RIGHT)->message(StrHelper::hideSensitiveInformation($command));
+                    ->setIcon(IconEnum::CHEVRON_RIGHT)->print(StrHelper::hideSensitiveInformation($command));
             }
         }
-        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Output:");
+        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Output:");
         if ($this->output) {
             foreach ($this->output as $outputLine) {
-                self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message(StrHelper::hideSensitiveInformation($outputLine));
+                self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->print(StrHelper::hideSensitiveInformation($outputLine));
             }
         }
         //
