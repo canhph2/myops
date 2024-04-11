@@ -2,6 +2,7 @@
 
 namespace TestApp;
 
+require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Classes/Version.php';
 require_once 'app/Classes/Process.php';
 require_once 'app/Classes/TextLine.php';
@@ -12,7 +13,6 @@ require_once 'app/Enum/IconEnum.php';
 require_once 'app/Helpers/DirHelper.php';
 require_once 'app/Helpers/StrHelper.php';
 require_once 'app/Helpers/UIHelper.php';
-require_once 'app/Traits/ConsoleUITrait.php';
 //
 require_once 'tests/TestApp/BaseTestCase.php';
 
