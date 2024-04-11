@@ -22,6 +22,7 @@ use App\Helpers\TextHelper;
 use App\Helpers\UIHelper;
 use App\OpsApp;
 use App\Services\SlackService;
+use App\Traits\ConsoleUITrait;
 use DateTime;
 
 class Release
@@ -63,6 +64,8 @@ class Release
             DirHelper::getClassPathAndFileName(UIHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
+            // === Traits ===
+            DirHelper::getClassPathAndFileName(ConsoleUITrait::class),
             // always on bottom
             'app/ops-app',
         ];
