@@ -118,7 +118,7 @@ class Release
         $this->handleAppClass();
         //    copy release file to home directory
         TextHelper::tagMultiple([__CLASS__, __FUNCTION__])->message("copy release file to home directory");
-        exec(sprintf("cp -f '%s/.release/app-ops' '%s/ops-app'", DirHelper::getWorkingDir(), DirHelper::getHomeDir()));
+        exec(sprintf("cp -f '%s/.release/ops-app' '%s/ops-app'", DirHelper::getWorkingDir(), DirHelper::getHomeDir()));
         //
         TextHelper::tagMultiple([__CLASS__, __FUNCTION__])->message("DONE");
         //    push new release to GitHub
