@@ -18,7 +18,6 @@ use App\Helpers\DockerHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
-use App\Helpers\TextHelper;
 use App\Helpers\UIHelper;
 use App\OpsApp;
 use App\Services\SlackService;
@@ -57,7 +56,6 @@ class Release
             // === Helper ===
             DirHelper::getClassPathAndFileName(DirHelper::class),
             DirHelper::getClassPathAndFileName(OPSHelper::class),
-            DirHelper::getClassPathAndFileName(TextHelper::class),
             DirHelper::getClassPathAndFileName(GitHubHelper::class),
             DirHelper::getClassPathAndFileName(AWSHelper::class),
             DirHelper::getClassPathAndFileName(AppHelper::class),

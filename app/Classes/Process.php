@@ -7,7 +7,6 @@ use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
 use App\Helpers\DirHelper;
-use App\Helpers\TextHelper;
 use App\Traits\ConsoleUITrait;
 
 class Process
@@ -237,13 +236,13 @@ class Process
         if ($this->commands) {
             foreach ($this->commands as $command) {
                 self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)
-                    ->setIcon(IconEnum::CHEVRON_RIGHT)->message(TextHelper::hideSensitiveInformation($command));
+                    ->setIcon(IconEnum::CHEVRON_RIGHT)->message(StrHelper::hideSensitiveInformation($command));
             }
         }
         self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Output:");
         if ($this->output) {
             foreach ($this->output as $outputLine) {
-                self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message(TextHelper::hideSensitiveInformation($outputLine));
+                self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message(StrHelper::hideSensitiveInformation($outputLine));
             }
         }
         //

@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Enum\GitHubEnum;
 use App\Enum\TagEnum;
 use App\Helpers\AWSHelper;
-use App\Helpers\TextHelper;
 use App\Traits\ConsoleUITrait;
 
 class SlackService
