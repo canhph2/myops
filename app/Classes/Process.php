@@ -7,6 +7,7 @@ use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
 use App\Helpers\DirHelper;
+use App\Helpers\StrHelper;
 use App\Traits\ConsoleUITrait;
 
 class Process
