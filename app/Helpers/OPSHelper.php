@@ -102,7 +102,7 @@ class OPSHelper
             sprintf(
                 "cp -f '%s/.release/ops-app' '%s/ops-app'",
                 $EngagePlusCachesRepositoryOpsLibDir,
-                DirHelper::getWorkingDir()
+                DirHelper::getHomeDir()
             ),
         ]))->execMultiInWorkDir()->printOutput();
         //
