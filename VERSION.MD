@@ -2,6 +2,7 @@
 
 ---
 ## === v3 ===
+- 3.2.0 | TODO ADD SOME CHANGE LOGS
 - 3.1.0 | TODO ADD SOME CHANGE LOGS
 ## === v2 ===
 - 2.19.0 | [GitHub Actions] add 'build-all-projects' command
