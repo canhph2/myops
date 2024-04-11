@@ -107,7 +107,7 @@ class DirHelper
      */
     public static function getClassPathAndFileName(string $ClassDotClass): string
     {
-        return sprintf("%s.php", str_replace("\\", "/", $ClassDotClass));
+        return lcfirst(sprintf("%s.php", str_replace("\\", "/", $ClassDotClass)));
     }
 
 
