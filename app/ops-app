@@ -4,6 +4,7 @@
 namespace App;
 
 require_once 'app/Helpers/AppHelper.php';
+require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
@@ -64,9 +65,6 @@ class OpsApp
 
     public function run(array $argv)
     {
-        //todo
-        self::icon(IconEnum::CHECK)->message("test trait");
-
         // === params ===
         $command = $argv[1] ?? null;
         $param1 = $argv[2] ?? null; // to use if needed
@@ -74,12 +72,12 @@ class OpsApp
 
         // === validation ===
         if (!$command) {
-            TextHelper::tag(TagEnum::ERROR)->message("missing command, should be 'php %s COMMAND'", OpsApp::APP_MAIN_COMMAND);
+            self::LineTag(TagEnum::ERROR)->message("missing command, should be 'php %s COMMAND'", OpsApp::APP_MAIN_COMMAND);
             $this->help();
             exit(); // END
         }
         if (!array_key_exists($command, CommandEnum::SUPPORT_COMMANDS())) {
-            TextHelper::tag(TagEnum::ERROR)->message("do not support this command '%s'", $command);
+            self::LineTag(TagEnum::ERROR)->message("do not support this command '%s'", $command);
             $this->help();
             exit(); // END
         }
@@ -94,7 +92,7 @@ class OpsApp
                 (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
-                TextHelper::new()->message(OpsApp::version());
+                self::LineNew()->message(OpsApp::version());
                 break;
             case CommandEnum::SYNC:
                 OPSHelper::sync();
@@ -106,7 +104,7 @@ class OpsApp
             case CommandEnum::GET_SECRET_ENV:
                 // validate
                 if (!$param1) {
-                    TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                    self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->message("required secret name");
                     exit(); // END
                 }
@@ -120,7 +118,7 @@ class OpsApp
             case CommandEnum::BRANCH:
                 echo exec(GitHubEnum::GET_BRANCH_COMMAND);
                 break;
-            case  CommandEnum::REPOSITORY:
+            case CommandEnum::REPOSITORY:
                 echo basename(str_replace('.git', '', exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND)));
                 break;
             case CommandEnum::HEAD_COMMIT_ID:
@@ -183,22 +181,22 @@ class OpsApp
             case CommandEnum::TITLE:
                 // validate
                 if (!$param1) {
-                    TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                    self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->message("required title text");
                     exit(); // END
                 }
                 // handle
-               TextHelper::new()->messageTitle($param1);
+                self::LineNew()->messageTitle($param1);
                 break;
             case CommandEnum::SUB_TITLE:
                 // validate
                 if (!$param1) {
-                    TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                    self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->message("required sub title text");
                     exit(); // END
                 }
                 // handle
-                TextHelper::new()->messageSubTitle($param1);
+                self::LineNew()->messageSubTitle($param1);
                 break;
             // === other ===
             default:
@@ -209,7 +207,7 @@ class OpsApp
 
     private function help()
     {
-        TextHelper::new()->message('')
+        self::LineNew()->message('')
             ->messageTitle("%s v%s", self::APP_NAME, self::APP_VERSION)
             ->setTag(TagEnum::INFO)->message("usage:  php %s COMMAND", OpsApp::APP_MAIN_COMMAND)
             ->setTag(TagEnum::NONE)->message("               php %s COMMAND PARAM1 PARAM2 ...", OpsApp::APP_MAIN_COMMAND)
@@ -222,21 +220,21 @@ class OpsApp
         foreach (CommandEnum::SUPPORT_COMMANDS() as $command => $descriptionArr) {
             switch (count($descriptionArr)) {
                 case 0: // group command's title
-                    TextHelper::new()->messageSubTitle($command);
+                    self::LineNew()->messageSubTitle($command);
                     break;
                 case 1: // group command's items - single line description
-                    TextHelper::indent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)
+                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)
                         ->message("%s     : %s", $command, $descriptionArr[0]);
                     break;
                 default: // group command's items - multiple line description
-                    TextHelper::indent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->message($command);
+                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->message($command);
                     foreach ($descriptionArr as $descriptionLine) {
-                        TextHelper::indent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->message($descriptionLine);
+                        self::LineIndent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->message($descriptionLine);
                     }
                     break;
             }
         }
-        TextHelper::new()->messageSeparate();
+        self::LineNew()->messageSeparate();
     }
 
     public static function version(Version $newVersion = null): string

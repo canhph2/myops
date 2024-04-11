@@ -4,12 +4,15 @@ namespace App\Helpers;
 
 use App\Enum\TagEnum;
 use App\Classes\Process;
+use App\Traits\ConsoleUITrait;
 
 /**
  * this is a DIRectory helper / folder helper
  */
 class DirHelper
 {
+    use ConsoleUITrait;
+
     /**
      * get home directory / get root directory of user
      *
@@ -77,7 +80,7 @@ class DirHelper
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
                     ->execMultiInWorkDir()->printOutput();
                 // validate result
-                TextHelper::new()->messageCondition(is_dir(self::getWorkingDir('tmp')),
+                self::LineNew()->messageCondition(is_dir(self::getWorkingDir('tmp')),
                     'create a tmp dir successfully', 'create a tmp dir failure');
                 break;
             case 'remove':
@@ -87,14 +90,14 @@ class DirHelper
                         ->execMultiInWorkDir()->printOutput();
                     // validate result
                     $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", self::getWorkingDir()));
-                    TextHelper::new()->messageCondition(!$checkTmpDir,
+                    self::LineNew()->messageCondition(!$checkTmpDir,
                         'remove a tmp dir successfully', 'remove a tmp dir failure');
                 } else {
-                    TextHelper::new()->message("tmp directory doesn't exist, do nothing");
+                    self::LineNew()->message("tmp directory doesn't exist, do nothing");
                 }
                 break;
             default:
-                TextHelper::tag(TagEnum::ERROR)->message("missing action, action should be 'add' or 'remove'");
+                self::LineTag(TagEnum::ERROR)->message("missing action, action should be 'add' or 'remove'");
                 break;
         }
     }

@@ -11,6 +11,7 @@ use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
 use App\Services\SlackService;
+use App\Traits\ConsoleUITrait;
 use DateTime;
 
 /**
@@ -18,6 +19,8 @@ use DateTime;
  */
 class GitHubHelper
 {
+    use ConsoleUITrait;
+
     /**
      * @param string $name
      * @return false|GitHubRepositoryInfo|null
@@ -123,26 +126,26 @@ class GitHubHelper
         $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
 
         if (!$repository || !$branch || !$engagePlusCachesDir || !$GitHubPersonalAccessToken) {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
                 ->message("missing a REPOSITORY or BRANCH or ENGAGEPLUS_CACHES_DIR or GITHUB_PERSONAL_ACCESS_TOKEN");
             exit(); // END
         }
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        TextHelper::tag($param2 ? 'CUSTOM' : 'ENV')->message("REPOSITORY = %s", $repository)
+        self::LineTag($param2 ? 'CUSTOM' : 'ENV')->message("REPOSITORY = %s", $repository)
             ->setTag($param3 ? 'CUSTOM' : 'ENV')->message("BRANCH = %s", $branch)
             ->message("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
-        TextHelper::tag(TagEnum::GIT)->messageTitle("Handle Caches and Git");
+        self::LineTag(TagEnum::GIT)->messageTitle("Handle Caches and Git");
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
-            TextHelper::new()->message("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
+            self::LineNew()->message("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
             //
             // case clone
         } else {
-            TextHelper::tag(TagEnum::ERROR)->message("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
+            self::LineTag(TagEnum::ERROR)->message("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
             //
             (new Process("Remove old directory", null, [
                 sprintf("rm -rf \"%s\"", $EngagePlusCachesRepositoryDir),
@@ -166,16 +169,16 @@ class GitHubHelper
 
     public static function forceCheckout()
     {
-        TextHelper::new()->messageTitle("Force checkout a GitHub repository with specific branch");
+        self::LineNew()->messageTitle("Force checkout a GitHub repository with specific branch");
         // === input ===
         $GIT_URL_WITH_TOKEN = readline("Please input GIT_URL_WITH_TOKEN? ");
         if (!$GIT_URL_WITH_TOKEN) {
-            TextHelper::tag(TagEnum::ERROR)->message("GitHub repository url with Token should be string");
+            self::LineTag(TagEnum::ERROR)->message("GitHub repository url with Token should be string");
             exit(); // END
         }
         $BRANCH_TO_FORCE_CHECKOUT = readline("Please input BRANCH_TO_FORCE_CHECKOUT? ");
         if (!$BRANCH_TO_FORCE_CHECKOUT) {
-            TextHelper::tag(TagEnum::ERROR)->message("branch to force checkout should be string");
+            self::LineTag(TagEnum::ERROR)->message("branch to force checkout should be string");
             exit(); // END
         }
         // === validation ===
@@ -183,7 +186,7 @@ class GitHubHelper
             && StrHelper::contains($GIT_URL_WITH_TOKEN, '@github.com')
             && StrHelper::contains($GIT_URL_WITH_TOKEN, '.git')
         )) {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::FORMAT])
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::FORMAT])
                 ->message("invalid GitHub repository url with Token format, should be 'https://TOKEN_TOKEN@@github.com/USER_NAME/REPOSITORY.git'");
             exit(); // END
         }
@@ -219,31 +222,31 @@ class GitHubHelper
     public static function buildAllProject()
     {
         $branchToBuild = GitHubEnum::DEVELOP;
-        TextHelper::new()->messageTitle("Build all projects to keep the GitHub runner token connecting (develop env)");
+        self::LineNew()->messageTitle("Build all projects to keep the GitHub runner token connecting (develop env)");
         // validate
         $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
         if (!$GitHubToken) {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->message("GitHub token not found (in Secret Manager)");
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->message("GitHub token not found (in Secret Manager)");
             return; //END
         }
         // handle
         //    notify
         SlackService::sendMessageInternalUsing(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
         //    get GitHub token and login gh
-        TextHelper::new()->messageSubTitle("login gh (GitHub CLI)");
+        self::LineNew()->messageSubTitle("login gh (GitHub CLI)");
         (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
             sprintf("echo %s | gh auth login --with-token", $GitHubToken),
         ]))->execMultiInWorkDir();
         //    send command to build all projects
-        TextHelper::new()->messageSubTitle("send command to build all projects");
+        self::LineNew()->messageSubTitle("send command to build all projects");
         $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
-        TextHelper::new()->message("WORKSPACE DIR = $workspaceDir");
+        self::LineNew()->message("WORKSPACE DIR = $workspaceDir");
         /** @var GitHubRepositoryInfo $repoInfo */
         foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {
             $repoInfo->setCurrentWorkspaceDir($workspaceDir)->setCurrentBranch($branchToBuild);
             if (is_dir($repoInfo->getCurrentRepositoryDir())) {
                 // show info
-                TextHelper::icon(IconEnum::PLUS)->message("Project '%s > %s' | %s | %s",
+                self::LineIcon(IconEnum::PLUS)->message("Project '%s > %s' | %s | %s",
                     $repoInfo->getUsername(), $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch(),
                     $repoInfo->isGitHubAction() ? "Actions workflow ✔" : "no setup X"
                 );
@@ -260,7 +263,7 @@ class GitHubHelper
                     while (self::isActionsWorkflowQueuedOrInProgress($repoInfo)) {
                         $duration = new Duration($startTime->diff(new DateTime()));
                         $message = sprintf("Project build in progress (%s) ...", $duration->getText());
-                        TextHelper::icon(IconEnum::DOT)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
+                        self::LineIcon(IconEnum::DOT)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
                             ->message($message);
                         if ($duration->totalMinutes && $duration->totalMinutes > $lastSendingMinute && $duration->totalMinutes % 3 === 0) { // notify every A minutes
                             SlackService::sendMessageInternalUsing(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
@@ -268,7 +271,7 @@ class GitHubHelper
                         }
                         sleep(30); // loop with interval = A seconds
                     }
-                    TextHelper::icon(IconEnum::CHECK)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
+                    self::LineIcon(IconEnum::CHECK)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
                         ->message("build done");
                 }
             }

@@ -11,12 +11,15 @@ use App\Enum\TagEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\Classes\Process;
+use App\Traits\ConsoleUITrait;
 
 /**
  * This is Ops helper
  */
 class OPSHelper
 {
+    use ConsoleUITrait;
+
     const COMPOSER_CONFIG_GITHUB_AUTH_FILE = 'auth.json';
 
     public static function getS3WhiteListIpsDevelopment(): string
@@ -46,15 +49,15 @@ class OPSHelper
     {
         $GITHUB_PERSONAL_ACCESS_TOKEN_NEW = readline("Please input new GITHUB_PERSONAL_ACCESS_TOKEN? ");
         if (!$GITHUB_PERSONAL_ACCESS_TOKEN_NEW) {
-            TextHelper::tag(TagEnum::ERROR)->message("GitHub Personal Token should be string");
+            self::LineTag(TagEnum::ERROR)->message("GitHub Personal Token should be string");
             exit(); // END
         }
 //
         $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
-        TextHelper::new()->message("WORKSPACE DIR = $workspaceDir");
+        self::LineNew()->message("WORKSPACE DIR = $workspaceDir");
         /** @var GitHubRepositoryInfo $repoInfo */
         foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {
-            TextHelper::icon(IconEnum::PLUS)->message("Project '%s > %s': %s",
+            self::LineIcon(IconEnum::PLUS)->message("Project '%s > %s': %s",
                 $repoInfo->getUsername(), $repoInfo->getRepositoryName(),
                 is_dir(sprintf("%s/%s", $workspaceDir, $repoInfo->getRepositoryName())) ? "✔" : "X"
             );
@@ -71,7 +74,7 @@ class OPSHelper
                 ]), $output, $resultCode);
                 // print output
                 foreach ($output as $line) {
-                    TextHelper::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message($line);
+                    self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message($line);
                 }
             }
         }
@@ -85,7 +88,7 @@ class OPSHelper
      */
     public static function sync()
     {
-        TextHelper::new()->messageTitle(__FUNCTION__);
+        self::LineNew()->messageTitle(__FUNCTION__);
         // load env into PHP
         self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
         // load caches of this source code
@@ -106,15 +109,15 @@ class OPSHelper
             ),
         ]))->execMultiInWorkDir()->printOutput();
         //
-        TextHelper::new()->messageSeparate()
+        self::LineNew()->messageSeparate()
             ->setTag(TagEnum::SUCCESS)->message("sync done");
-        TextHelper::new()->messageSeparate();
+        self::LineNew()->messageSeparate();
         // show open new session to show right version
         (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
             'php ~/ops-app version'
         ]))->execMultiInWorkDir(true)->printOutput();
         //
-        TextHelper::new()->messageSeparate();
+        self::LineNew()->messageSeparate();
     }
 
     /**
@@ -154,9 +157,9 @@ class OPSHelper
         // === param ===
         $isSkipCheckDir = ($argv[2] ?? null) === PostWorkEnum::SKIP_CHECK_DIR;
         //
-        TextHelper::new()->messageTitle("Post works");
+        self::LineNew()->messageTitle("Post works");
         if ($isSkipCheckDir) {
-            TextHelper::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)
+            self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)
                 ->message("skip check execution directory");
         }
         $isDoNothing = true;
@@ -171,7 +174,7 @@ class OPSHelper
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DirHelper::getWorkingDir()));
-                TextHelper::new()->messageCondition(!$checkTmpDir,
+                self::LineNew()->messageCondition(!$checkTmpDir,
                     "remove '.env' file successfully", "remove '.env' file failed");
                 //
                 $isDoNothing = false;
@@ -183,7 +186,7 @@ class OPSHelper
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.conf-ryt'", DirHelper::getWorkingDir()));
-                TextHelper::new()->messageCondition(!$checkTmpDir,
+                self::LineNew()->messageCondition(!$checkTmpDir,
                     "remove a '.conf-ryt' file successfully", "remove a '.conf-ryt' file failed");
                 //
                 $isDoNothing = false;
@@ -195,7 +198,7 @@ class OPSHelper
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'payment-credentials.json'", DirHelper::getWorkingDir()));
-                TextHelper::new()->messageCondition(!$checkTmpDir,
+                self::LineNew()->messageCondition(!$checkTmpDir,
                     "remove a 'payment-credentials.json' file successfully", "remove a 'payment-credentials.json' file failed");
                 //
                 $isDoNothing = false;
@@ -208,7 +211,7 @@ class OPSHelper
             ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
             // validate result
             $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DirHelper::getWorkingDir()));
-            TextHelper::new()->messageCondition(!$checkTmpDir,
+            self::LineNew()->messageCondition(!$checkTmpDir,
                 'remove a tmp dir successfully', 'remove a tmp dir failure');
             //
             $isDoNothing = false;
@@ -220,7 +223,7 @@ class OPSHelper
             ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
             // validate result
             $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DirHelper::getWorkingDir()));
-            TextHelper::new()->messageCondition(!$checkTmpDir,
+            self::LineNew()->messageCondition(!$checkTmpDir,
                 'remove a dist dir successfully', 'remove a dist dir failure');
             //
             $isDoNothing = false;
@@ -234,7 +237,7 @@ class OPSHelper
                 ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DirHelper::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
-                TextHelper::new()->messageCondition(
+                self::LineNew()->messageCondition(
                     !$checkTmpDir,
                     sprintf("remove file '%s' successfully", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE),
                     sprintf("remove file '%s' failed", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE)
@@ -255,20 +258,20 @@ class OPSHelper
         // === end cleanup ===
         //
         if ($isDoNothing) {
-            TextHelper::new()->message("do nothing");
+            self::LineNew()->message("do nothing");
         }
-        TextHelper::new()->messageSeparate();
+        self::LineNew()->messageSeparate();
     }
 
     public static function clearOpsDir(): void
     {
-        TextHelper::new()->messageTitle("Clear _ops directory");
+        self::LineNew()->messageTitle("Clear _ops directory");
         (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
             sprintf("rm -rf '%s'", DirHelper::getWorkingDir('_ops'))
         ]))->execMultiInWorkDir(true)->printOutput();
         // validate result
         $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
-        TextHelper::new()->messageCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
+        self::LineNew()->messageCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
     }
 
     /**
@@ -284,7 +287,7 @@ class OPSHelper
             if (!getenv($envVar)) $envVarsMissing[] = $envVar;
         }
         if (count($envVarsMissing) > 0) {
-            TextHelper::tagMultiple([TagEnum::ERROR, TagEnum::ENV])->message("missing %s", join(" or ", $envVarsMissing));
+            self::LineTagMultiple([TagEnum::ERROR, TagEnum::ENV])->message("missing %s", join(" or ", $envVarsMissing));
             return false; // END | case error
         }
         return true; // END | case OK
@@ -306,7 +309,7 @@ class OPSHelper
                 self::validateFileContainsText($argv);
                 break;
             default:
-                TextHelper::tag(TagEnum::ERROR)->message("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
+                self::LineTag(TagEnum::ERROR)->message("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
                     ->message("should be like eg:   php ~/ops-lib validate branch");
                 break;
         }
@@ -321,9 +324,9 @@ class OPSHelper
     private static function validateBranch()
     {
         if (in_array(getenv('BRANCH'), ['develop', 'staging', 'master'])) {
-            TextHelper::tag(TagEnum::SUCCESS)->message("validation branch got OK result: %s", getenv('BRANCH'));
+            self::LineTag(TagEnum::SUCCESS)->message("validation branch got OK result: %s", getenv('BRANCH'));
         } else {
-            TextHelper::tag(TagEnum::ERROR)->message("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
+            self::LineTag(TagEnum::ERROR)->message("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
             exit(1); // END app
         }
     }
@@ -337,9 +340,9 @@ class OPSHelper
     {
         $dockerServer = exec("docker version | grep 'Server:'");
         if (trim($dockerServer)) {
-            TextHelper::tag(TagEnum::SUCCESS)->message("Docker is running: $dockerServer");
+            self::LineTag(TagEnum::SUCCESS)->message("Docker is running: $dockerServer");
         } else {
-            TextHelper::tag(TagEnum::ERROR)->message("Docker isn't running. Please start Docker app.");
+            self::LineTag(TagEnum::ERROR)->message("Docker isn't running. Please start Docker app.");
             exit(1); // END app
         }
     }
@@ -352,9 +355,9 @@ class OPSHelper
     private static function validateDevice()
     {
         if (getenv('DEVICE')) {
-            TextHelper::tag(TagEnum::SUCCESS)->message("validation device got OK result: %s", getenv('DEVICE'));
+            self::LineTag(TagEnum::SUCCESS)->message("validation device got OK result: %s", getenv('DEVICE'));
         } else {
-            TextHelper::tag(TagEnum::ERROR)->message("Invalid device | should pass in your command");
+            self::LineTag(TagEnum::ERROR)->message("Invalid device | should pass in your command");
             exit(1); // END app
         }
     }
@@ -371,11 +374,11 @@ class OPSHelper
                 }
         }
         if (!$filePath || !count($searchTextArr)) {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->message("missing filePath or searchText (can path multiple searchText1 searchText2)");
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->message("missing filePath or searchText (can path multiple searchText1 searchText2)");
             exit(1);
         }
         if (!is_file($filePath)) {
-            TextHelper::tag(TagEnum::ERROR)->message("'%s' does not exist", $filePath);
+            self::LineTag(TagEnum::ERROR)->message("'%s' does not exist", $filePath);
             exit(1);
         }
         // handle
@@ -391,11 +394,11 @@ class OPSHelper
             return $item['isContains'];
         }));
         if ($amountValidationPass === count($searchTextArr)) {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->message("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTextArr));
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->message("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTextArr));
         } else {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->message("file '%s' does not contains (some) text(s):", $filePath);
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->message("file '%s' does not contains (some) text(s):", $filePath);
             foreach ($validationResult as $result) {
-                TextHelper::indent(IndentLevelEnum::ITEM_LINE)
+                self::LineIndent(IndentLevelEnum::ITEM_LINE)
                     ->setIcon($result['isContains'] ? IconEnum::CHECK : IconEnum::X)
                     ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
                     ->message($result['searchText']);

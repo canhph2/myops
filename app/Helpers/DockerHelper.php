@@ -10,12 +10,15 @@ use App\Enum\TagEnum;
 use App\Enum\UIEnum;
 use App\Classes\DockerImage;
 use App\Classes\Process;
+use App\Traits\ConsoleUITrait;
 
 /**
  * this is a Docker helper
  */
 class DockerHelper
 {
+    use ConsoleUITrait;
+
     public static function isDockerInstalled(): bool
     {
         $dockerPath = trim(exec("which docker"));
@@ -35,33 +38,33 @@ class DockerHelper
         $imageTag = $argv[3] ?? null;
         // === validate ===
         if (!$imageRepository || !$imageTag) {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                 ->message("missing a 'imageRepository' 'imageTag'");
             exit(); // END
         }
         // === handle ===
-        TextHelper::tag(TagEnum::DOCKER)->messageTitle("Keep latest Docker image by repository");
+        self::LineTag(TagEnum::DOCKER)->messageTitle("Keep latest Docker image by repository");
         $listImage = self::getListImages();
         if (count($listImage) === 0) {
-            TextHelper::new()->message("Empty images. Do nothing.")->messageSeparate();
+            self::LineNew()->message("Empty images. Do nothing.")->messageSeparate();
             return; // END
         }
         /** @var DockerImage $image */
         foreach (self::getListImages() as $image) {
-            TextHelper::indent(IndentLevelEnum::ITEM_LINE)->messageSeparate();
+            self::LineIndent(IndentLevelEnum::ITEM_LINE)->messageSeparate();
             // case: to check image
             if ($image->getRepository() === $imageRepository) {
                 if ($image->getTag() === $imageTag) {
-                    TextHelper::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)
+                    self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)
                         ->message("Keep image '%s:%s'", $image->getRepository(), $image->getTag());
-                    TextHelper::indent(IndentLevelEnum::SUB_ITEM_LINE)
+                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)
                         ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
                     // do nothing | skip this image
                 } else {
-                    TextHelper::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
+                    self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
                         ->setColor(UIEnum::COLOR_RED)
                         ->message("Delete image '%s:%s'", $image->getRepository(), $image->getTag());
-                    TextHelper::indent(IndentLevelEnum::SUB_ITEM_LINE)
+                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)
                         ->setColor(UIEnum::COLOR_RED)
                         ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
                     (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
@@ -72,14 +75,14 @@ class DockerHelper
                 //
                 // case: other images
             } else {
-                TextHelper::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)
+                self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)
                     ->message("Keep other image '%s:%s'", $image->getRepository(), $image->getTag());
-                TextHelper::indent(IndentLevelEnum::SUB_ITEM_LINE)
+                self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)
                     ->message("(%s | %s)", $image->getCreatedSince(), $image->getSize());
             }
         }
         //
-        TextHelper::new()->messageSeparate();
+        self::LineNew()->messageSeparate();
     }
 
     /**
@@ -95,17 +98,17 @@ class DockerHelper
         $secretName = $argv[3] ?? null;
         // === validate ===
         if (!$DockerfilePath || !$secretName) {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                 ->message("missing a 'DockerfilePath' 'secretName'");
             exit(); // END
         }
         if (!is_file($DockerfilePath)) {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])
                 ->message("'DockerfilePath' isn't a file");
             exit(); // END
         }
         // === handle ===
-        TextHelper::tag(TagEnum::DOCKER)->messageTitle("Dockerfile: get '%s' from AWS Secret and add to Dockerfile", $secretName);
+        self::LineTag(TagEnum::DOCKER)->messageTitle("Dockerfile: get '%s' from AWS Secret and add to Dockerfile", $secretName);
         //    get secret
         $envData = json_decode(exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output json", $secretName)));
         $envLines = ["", "# === Generated vars ==="];
@@ -130,12 +133,12 @@ class DockerHelper
         file_put_contents($DockerfilePath, implode(PHP_EOL, $DockerfileLines));
         //    validate result
         if (StrHelper::contains(file_get_contents($DockerfilePath), DockerEnum::ENV)) {
-            TextHelper::tag(TagEnum::SUCCESS)->message("get '%s' from AWS Secret and add to Dockerfile successfully", $secretName);
+            self::LineTag(TagEnum::SUCCESS)->message("get '%s' from AWS Secret and add to Dockerfile successfully", $secretName);
         } else {
-            TextHelper::tag(TagEnum::ERROR)->message("ENV data doesn't exist in Dockerfile");
+            self::LineTag(TagEnum::ERROR)->message("ENV data doesn't exist in Dockerfile");
             exit(1);
         }
-        TextHelper::new()->messageSeparate();
+        self::LineNew()->messageSeparate();
     }
 
     private static function getListImages(): array
@@ -173,16 +176,16 @@ class DockerHelper
     public static function removeDanglingImages(): void
     {
         // === handle ===
-        TextHelper::tag(TagEnum::DOCKER)->messageTitle("Remove dangling images / <none> images");
+        self::LineTag(TagEnum::DOCKER)->messageTitle("Remove dangling images / <none> images");
         $listImage = self::getListImages();
         if (count($listImage) === 0) {
-            TextHelper::new()->message("Empty images. Do nothing.")->messageSeparate();
+            self::LineNew()->message("Empty images. Do nothing.")->messageSeparate();
             return; // END
         }
         /** @var DockerImage $image */
         foreach (self::getListImages() as $image) {
             if ($image->isDanglingImage()) {
-                TextHelper::indent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
+                self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)
                     ->setColor(UIEnum::COLOR_RED)
                     ->message("Delete dangling image '%s:%s'", $image->getRepository(), $image->getTag());
                 (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
@@ -192,6 +195,6 @@ class DockerHelper
             }
         }
         //
-        TextHelper::new()->messageSeparate();
+        self::LineNew()->messageSeparate();
     }
 }

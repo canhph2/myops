@@ -8,9 +8,12 @@ use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
 use App\Helpers\DirHelper;
 use App\Helpers\TextHelper;
+use App\Traits\ConsoleUITrait;
 
 class Process
 {
+    use ConsoleUITrait;
+
     /** @var string|null */
     private $workName;
 
@@ -188,7 +191,7 @@ class Process
                 sprintf("rm -rf '%s/'", DirHelper::getHomeDir()),
                 sprintf("rm -rf \"%s/\"", DirHelper::getHomeDir()),
             ])) {
-                TextHelper::tag(TagEnum::ERROR)->message("detect dangerous command: $command  , exit app");
+                self::LineTag(TagEnum::ERROR)->message("detect dangerous command: $command  , exit app");
                 exit(1); // END
             }
         }
@@ -198,7 +201,7 @@ class Process
             exec(join(';', $this->commands), $this->output, $exitCode);
             if ($exitCode && $this->isExistOnError) {
                 $this->printOutput();
-                TextHelper::tag(TagEnum::ERROR)->message("detect execute shell command failed, exit app | exit code = $exitCode");
+                self::LineTag(TagEnum::ERROR)->message("detect execute shell command failed, exit app | exit code = $exitCode");
                 exit($exitCode); // END app
             }
         }
@@ -229,18 +232,18 @@ class Process
 
     public function printOutput(): Process
     {
-        TextHelper::indent($this->getOutputParentIndentLevel())->setTag(TagEnum::WORK)->message($this->workName);
-        TextHelper::indent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Commands:");
+        self::LineIndent($this->getOutputParentIndentLevel())->setTag(TagEnum::WORK)->message($this->workName);
+        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Commands:");
         if ($this->commands) {
             foreach ($this->commands as $command) {
-                TextHelper::indent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)
+                self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)
                     ->setIcon(IconEnum::CHEVRON_RIGHT)->message(TextHelper::hideSensitiveInformation($command));
             }
         }
-        TextHelper::indent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Output:");
+        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->message("Output:");
         if ($this->output) {
             foreach ($this->output as $outputLine) {
-                TextHelper::indent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message(TextHelper::hideSensitiveInformation($outputLine));
+                self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->message(TextHelper::hideSensitiveInformation($outputLine));
             }
         }
         //

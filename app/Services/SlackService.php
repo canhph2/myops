@@ -6,9 +6,12 @@ use App\Enum\GitHubEnum;
 use App\Enum\TagEnum;
 use App\Helpers\AWSHelper;
 use App\Helpers\TextHelper;
+use App\Traits\ConsoleUITrait;
 
 class SlackService
 {
+    use ConsoleUITrait;
+
     /**
      * select appropriate Slack channel to notify
      * - production channel: notify to the team, the manager  (required: env > SLACK_CHANNEL_PRODUCTION)
@@ -46,7 +49,7 @@ class SlackService
         //    validate a message
         $message = $argv[2] ?? null;
         if (!$message) {
-            TextHelper::tag(TagEnum::ERROR)->message("missing a MESSAGE");
+            self::LineTag(TagEnum::ERROR)->message("missing a MESSAGE");
             exit(); // END
         }
         //    validate env vars
@@ -55,7 +58,7 @@ class SlackService
         $slackBotToken = getenv('SLACK_BOT_TOKEN');
         $slackChannel = self::selectSlackChannel();
         if (!$repository || !$branch || !$slackBotToken || !$slackChannel) {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
                 ->message("missing a BRANCH or REPOSITORY or SLACK_BOT_TOKEN or SLACK_CHANNEL");
             exit(); // END
         }
@@ -73,17 +76,17 @@ class SlackService
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
         $response = curl_exec($curl);
         if (!$response) {
-            TextHelper::tag(TagEnum::ERROR)->message(curl_error($curl));
+            self::LineTag(TagEnum::ERROR)->message(curl_error($curl));
         } else {
             $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             if ($responseCode === 200) {
                 if (json_decode($response, true)['ok']) {
-                    TextHelper::tagMultiple([TagEnum::SLACK, TagEnum::SUCCESS])->message("Message sent successfully | Slack status OK | HTTP code $responseCode");
+                    self::LineTagMultiple([TagEnum::SLACK, TagEnum::SUCCESS])->message("Message sent successfully | Slack status OK | HTTP code $responseCode");
                 } else {
-                    TextHelper::tagMultiple([TagEnum::SLACK, TagEnum::ERROR])->message(json_decode($response, true)['error'] . " | Slack status NO | HTTP code $responseCode");
+                    self::LineTagMultiple([TagEnum::SLACK, TagEnum::ERROR])->message(json_decode($response, true)['error'] . " | Slack status NO | HTTP code $responseCode");
                 }
             } else {
-                TextHelper::tagMultiple([TagEnum::SLACK, TagEnum::ERROR])->message("Error sending message | HTTP code $responseCode");
+                self::LineTagMultiple([TagEnum::SLACK, TagEnum::ERROR])->message("Error sending message | HTTP code $responseCode");
             }
         }
     }

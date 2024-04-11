@@ -27,6 +27,8 @@ use DateTime;
 
 class Release
 {
+    use ConsoleUITrait;
+
     /**
      * @return array
      * to release
@@ -90,10 +92,10 @@ class Release
                 return true;
             case '.release':
             case basename(DirHelper::getHomeDir()):
-                TextHelper::tag(TagEnum::ERROR)->message("release in directory / another project, stop release job");
+                self::LineTag(TagEnum::ERROR)->message("release in directory / another project, stop release job");
                 return false;
             default:
-                TextHelper::tag(TagEnum::ERROR)->message("unknown error");
+                self::LineTag(TagEnum::ERROR)->message("unknown error");
                 return false;
         }
     }
@@ -107,23 +109,23 @@ class Release
         //    validate version part
         $part = $argv[2] ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
-            TextHelper::tag(TagEnum::ERROR)->message("invalid part of version, should be: %s", join(', ', Version::PARTS));
+            self::LineTag(TagEnum::ERROR)->message("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END
         }
         // handle
-        TextHelper::new()->messageTitle("release");
+        self::LineNew()->messageTitle("release");
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
         //    combine files
-        TextHelper::tagMultiple([__CLASS__, __FUNCTION__])->message("combine files");
+        self::LineTagMultiple([__CLASS__, __FUNCTION__])->message("combine files");
         file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", OpsApp::version($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
         //    copy release file to home directory
-        TextHelper::tagMultiple([__CLASS__, __FUNCTION__])->message("copy release file to home directory");
+        self::LineTagMultiple([__CLASS__, __FUNCTION__])->message("copy release file to home directory");
         exec(sprintf("cp -f '%s/.release/ops-app' '%s/ops-app'", DirHelper::getWorkingDir(), DirHelper::getHomeDir()));
         //
-        TextHelper::tagMultiple([__CLASS__, __FUNCTION__])->message("DONE");
+        self::LineTagMultiple([__CLASS__, __FUNCTION__])->message("DONE");
         //    push new release to GitHub
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
@@ -131,7 +133,7 @@ class Release
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
         //
-        TextHelper::new()->messageSeparate()
+        self::LineNew()->messageSeparate()
             ->setTag(TagEnum::SUCCESS)->message("Release successful %s", OpsApp::version($newVersion));
     }
 

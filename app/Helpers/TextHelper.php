@@ -2,65 +2,16 @@
 
 namespace App\Helpers;
 
-use App\Enum\IndentLevelEnum;
-use App\Enum\TagEnum;
 use App\Classes\TextLine;
+use App\Enum\TagEnum;
+use App\Traits\ConsoleUITrait;
 
 /**
  * This is TEXT Helper
- * - e.g. usage
- *     - TEXT::message("simple_text");
- *     - TEXT::indent(IndentLevelEnum)->icon(IconEnum)->tag(TagEnum)->message("format %s %a", params)->message("next line");
  */
 class TextHelper
 {
-    /**
-     * get new instance of Text Line
-     * @return TextLine
-     */
-    public static function new(): TextLine
-    {
-        return (new TextLine());
-    }
-
-    /**
-     * start with indent level
-     * @param int $indentLevel
-     * @return TextLine
-     */
-    public static function indent(int $indentLevel = IndentLevelEnum::MAIN_LINE): TextLine
-    {
-        return new TextLine(null, $indentLevel);
-    }
-
-    /**
-     * start with icon
-     * @param string $icon
-     * @return TextLine
-     */
-    public static function icon(string $icon): TextLine
-    {
-        return (new TextLine())->setIcon($icon);
-    }
-
-    /**
-     * start with tag
-     * @param string $tag
-     * @return TextLine
-     */
-    public static function tag(string $tag): TextLine
-    {
-        return (new TextLine())->setTag($tag);
-    }
-
-    /**
-     * @param array $tags
-     * @return TextLine
-     */
-    public static function tagMultiple(array $tags): TextLine
-    {
-        return (new TextLine())->setTagMultiple($tags);
-    }
+    use ConsoleUITrait;
 
     /**
      * required
@@ -77,12 +28,12 @@ class TextHelper
         $replaceText = $argv[3] ?? null;
         $filePath = $argv[4] ?? null;
         if (!$searchText || is_null($replaceText) || !$filePath) {
-            TextHelper::tagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                 ->message("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
             exit(); // END
         }
         if (!is_file($filePath)) {
-            self::tag(TagEnum::ERROR)->message("$filePath does not exist");
+            self::LineTag(TagEnum::ERROR)->message("$filePath does not exist");
             exit(); // END
         }
 
@@ -91,7 +42,7 @@ class TextHelper
         file_put_contents($filePath, str_replace($searchText, $replaceText, $oldText));
         $newText = file_get_contents($filePath);
 //    validate result
-        self::new()->messageCondition($oldText !== $newText,
+        self::lineNew()->messageCondition($oldText !== $newText,
             "replace done with successful result", "replace done with failed result");
     }
 
@@ -106,10 +57,10 @@ class TextHelper
         // detect GitHub token
         if (StrHelper::contains($line, "https://") && StrHelper::contains($line, "@github.com")) {
             // handle hide GitHub token: show last X letter of token
-            $tempArr  = explode("https://", $line);
+            $tempArr = explode("https://", $line);
             $tempArr2 = explode("@github.com", $tempArr[1]);
             $token = $tempArr2[0];
-            $hiddenToken = "****".substr($token, -3);
+            $hiddenToken = "****" . substr($token, -3);
             $line = str_replace($token, $hiddenToken, $line);
         }
         return $line;
