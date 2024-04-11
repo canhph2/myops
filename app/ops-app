@@ -24,13 +24,16 @@ use App\Helpers\OPSHelper;
 use App\Helpers\TextHelper;
 use App\Helpers\UIHelper;
 use App\Services\SlackService;
+use App\Traits\ConsoleUITrait;
 
 AppHelper::requireOneAllPHPFilesInDir(DirHelper::getWorkingDir('app'));
 
 class OpsApp
 {
+    use ConsoleUITrait;
+
     const APP_NAME = 'OPS APP (PHP)';
-    const APP_VERSION = '3.0.12';
+    const APP_VERSION = '3.0.13';
     const APP_MAIN_COMMAND = '~/ops-app';
 
     const SHELL_DATA_BASE_64 = '';
@@ -61,6 +64,9 @@ class OpsApp
 
     public function run(array $argv)
     {
+        //todo
+        self::icon(IconEnum::CHECK)->message("test trait");
+
         // === params ===
         $command = $argv[1] ?? null;
         $param1 = $argv[2] ?? null; // to use if needed

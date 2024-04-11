@@ -43,7 +43,7 @@ php ~/ops-app sync
   - add new files to FILES_LIST in Release class
   - combine and release
 ```shell
-php app/app release
+php app/ops-app release
 php vendor/phpunit/phpunit/phpunit tests
 ```
 
