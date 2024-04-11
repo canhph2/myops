@@ -13,21 +13,22 @@ class GitHubRepositoryInfo
     /** @var bool */
     private $isGitHubAction;
 
-    /** @var int */
-    private $amountBuildTimeInMinute;
+    /** @var string */
+    private $currentBranch;
+
+    /** @var string */
+    private $currentWorkspaceDir;
 
     /**
      * @param string $repositoryName
      * @param string $username
      * @param bool $isGitHubAction
-     * @param int $amountBuildTimeInMinute
      */
-    public function __construct(string $repositoryName, string $username, bool $isGitHubAction = false, int $amountBuildTimeInMinute = 0)
+    public function __construct(string $repositoryName, string $username, bool $isGitHubAction = false)
     {
         $this->repositoryName = $repositoryName;
         $this->username = $username;
         $this->isGitHubAction = $isGitHubAction;
-        $this->amountBuildTimeInMinute = $amountBuildTimeInMinute;
     }
 
     /**
@@ -85,28 +86,47 @@ class GitHubRepositoryInfo
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getAmountBuildTimeInMinute(): int
+    public function getCurrentBranch(): string
     {
-        return $this->amountBuildTimeInMinute;
+        return $this->currentBranch;
     }
 
     /**
-     * @return int
-     */
-    public function getAmountBuildTimeInSecond(): int
-    {
-        return $this->amountBuildTimeInMinute * 60;
-    }
-
-    /**
-     * @param int $amountBuildTimeInMinute
+     * @param string $currentBranch
      * @return GitHubRepositoryInfo
      */
-    public function setAmountBuildTimeInMinute(int $amountBuildTimeInMinute): GitHubRepositoryInfo
+    public function setCurrentBranch(string $currentBranch): GitHubRepositoryInfo
     {
-        $this->amountBuildTimeInMinute = $amountBuildTimeInMinute;
+        $this->currentBranch = $currentBranch;
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function getCurrentWorkspaceDir(): string
+    {
+        return $this->currentWorkspaceDir;
+    }
+
+    /**
+     * @param string $currentWorkspaceDir
+     * @return GitHubRepositoryInfo
+     */
+    public function setCurrentWorkspaceDir(string $currentWorkspaceDir): GitHubRepositoryInfo
+    {
+        $this->currentWorkspaceDir = $currentWorkspaceDir;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrentRepositoryDir(): string
+    {
+        return sprintf('%s/%s', $this->currentWorkspaceDir, $this->repositoryName);
+    }
+
 }

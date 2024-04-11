@@ -29,14 +29,14 @@ class GitHubEnum
     public static function GET_REPOSITORIES_INFO(): array
     {
         return [
-            new GitHubRepositoryInfo('engage-api', 'infohkengage', true, 20),
-            new GitHubRepositoryInfo('engage-spa', 'infohkengage', true, 20),
-            new GitHubRepositoryInfo('engage-booking-api', 'infohkengage', true, 20),
-            new GitHubRepositoryInfo('engage-booking-spa', 'infohkengage', true, 12),
-            new GitHubRepositoryInfo('invoice-service', 'infohkengage', true, 15),
-            new GitHubRepositoryInfo('payment-service', 'infohkengage', true, 15),
-            new GitHubRepositoryInfo('integration-api', 'infohkengage', true, 15),
-            new GitHubRepositoryInfo('email-service', 'infohkengage', true, 15),
+            new GitHubRepositoryInfo('engage-api', 'infohkengage', true),
+            new GitHubRepositoryInfo('engage-spa', 'infohkengage', true),
+            new GitHubRepositoryInfo('engage-booking-api', 'infohkengage', true),
+            new GitHubRepositoryInfo('engage-booking-spa', 'infohkengage', true),
+            new GitHubRepositoryInfo('invoice-service', 'infohkengage', true),
+            new GitHubRepositoryInfo('payment-service', 'infohkengage', true),
+            new GitHubRepositoryInfo('integration-api', 'infohkengage', true),
+            new GitHubRepositoryInfo('email-service', 'infohkengage', true),
             //
             new GitHubRepositoryInfo('engage-api-deploy', 'infohkengage'),
             //

@@ -40,6 +40,7 @@ class Release
             DirHelper::getClassPathAndFileName(DockerImage::class),
             DirHelper::getClassPathAndFileName(TextLine::class),
             DirHelper::getClassPathAndFileName(GitHubRepositoryInfo::class),
+            DirHelper::getClassPathAndFileName(Duration::class),
             // === Enum ===
             DirHelper::getClassPathAndFileName(CommandEnum::class),
             DirHelper::getClassPathAndFileName(GitHubEnum::class),

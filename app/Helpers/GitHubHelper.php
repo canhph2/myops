@@ -2,6 +2,7 @@
 
 namespace app\Helpers;
 
+use app\Classes\Duration;
 use app\Classes\GitHubRepositoryInfo;
 use app\Classes\Process;
 use app\Enum\CommandEnum;
@@ -10,6 +11,7 @@ use app\Enum\IconEnum;
 use app\Enum\IndentLevelEnum;
 use app\Enum\TagEnum;
 use app\Services\SlackService;
+use DateTime;
 
 /**
  * This is a GitHub helper
@@ -245,27 +247,57 @@ class GitHubHelper
         TextHelper::new()->message("WORKSPACE DIR = $workspaceDir");
         /** @var GitHubRepositoryInfo $repoInfo */
         foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {
-            $projectDir = sprintf("%s/%s", $workspaceDir, $repoInfo->getRepositoryName());
-            if (is_dir($projectDir)) {
+            $repoInfo->setCurrentWorkspaceDir($workspaceDir)->setCurrentBranch($branchToBuild);
+            if (is_dir($repoInfo->getCurrentRepositoryDir())) {
                 // show info
-                TextHelper::icon(IconEnum::PLUS)->message("Project '%s > %s'(%s): %s",
-                    $repoInfo->getUsername(), $repoInfo->getRepositoryName(), $branchToBuild,
-                    $repoInfo->isGitHubAction() ? "✔" : "X"
+                TextHelper::icon(IconEnum::PLUS)->message("Project '%s > %s' | %s | %s",
+                    $repoInfo->getUsername(), $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch(),
+                    $repoInfo->isGitHubAction() ? "Actions workflow ✔" : "no setup X"
                 );
                 // handle send command to build
                 if ($repoInfo->isGitHubAction()) {
                     (new Process("build project " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
-                        sprintf("cd '%s'", $projectDir),
-                        sprintf('gh workflow run workflow--%s--%s -r %s', $repoInfo->getRepositoryName(), $branchToBuild, $branchToBuild)
+                        sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
+                        sprintf('gh workflow run workflow--%s--%s -r %s', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch(), $repoInfo->getCurrentBranch())
                     ]))->execMultiInWorkDir();
-                    // wait to send next command
-                    TextHelper::icon(IconEnum::DOT)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
-                        ->message("wait %s minute...", $repoInfo->getAmountBuildTimeInMinute());
-                    sleep($repoInfo->getAmountBuildTimeInSecond());
+                    // check completed
+                    $startTime = new DateTime();
+                    $lastSendingMinute = 0;
+                    sleep(30); // wait A seconds while Actions handling new workflow
+                    while (self::isActionsWorkflowQueuedOrInProgress($repoInfo)) {
+                        $duration = new Duration($startTime->diff(new DateTime()));
+                        $message = sprintf("Project build in progress (%s) ...", $duration->getText());
+                        TextHelper::icon(IconEnum::DOT)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
+                            ->message($message);
+                        if ($duration->totalMinutes && $duration->totalMinutes > $lastSendingMinute && $duration->totalMinutes % 3 === 0) { // notify every A minutes
+                            SlackService::sendMessageInternalUsing(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
+                            $lastSendingMinute =   $duration->totalMinutes;
+                        }
+                        sleep(30); // loop with interval = A seconds
+                    }
+                    TextHelper::icon(IconEnum::CHECK)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
+                        ->message("build done");
                 }
             }
         } // end loop
         //    notify
         SlackService::sendMessageInternalUsing(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+    }
+
+
+    private static function isActionsWorkflowQueuedOrInProgress(GitHubRepositoryInfo $repoInfo): bool
+    {
+        // in progress
+        $resultInProgress = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
+            sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
+            sprintf('gh run list --workflow workflow--%s--%s.yml --status in_progress --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
+        ]))->execMultiInWorkDirAndGetOutputStr();
+        // queue
+        $resultQueued = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
+            sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
+            sprintf('gh run list --workflow workflow--%s--%s.yml --status queued --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
+        ]))->execMultiInWorkDirAndGetOutputStr();
+        //
+        return count(json_decode($resultInProgress, true)) || count(json_decode($resultQueued, true));
     }
 }

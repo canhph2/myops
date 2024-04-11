@@ -219,6 +219,14 @@ class Process
         return $this;
     }
 
+    /**
+     * will execMultiInWorkDir | skip check dir | return output string
+     * @return string|null
+     */
+    public function execMultiInWorkDirAndGetOutputStr():?string{
+        return $this->execMultiInWorkDir(true)->getOutputStrAll();
+    }
+
     public function printOutput(): Process
     {
         TextHelper::indent($this->getOutputParentIndentLevel())->setTag(TagEnum::WORK)->message($this->workName);
