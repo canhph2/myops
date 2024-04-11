@@ -2,6 +2,7 @@
 
 namespace TestApp;
 
+require_once 'app/ops-app';
 require_once 'app/Classes/Version.php';
 require_once 'app/Classes/Process.php';
 require_once 'app/Classes/TextLine.php';
@@ -20,6 +21,7 @@ use App\Enum\TagEnum;
 use App\Helpers\DirHelper;
 use App\Classes\Process;
 use App\Classes\Version;
+use App\OpsApp;
 
 
 class OpsLibTest extends BaseTestCase
@@ -48,7 +50,7 @@ class OpsLibTest extends BaseTestCase
     public function testCommandVersion()
     {
         $oldVersion = exec("php ~/ops-app version");
-        $this->customAssertIsStringAndContainsString("OPS SHARED LIBRARY (PHP)", $oldVersion);
+        $this->customAssertIsStringAndContainsString( OpsApp::APP_NAME, $oldVersion);
         $this->customAssertIsStringAndContainsString("v", $oldVersion);
         $this->customAssertIsStringAndContainsString(".", $oldVersion);
     }

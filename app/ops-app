@@ -30,7 +30,7 @@ AppHelper::requireOneAllPHPFilesInDir(DirHelper::getWorkingDir('app'));
 class OpsApp
 {
     const APP_NAME = 'OPS APP (PHP)';
-    const APP_VERSION = '3.0.8';
+    const APP_VERSION = '3.0.9';
     const APP_MAIN_COMMAND = '~/ops-app';
 
     const SHELL_DATA_BASE_64 = '';
@@ -88,7 +88,7 @@ class OpsApp
                 (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
-                TextHelper::new()->message(app::version());
+                TextHelper::new()->message(OpsApp::version());
                 break;
             case CommandEnum::SYNC:
                 OPSHelper::sync();
