@@ -1,11 +1,11 @@
 <?php
 
-namespace app\Services;
+namespace App\Services;
 
-use app\Enum\GitHubEnum;
-use app\Enum\TagEnum;
-use app\Helpers\AWSHelper;
-use app\Helpers\TextHelper;
+use App\Enum\GitHubEnum;
+use App\Enum\TagEnum;
+use App\Helpers\AWSHelper;
+use App\Helpers\TextHelper;
 
 class SlackService
 {
@@ -37,7 +37,6 @@ class SlackService
     }
 
     /**
-     * php _ops/lib slack "a message"
      * @param array $argv
      * @return void
      */

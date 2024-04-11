@@ -1,37 +1,37 @@
 #!/usr/bin/env php
 <?php
 
-namespace app;
+namespace App;
 
 require_once 'app/Helpers/AppHelper.php';
 require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
-use app\Classes\Release;
-use app\Classes\Version;
-use app\Enum\CommandEnum;
-use app\Enum\GitHubEnum;
-use app\Enum\IconEnum;
-use app\Enum\IndentLevelEnum;
-use app\Enum\TagEnum;
-use app\Enum\UIEnum;
-use app\Helpers\AppHelper;
-use app\Helpers\AWSHelper;
-use app\Helpers\DirHelper;
-use app\Helpers\DockerHelper;
-use app\Helpers\GitHubHelper;
-use app\Helpers\OPSHelper;
-use app\Helpers\TextHelper;
-use app\Helpers\UIHelper;
-use app\Services\SlackService;
+use App\Classes\Release;
+use App\Classes\Version;
+use App\Enum\CommandEnum;
+use App\Enum\GitHubEnum;
+use App\Enum\IconEnum;
+use App\Enum\IndentLevelEnum;
+use App\Enum\TagEnum;
+use App\Enum\UIEnum;
+use App\Helpers\AppHelper;
+use App\Helpers\AWSHelper;
+use App\Helpers\DirHelper;
+use App\Helpers\DockerHelper;
+use App\Helpers\GitHubHelper;
+use App\Helpers\OPSHelper;
+use App\Helpers\TextHelper;
+use App\Helpers\UIHelper;
+use App\Services\SlackService;
 
 AppHelper::requireOneAllPHPFilesInDir(DirHelper::getWorkingDir('app'));
 
-class app
+class OpsApp
 {
-    const APP_NAME = 'OPS SHARED LIBRARY (PHP)';
-    /**  @var string */
-    const APP_VERSION = '2.19.5';
+    const APP_NAME = 'OPS APP (PHP)';
+    const APP_VERSION = '3.0.0';
+    const APP_MAIN_COMMAND = '~/ops-app';
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -68,11 +68,11 @@ class app
 
         // === validation ===
         if (!$command) {
-            TextHelper::tag(TagEnum::ERROR)->message("missing command, should be 'php _ops/lib COMMAND'");
+            TextHelper::tag(TagEnum::ERROR)->message("missing command, should be 'php %s COMMAND'", OpsApp::APP_MAIN_COMMAND);
             $this->help();
             exit(); // END
         }
-        if (!array_key_exists($command, CommandEnum::SUPPORT_COMMANDS)) {
+        if (!array_key_exists($command, CommandEnum::SUPPORT_COMMANDS())) {
             TextHelper::tag(TagEnum::ERROR)->message("do not support this command '%s'", $command);
             $this->help();
             exit(); // END
@@ -205,15 +205,15 @@ class app
     {
         TextHelper::new()->message('')
             ->messageTitle("%s v%s", self::APP_NAME, self::APP_VERSION)
-            ->setTag(TagEnum::INFO)->message("usage:  php _ops/lib COMMAND")
-            ->setTag(TagEnum::NONE)->message("               php _ops/lib COMMAND PARAM1 PARAM2 ...")
+            ->setTag(TagEnum::INFO)->message("usage:  php %s COMMAND", OpsApp::APP_MAIN_COMMAND)
+            ->setTag(TagEnum::NONE)->message("               php %s COMMAND PARAM1 PARAM2 ...", OpsApp::APP_MAIN_COMMAND)
             ->setTag(TagEnum::NONE)->message('')
             ->setTag(TagEnum::INFO)->message("Support commands:");
         /**
          * @var  $command string
          * @var  $descriptionArr array
          */
-        foreach (CommandEnum::SUPPORT_COMMANDS as $command => $descriptionArr) {
+        foreach (CommandEnum::SUPPORT_COMMANDS() as $command => $descriptionArr) {
             switch (count($descriptionArr)) {
                 case 0: // group command's title
                     TextHelper::new()->messageSubTitle($command);
@@ -245,5 +245,5 @@ class app
 // === end class zone ====
 
 // === execute zone ===
-(new app())->run($argv);
+(new OpsApp())->run($argv);
 // === end execute zone ===

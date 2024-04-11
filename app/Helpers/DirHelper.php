@@ -1,9 +1,9 @@
 <?php
 
-namespace app\Helpers;
+namespace App\Helpers;
 
-use app\Enum\TagEnum;
-use app\Classes\Process;
+use App\Enum\TagEnum;
+use App\Classes\Process;
 
 /**
  * this is a DIRectory helper / folder helper

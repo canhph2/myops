@@ -1,15 +1,15 @@
 <?php
 
-namespace app\Helpers;
+namespace App\Helpers;
 
 
-use app\Enum\DockerEnum;
-use app\Enum\IconEnum;
-use app\Enum\IndentLevelEnum;
-use app\Enum\TagEnum;
-use app\Enum\UIEnum;
-use app\Classes\DockerImage;
-use app\Classes\Process;
+use App\Enum\DockerEnum;
+use App\Enum\IconEnum;
+use App\Enum\IndentLevelEnum;
+use App\Enum\TagEnum;
+use App\Enum\UIEnum;
+use App\Classes\DockerImage;
+use App\Classes\Process;
 
 /**
  * this is a Docker helper

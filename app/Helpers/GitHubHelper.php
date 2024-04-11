@@ -1,16 +1,16 @@
 <?php
 
-namespace app\Helpers;
+namespace App\Helpers;
 
-use app\Classes\Duration;
-use app\Classes\GitHubRepositoryInfo;
-use app\Classes\Process;
-use app\Enum\CommandEnum;
-use app\Enum\GitHubEnum;
-use app\Enum\IconEnum;
-use app\Enum\IndentLevelEnum;
-use app\Enum\TagEnum;
-use app\Services\SlackService;
+use App\Classes\Duration;
+use App\Classes\GitHubRepositoryInfo;
+use App\Classes\Process;
+use App\Enum\CommandEnum;
+use App\Enum\GitHubEnum;
+use App\Enum\IconEnum;
+use App\Enum\IndentLevelEnum;
+use App\Enum\TagEnum;
+use App\Services\SlackService;
 use DateTime;
 
 /**
@@ -105,14 +105,7 @@ class GitHubHelper
     }
 
     /**
-     * usage:
-     *     php _ops/lib handle-caches-and-git REPOSITORY
-     *
-     * required:
-     *     ENV > GITHUB_PERSONAL_ACCESS_TOKEN
-     *
-     * case engage-api-deploy, to build api docker image
-     *     php _ops/lib_temp/HandleCachesAndGit ENGAGE_API_DEPLOY
+     * require envs: GITHUB_PERSONAL_ACCESS_TOKEN
      */
     public static function handleCachesAndGit(array $argv)
     {
@@ -235,7 +228,7 @@ class GitHubHelper
         }
         // handle
         //    notify
-        SlackService::sendMessageInternalUsing(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternalUsing(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
         //    get GitHub token and login gh
         TextHelper::new()->messageSubTitle("login gh (GitHub CLI)");
         (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
@@ -281,7 +274,7 @@ class GitHubHelper
             }
         } // end loop
         //    notify
-        SlackService::sendMessageInternalUsing(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternalUsing(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
     }
 
 

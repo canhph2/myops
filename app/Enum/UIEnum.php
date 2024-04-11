@@ -1,6 +1,6 @@
 <?php
 
-namespace app\Enum;
+namespace App\Enum;
 
 /**
  * reference https://en.wikipedia.org/wiki/ANSI_escape | SGR (Select Graphic Rendition) parameters | Colors

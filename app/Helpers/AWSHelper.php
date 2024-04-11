@@ -1,11 +1,11 @@
 <?php
 
-namespace app\Helpers;
+namespace App\Helpers;
 
-use app\app;
-use app\Classes\Process;
-use app\Enum\TagEnum;
-use app\Services\SlackService;
+use App\OpsApp;
+use App\Classes\Process;
+use App\Enum\TagEnum;
+use App\Services\SlackService;
 use DateTime;
 use Exception;
 
@@ -48,7 +48,7 @@ class AWSHelper
 
     /**
      * should run with command in shell:
-     *      val "$(php _ops/lib load-env-ops)"
+     *      val "$(php ~/ops-app load-env-ops)"
      *
      * @return string
      */
@@ -57,7 +57,7 @@ class AWSHelper
         $opsEnvSecretName = 'env-ops';
         $opsEnvData = json_decode(exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output json", $opsEnvSecretName)));
         //
-        return sprintf("#!/bin/bash\n%s\n%s", $opsEnvData, app::getShellData());
+        return sprintf("#!/bin/bash\n%s\n%s", $opsEnvData, OpsApp::getShellData());
     }
 
     /**
@@ -155,7 +155,7 @@ class AWSHelper
                     sprintf("%s:%s", getenv('ECR_REPO_PAYMENT_SERVICE'), $TAG_PAYMENT_SERVICE_NAME),
                     sprintf("%s:%s", getenv('ECR_REPO_INTEGRATION_API'), $TAG_INTEGRATION_API_NAME)
                 ],
-                app::getELBTemplate()["DockerrunTemplate"]
+                OpsApp::getELBTemplate()["DockerrunTemplate"]
             );
             //    write files
             file_put_contents(

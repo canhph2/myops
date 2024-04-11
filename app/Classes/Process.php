@@ -1,13 +1,13 @@
 <?php
 
-namespace app\Classes;
+namespace App\Classes;
 
-use app\Enum\GitHubEnum;
-use app\Enum\IconEnum;
-use app\Enum\IndentLevelEnum;
-use app\Enum\TagEnum;
-use app\Helpers\DirHelper;
-use app\Helpers\TextHelper;
+use App\Enum\GitHubEnum;
+use App\Enum\IconEnum;
+use App\Enum\IndentLevelEnum;
+use App\Enum\TagEnum;
+use App\Helpers\DirHelper;
+use App\Helpers\TextHelper;
 
 class Process
 {

@@ -1,16 +1,16 @@
 <?php
 
-namespace app\Helpers;
+namespace App\Helpers;
 
-use app\Classes\GitHubRepositoryInfo;
-use app\Enum\GitHubEnum;
-use app\Enum\IconEnum;
-use app\Enum\IndentLevelEnum;
-use app\Enum\PostWorkEnum;
-use app\Enum\TagEnum;
-use app\Enum\UIEnum;
-use app\Enum\ValidationTypeEnum;
-use app\Classes\Process;
+use App\Classes\GitHubRepositoryInfo;
+use App\Enum\GitHubEnum;
+use App\Enum\IconEnum;
+use App\Enum\IndentLevelEnum;
+use App\Enum\PostWorkEnum;
+use App\Enum\TagEnum;
+use App\Enum\UIEnum;
+use App\Enum\ValidationTypeEnum;
+use App\Classes\Process;
 
 /**
  * This is Ops helper
@@ -78,10 +78,10 @@ class OPSHelper
     }
 
     /**
-     * sync new release code to project at _ops/lib
+     * sync new release code to home dir (~) at ~/ops-app
      * sync strategy:
-     * - clone 'ops-lib' project at caches folder
-     * - copy new lib file into project at _ops/lib
+     * - clone 'ops-app' project at caches folder
+     * - copy new ops-lib file into home dir(~) at ~/ops-app
      */
     public static function sync()
     {
@@ -92,15 +92,15 @@ class OPSHelper
         GitHubHelper::handleCachesAndGit([
             'script path',
             'command-name', // param 1
-            'ops-lib', // param 2, in this case is repository
+            'ops-app', // param 2, in this case is repository
             'main', // param 3, in this case is branch
         ]);
         // sync new lib
-        $EngagePlusCachesRepositoryOpsLibDir = sprintf("%s/ops-lib", getenv('ENGAGEPLUS_CACHES_DIR'));
+        $EngagePlusCachesRepositoryOpsLibDir = sprintf("%s/ops-app", getenv('ENGAGEPLUS_CACHES_DIR'));
         (new Process("SYNC OPS LIB", DirHelper::getWorkingDir(), [
-            'rm _ops/lib',
+            'rm ~/ops-app',
             sprintf(
-                "cp -f '%s/_ops/lib' '%s/_ops/lib'",
+                "cp -f '%s/.release/ops-app' '%s/ops-app'",
                 $EngagePlusCachesRepositoryOpsLibDir,
                 DirHelper::getWorkingDir()
             ),
@@ -111,7 +111,7 @@ class OPSHelper
         TextHelper::new()->messageSeparate();
         // show open new session to show right version
         (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
-            'php _ops/lib version'
+            'php ~/ops-app version'
         ]))->execMultiInWorkDir(true)->printOutput();
         //
         TextHelper::new()->messageSeparate();
@@ -120,7 +120,7 @@ class OPSHelper
     /**
      * need to get
      * - ENGAGEPLUS_CACHES_FOLDER
-     * - ENGAGEPLUS_CACHES_DIR="$(php _ops/lib home-dir)/${ENGAGEPLUS_CACHES_FOLDER}"
+     * - ENGAGEPLUS_CACHES_DIR="$(php ~/ops-app home-dir)/${ENGAGEPLUS_CACHES_FOLDER}"
      * - GITHUB_PERSONAL_ACCESS_TOKEN
      * and put to PHP env
      * @return void
@@ -307,7 +307,7 @@ class OPSHelper
                 break;
             default:
                 TextHelper::tag(TagEnum::ERROR)->message("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
-                    ->message("should be like eg:   php _ops/lib validate branch");
+                    ->message("should be like eg:   php ~/ops-lib validate branch");
                 break;
         }
     }
@@ -315,7 +315,7 @@ class OPSHelper
     /**
      * allow branches: develop, staging, master
      * should combine with exit 1 in shell:
-     *     php _ops/lib validate branch || exit 1
+     *     php ~/ops-app validate branch || exit 1
      * @return void
      */
     private static function validateBranch()
@@ -331,7 +331,7 @@ class OPSHelper
     /**
      * Docker should is running
      * should combine with exit 1 in shell:
-     *      php _ops/lib validate docker || exit 1
+     *      php ~/ops-app validate docker || exit 1
      */
     private static function validateDocker()
     {
@@ -346,7 +346,7 @@ class OPSHelper
 
     /**
      * should have env var: BRANCH
-     *     php _ops/lib validate device || exit 1
+     *     php ~/ops-app validate device || exit 1
      * @return void
      */
     private static function validateDevice()

@@ -1,10 +1,10 @@
 <?php
 
-namespace app\Helpers;
+namespace App\Helpers;
 
-use app\app;
-use app\Classes\Release;
-use app\Classes\Version;
+use App\OpsApp;
+use App\Classes\Release;
+use App\Classes\Version;
 
 class AppHelper
 {
@@ -41,12 +41,12 @@ class AppHelper
         $isAddToVersionMD = false;
         switch ($part) {
             case Version::MINOR:
-                $newVersion = Version::parse(app::APP_VERSION)->bump(Version::MINOR);
+                $newVersion = Version::parse(OpsApp::APP_VERSION)->bump(Version::MINOR);
                 $isAddToVersionMD = true;
                 break;
             case Version::PATCH:
             default:
-                $newVersion = Version::parse(app::APP_VERSION)->bump($part);
+                $newVersion = Version::parse(OpsApp::APP_VERSION)->bump($part);
                 break;
         }
         // update data

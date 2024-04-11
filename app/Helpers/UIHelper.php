@@ -1,8 +1,8 @@
 <?php
 
-namespace app\Helpers;
+namespace App\Helpers;
 
-use app\Enum\UIEnum;
+use App\Enum\UIEnum;
 
 /**
  * This is a UI Console helper

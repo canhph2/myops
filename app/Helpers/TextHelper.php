@@ -1,10 +1,10 @@
 <?php
 
-namespace app\Helpers;
+namespace App\Helpers;
 
-use app\Enum\IndentLevelEnum;
-use app\Enum\TagEnum;
-use app\Classes\TextLine;
+use App\Enum\IndentLevelEnum;
+use App\Enum\TagEnum;
+use App\Classes\TextLine;
 
 /**
  * This is TEXT Helper
@@ -63,7 +63,6 @@ class TextHelper
     }
 
     /**
-     *  php _ops/lib replace-text-in-file "search text" "replace text" "file path"
      * required
      * - "search text"  (param 2)
      * - "replace text"  (param 3)

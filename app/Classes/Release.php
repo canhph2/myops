@@ -1,27 +1,27 @@
 <?php
 
-namespace app\Classes;
+namespace App\Classes;
 
-use app\app;
-use app\Enum\CommandEnum;
-use app\Enum\DockerEnum;
-use app\Enum\GitHubEnum;
-use app\Enum\IconEnum;
-use app\Enum\IndentLevelEnum;
-use app\Enum\PostWorkEnum;
-use app\Enum\TagEnum;
-use app\Enum\UIEnum;
-use app\Enum\ValidationTypeEnum;
-use app\Helpers\AppHelper;
-use app\Helpers\AWSHelper;
-use app\Helpers\DirHelper;
-use app\Helpers\DockerHelper;
-use app\Helpers\GitHubHelper;
-use app\Helpers\OPSHelper;
-use app\Helpers\StrHelper;
-use app\Helpers\TextHelper;
-use app\Helpers\UIHelper;
-use app\Services\SlackService;
+use App\Enum\CommandEnum;
+use App\Enum\DockerEnum;
+use App\Enum\GitHubEnum;
+use App\Enum\IconEnum;
+use App\Enum\IndentLevelEnum;
+use App\Enum\PostWorkEnum;
+use App\Enum\TagEnum;
+use App\Enum\UIEnum;
+use App\Enum\ValidationTypeEnum;
+use App\Helpers\AppHelper;
+use App\Helpers\AWSHelper;
+use App\Helpers\DirHelper;
+use App\Helpers\DockerHelper;
+use App\Helpers\GitHubHelper;
+use App\Helpers\OPSHelper;
+use App\Helpers\StrHelper;
+use App\Helpers\TextHelper;
+use App\Helpers\UIHelper;
+use App\OpsApp;
+use App\Services\SlackService;
 use DateTime;
 
 class Release
@@ -64,11 +64,11 @@ class Release
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // always on bottom
-            'app/app',
+            'app/ops-app',
         ];
     }
 
-    const RELEASE_PATH = '_ops/lib';
+    const RELEASE_PATH = '.release/ops-app';
 
     public function __construct()
     {
@@ -85,7 +85,8 @@ class Release
         switch (basename(DirHelper::getScriptDir())) {
             case 'app':
                 return true;
-            case '_ops':
+            case '.release':
+            case DirHelper::getScriptDir():
                 TextHelper::tag(TagEnum::ERROR)->message("release in directory / another project, stop release job");
                 return false;
             default:
@@ -110,21 +111,25 @@ class Release
         TextHelper::new()->messageTitle("release");
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
-        //    generate files
-        TextHelper::tagMultiple([__CLASS__, __FUNCTION__])->message("init ops/lib file");
-        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", app::version($newVersion))); // init file
+        //    combine files
+        TextHelper::tagMultiple([__CLASS__, __FUNCTION__])->message("combine files");
+        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", OpsApp::version($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
+        //    copy release file to home directory
+        TextHelper::tagMultiple([__CLASS__, __FUNCTION__])->message("copy release file to home directory");
+        exec(sprintf("cp -f '%s/.releases/app-ops' '%s/app-ops'", DirHelper::getWorkingDir(), DirHelper::getHomeDir()));
+        //
         TextHelper::tagMultiple([__CLASS__, __FUNCTION__])->message("DONE");
         //    push new release to GitHub
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
-            sprintf("git commit -m 'release %s on %s UTC'", app::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
+            sprintf("git commit -m 'release %s on %s UTC'", OpsApp::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
         //
         TextHelper::new()->messageSeparate()
-            ->setTag(TagEnum::SUCCESS)->message("Release successful %s", app::version($newVersion));
+            ->setTag(TagEnum::SUCCESS)->message("Release successful %s", OpsApp::version($newVersion));
     }
 
     /**
@@ -166,13 +171,13 @@ class Release
         // handle shell data
         $appClassContentClassOnly = str_replace(
             "const SHELL_DATA_BASE_64 = '';",
-            sprintf("const SHELL_DATA_BASE_64 = '%s';", base64_encode(app::getShellData())),
+            sprintf("const SHELL_DATA_BASE_64 = '%s';", base64_encode(OpsApp::getShellData())),
             $appClassContentClassOnly
         );
         // handle ELB template
         $appClassContentClassOnly = str_replace(
             "const ELB_TEMPLATE_BASE_64 = '';",
-            sprintf("const ELB_TEMPLATE_BASE_64 = '%s';", base64_encode(json_encode(app::getELBTemplate()))),
+            sprintf("const ELB_TEMPLATE_BASE_64 = '%s';", base64_encode(json_encode(OpsApp::getELBTemplate()))),
             $appClassContentClassOnly
         );
         //

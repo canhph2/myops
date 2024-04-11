@@ -1,8 +1,8 @@
 <?php
 
-namespace app\Enum;
+namespace App\Enum;
 
-use app\Classes\GitHubRepositoryInfo;
+use App\Classes\GitHubRepositoryInfo;
 
 class GitHubEnum
 {
@@ -41,7 +41,7 @@ class GitHubEnum
             new GitHubRepositoryInfo('engage-api-deploy', 'infohkengage'),
             //
             new GitHubRepositoryInfo('engage-database-utils', 'congnqnexlesoft'),
-            new GitHubRepositoryInfo('ops-lib', 'congnqnexlesoft'),
+            new GitHubRepositoryInfo('ops-app', 'congnqnexlesoft'),
             new GitHubRepositoryInfo('docker-base-images', 'congnqnexlesoft'),
             new GitHubRepositoryInfo('engage-selenium-test-1', 'congnqnexlesoft'),
         ];

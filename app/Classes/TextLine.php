@@ -1,11 +1,11 @@
 <?php
 
-namespace app\Classes;
+namespace App\Classes;
 
-use app\Enum\IndentLevelEnum;
-use app\Enum\TagEnum;
-use app\Enum\UIEnum;
-use app\Helpers\UIHelper;
+use App\Enum\IndentLevelEnum;
+use App\Enum\TagEnum;
+use App\Enum\UIEnum;
+use App\Helpers\UIHelper;
 
 class TextLine
 {
