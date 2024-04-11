@@ -2,7 +2,6 @@
 
 namespace TestApp;
 
-require_once 'app/ops-app';
 require_once 'app/Classes/Version.php';
 require_once 'app/Classes/Process.php';
 require_once 'app/Classes/TextLine.php';
@@ -50,7 +49,7 @@ class OpsLibTest extends BaseTestCase
     public function testCommandVersion()
     {
         $oldVersion = exec("php ~/ops-app version");
-        $this->customAssertIsStringAndContainsString( OpsApp::APP_NAME, $oldVersion);
+        $this->customAssertIsStringAndContainsString( "OPS APP (PHP)", $oldVersion);
         $this->customAssertIsStringAndContainsString("v", $oldVersion);
         $this->customAssertIsStringAndContainsString(".", $oldVersion);
     }
