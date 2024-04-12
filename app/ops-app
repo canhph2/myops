@@ -23,7 +23,6 @@ use App\Helpers\DockerHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
-use App\Helpers\UIHelper;
 use App\Services\SlackService;
 use App\Traits\ConsoleUITrait;
 
@@ -239,7 +238,7 @@ class OpsApp
 
     public static function version(Version $newVersion = null): string
     {
-        return UIHelper::colorFormat(
+        return self::colorFormat(
             sprintf("%s v%s", self::APP_NAME, $newVersion ? $newVersion->toString() : self::APP_VERSION),
             UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD
         );

@@ -18,7 +18,6 @@ use App\Helpers\DockerHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
-use App\Helpers\UIHelper;
 use App\OpsApp;
 use App\Services\SlackService;
 use App\Traits\ConsoleUITrait;
@@ -61,7 +60,6 @@ class Release
             DirHelper::getClassPathAndFileName(AppHelper::class),
             DirHelper::getClassPathAndFileName(DockerHelper::class),
             DirHelper::getClassPathAndFileName(StrHelper::class),
-            DirHelper::getClassPathAndFileName(UIHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===

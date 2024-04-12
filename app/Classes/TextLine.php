@@ -5,10 +5,12 @@ namespace App\Classes;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
 use App\Enum\UIEnum;
-use App\Helpers\UIHelper;
+use App\Traits\ConsoleUITrait;
 
 class TextLine
 {
+    use ConsoleUITrait;
+
     /** @var string */
     private $text;
 
@@ -203,11 +205,11 @@ class TextLine
         $finalText = sprintf("%s\n", $this->toString());
         //     case 1: set both color and format
         if ($this->color !== UIEnum::COLOR_NO_SET && $this->format !== UIEnum::FORMAT_NO_SET) {
-            echo UIHelper::colorFormat($finalText, $this->color, $this->format);
+            echo self::colorFormat($finalText, $this->color, $this->format);
             //
             // case 2: set color only
         } else if ($this->color !== UIEnum::COLOR_NO_SET) {
-            echo UIHelper::color($finalText, $this->color);
+            echo self::color($finalText, $this->color);
             //
             // case 3: no set both color and format
         } else {
@@ -222,7 +224,7 @@ class TextLine
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
-        echo UIHelper::colorFormat(sprintf("=== %s ===\n", $this->toString()),
+        echo self::colorFormat(sprintf("=== %s ===\n", $this->toString()),
             UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD);
         //
         return $this;
@@ -233,7 +235,7 @@ class TextLine
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
-        echo UIHelper::color(sprintf("-- %s --\n", $this->toString()), UIEnum::COLOR_BLUE);
+        echo self::color(sprintf("-- %s --\n", $this->toString()), UIEnum::COLOR_BLUE);
         //
         return $this;
     }
