@@ -1,4 +1,4 @@
-# ops-app v3.2.3
+# ops-app v3.2.4
 *DevOps | CICD | Ops App (PHP)*
 
 ## === Usage ===
@@ -22,6 +22,18 @@ sh _ops/build-and-deploy-with-caches.sh 'Developer (manual)'
 php ~/ops-app sync
 ```
 
+TODO ANALYZE
+### Install
+- First time, copy full `.release/ops-app` to machine, and run install
+- Next time, just sync new version
+### Usage
+- use alias `ops-app` anywhere in Mac / Linux
+```shell
+alias ops-app1="php ~/Desktop/ops-app/app/ops-app"
+Mac ~/.zshrc
+Ubuntu ~/.bash...
+```
+
 
 ---
 ## === Project Notes ===
@@ -40,8 +52,8 @@ php ~/ops-app sync
 ---
 - In this project (development and library):
 - [RELEASE] Building project will result `~/ops-app`
-  - add new files to FILES_LIST in Release class
-  - combine and release
+  - Add new files to FILES_LIST in Release class
+  - Combine and release
 ```shell
 php app/ops-app release
 php vendor/phpunit/phpunit/phpunit tests

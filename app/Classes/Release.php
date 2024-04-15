@@ -64,12 +64,12 @@ class Release
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
             DirHelper::getClassPathAndFileName(ConsoleUITrait::class),
-            // always on bottom
-            'app/ops-app',
+            // App file always on bottom
+            DirHelper::getClassPathAndFileName(OpsApp::class),
         ];
     }
 
-    const RELEASE_PATH = '.release/ops-app';
+    const RELEASE_PATH = '.release/OpsApp.php';
 
     public function __construct()
     {
@@ -114,12 +114,12 @@ class Release
         $newVersion = AppHelper::increaseVersion($part);
         //    combine files
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
-        file_put_contents(self::RELEASE_PATH, sprintf("#!/usr/bin/env php\n<?php\n// === %s ===\n", OpsApp::version($newVersion)));
+        file_put_contents(self::RELEASE_PATH, sprintf("<?php\n// === %s ===\n", OpsApp::version($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
-        //    copy release file to home directory
-        self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("copy release file to home directory");
-        exec(sprintf("cp -f '%s/.release/ops-app' '%s/ops-app'", DirHelper::getWorkingDir(), DirHelper::getHomeDir()));
+        //    copy release file to home directory | TODO Replace aliasy
+//        self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("copy release file to home directory");
+//        exec(sprintf("cp -f '%s/.release/ops-app' '%s/ops-app'", DirHelper::getWorkingDir(), DirHelper::getHomeDir()));
         //
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
@@ -143,8 +143,7 @@ class Release
     private function handlePHPClassContent(string $classPath): string
     {
         // remove php tag
-        $classContent = str_replace('#!/usr/bin/env php', '', trim(file_get_contents($classPath)));
-        $classContent = str_replace('<?php', '', $classContent);
+        $classContent = str_replace('<?php', '', trim(file_get_contents($classPath)));
         // remove unused elements
         $lines = explode("\n", $classContent);
         $modifiedLines = [];

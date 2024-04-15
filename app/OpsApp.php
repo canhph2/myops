@@ -1,4 +1,3 @@
-#!/usr/bin/env php
 <?php
 
 namespace App;
@@ -33,8 +32,8 @@ class OpsApp
     use ConsoleUITrait;
 
     const APP_NAME = 'OPS APP (PHP)';
-    const APP_VERSION = '3.2.3';
-    const APP_MAIN_COMMAND = '~/ops-app';
+    const APP_VERSION = '3.2.4';
+    const APP_MAIN_COMMAND = 'ops-app';
 
     const SHELL_DATA_BASE_64 = '';
 
