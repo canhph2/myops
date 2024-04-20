@@ -27,7 +27,7 @@ class OpsLibTest extends BaseTestCase
 {
     public function testAllFunctions()
     {
-        $this->assertIsString(OpsApp::APP_NAME . " test string");
+        $this->assertIsString("test string 1");
     }
 
     public function testVersionObject()

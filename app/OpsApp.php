@@ -33,7 +33,7 @@ class OpsApp
     use ConsoleUITrait;
 
     const APP_NAME = 'OPS APP (PHP)';
-    const APP_VERSION = '3.2.16';
+    const APP_VERSION = '3.2.17';
     const APP_MAIN_COMMAND = 'ops-app';
 
     const SHELL_DATA_BASE_64 = '';
@@ -62,7 +62,7 @@ class OpsApp
 
     }
 
-    public function run(array $argv)
+    public function run($argv)
     {
         // === params ===
         $command = $argv[1] ?? null;
