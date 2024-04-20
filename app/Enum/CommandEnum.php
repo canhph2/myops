@@ -51,6 +51,9 @@ class CommandEnum
     const TITLE = 'title';
     const SUB_TITLE = 'sub-title';
 
+    // === others ==
+    const ON_REQUIRE_FILE = 'ON_REQUIRE_FILE';
+
     /**
      * @return array
      * key => value | key is command, value is description

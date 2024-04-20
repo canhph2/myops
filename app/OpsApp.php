@@ -25,6 +25,7 @@ use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
 use App\Services\SlackService;
 use App\Traits\ConsoleUITrait;
+use phpDocumentor\Reflection\DocBlock\Tag;
 
 AppHelper::requireOneAllPHPFilesInDir(DirHelper::getWorkingDir('app'));
 
@@ -33,7 +34,7 @@ class OpsApp
     use ConsoleUITrait;
 
     const APP_NAME = 'OPS APP (PHP)';
-    const APP_VERSION = '3.2.17';
+    const APP_VERSION = '3.2.16';
     const APP_MAIN_COMMAND = 'ops-app';
 
     const SHELL_DATA_BASE_64 = '';
@@ -62,7 +63,7 @@ class OpsApp
 
     }
 
-    public function run($argv)
+    public function run(array $argv)
     {
         // === params ===
         $command = $argv[1] ?? null;
@@ -70,6 +71,10 @@ class OpsApp
         $param2 = $argv[3] ?? null; // to use if needed
 
         // === validation ===
+        if ($command === CommandEnum::ON_REQUIRE_FILE) {
+            self::lineTag('DETECTION')->print("ON_REQUIRE_FILE");
+            return; // END
+        }
         if (!$command) {
             self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", OpsApp::APP_MAIN_COMMAND);
             $this->help();
@@ -248,5 +253,5 @@ class OpsApp
 // === end class zone ====
 
 // === execute zone ===
-(new OpsApp())->run($argv);
+(new OpsApp())->run($argv ?? [CommandEnum::ON_REQUIRE_FILE]);
 // === end execute zone ===
