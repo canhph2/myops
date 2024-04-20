@@ -1,4 +1,4 @@
-# ops-app v3.2.11
+# ops-app v3.2.12
 *DevOps | CICD | Ops App (PHP)*
 
 ## === Usage ===
