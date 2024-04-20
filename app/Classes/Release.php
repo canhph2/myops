@@ -2,6 +2,7 @@
 
 namespace App\Classes;
 
+use App\Enum\AppInfoEnum;
 use App\Enum\CommandEnum;
 use App\Enum\DockerEnum;
 use App\Enum\GitHubEnum;
@@ -43,6 +44,7 @@ class Release
             DirHelper::getClassPathAndFileName(GitHubRepositoryInfo::class),
             DirHelper::getClassPathAndFileName(Duration::class),
             // === Enum ===
+            DirHelper::getClassPathAndFileName(AppInfoEnum::class),
             DirHelper::getClassPathAndFileName(CommandEnum::class),
             DirHelper::getClassPathAndFileName(GitHubEnum::class),
             DirHelper::getClassPathAndFileName(IndentLevelEnum::class),

@@ -2,11 +2,11 @@
 
 namespace TestApp;
 
-require_once 'app/OpsApp.php';
 require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Classes/Version.php';
 require_once 'app/Classes/Process.php';
 require_once 'app/Classes/TextLine.php';
+require_once 'app/Enum/AppInfoEnum.php';
 require_once 'app/Enum/IndentLevelEnum.php';
 require_once 'app/Enum/TagEnum.php';
 require_once 'app/Enum/UIEnum.php';

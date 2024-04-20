@@ -65,17 +65,17 @@ class CommandEnum
             "OPS APP" => [],
             self::HELP => ['show list support command and usage'],
             self::RELEASE => [
-                sprintf("combine all PHP files into '.release/OpsApp.php' and install a alias '%s'",OpsApp::APP_MAIN_COMMAND),
+                sprintf("combine all PHP files into '.release/OpsApp.php' and install a alias '%s'",AppInfoEnum::APP_MAIN_COMMAND),
                 "default version increasing is 'patch'",
                 "feature should be 'minor'",
             ],
             self::VERSION => ["show app version"],
-            self::SYNC => [sprintf("sync new release code to caches dir and create an alias '%s'", OpsApp::APP_MAIN_COMMAND)],
+            self::SYNC => [sprintf("sync new release code to caches dir and create an alias '%s'", AppInfoEnum::APP_MAIN_COMMAND)],
             // group title
             "AWS Related" => [],
             self::LOAD_ENV_OPS => [
                 '[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:',
-                sprintf('            eval "$(%s load-env-ops)"    ', OpsApp::APP_MAIN_COMMAND)
+                sprintf('            eval "$(%s load-env-ops)"    ', AppInfoEnum::APP_MAIN_COMMAND)
             ],
             self::GET_SECRET_ENV => ["[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName"],
             self::ELB_UPDATE_VERSION => ["[AWS Elastic Beanstalk] create a new version and update an environment"],
@@ -100,7 +100,7 @@ class CommandEnum
             self::HOME_DIR => ['return home directory of machine / server'],
             self::SCRIPT_DIR => ['return directory of script'],
             self::WORKING_DIR => ['get root project directory / current working directory'],
-            self::REPLACE_TEXT_IN_FILE => [sprintf('php %s replace-text-in-file "search text" "replace text" "file path"', OpsApp::APP_MAIN_COMMAND)],
+            self::REPLACE_TEXT_IN_FILE => [sprintf('php %s replace-text-in-file "search text" "replace text" "file path"', AppInfoEnum::APP_MAIN_COMMAND)],
             self::SLACK => ["notify a message to Slack"],
             self::TMP => [
                 'handle temporary directory (tmp)',
@@ -117,7 +117,7 @@ class CommandEnum
             "VALIDATION" => [],
             self::VALIDATE => [
                 "required: 'set -e' in bash file",
-                sprintf('  should combine with exit 1, eg:   php %s validate TYPE | exit 1', OpsApp::APP_MAIN_COMMAND),
+                sprintf('  should combine with exit 1, eg:   php %s validate TYPE | exit 1', AppInfoEnum::APP_MAIN_COMMAND),
                 '  support TYPEs:',
                 '    branch  : to only allow develop, staging, master',
                 '    docker  : docker should is running',

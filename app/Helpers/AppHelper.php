@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Enum\AppInfoEnum;
 use App\OpsApp;
 use App\Classes\Release;
 use App\Classes\Version;
@@ -41,21 +42,20 @@ class AppHelper
         $isAddToVersionMD = false;
         switch ($part) {
             case Version::MINOR:
-                $newVersion = Version::parse(OpsApp::APP_VERSION)->bump(Version::MINOR);
+                $newVersion = Version::parse(AppInfoEnum::APP_VERSION)->bump(Version::MINOR);
                 $isAddToVersionMD = true;
                 break;
             case Version::PATCH:
             default:
-                $newVersion = Version::parse(OpsApp::APP_VERSION)->bump($part);
+                $newVersion = Version::parse(AppInfoEnum::APP_VERSION)->bump($part);
                 break;
         }
         // update data
         //    app class
-        $appClassPath = Release::GET_FILES_LIST()[count(Release::GET_FILES_LIST()) - 1];
-        file_put_contents($appClassPath, preg_replace(
+        file_put_contents(DirHelper::getClassPathAndFileName(AppInfoEnum::class), preg_replace(
             '/APP_VERSION\s*=\s*\'(\d+\.\d+\.\d+)\'/',
             sprintf("APP_VERSION = '%s'", $newVersion->toString()),
-            file_get_contents($appClassPath)
+            file_get_contents(DirHelper::getClassPathAndFileName(AppInfoEnum::class))
         ));
         //    README.MD
         $readmePath = "README.MD";

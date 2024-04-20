@@ -7,9 +7,9 @@ require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
-use App\Classes\Process;
 use App\Classes\Release;
 use App\Classes\Version;
+use App\Enum\AppInfoEnum;
 use App\Enum\CommandEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
@@ -25,17 +25,12 @@ use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
 use App\Services\SlackService;
 use App\Traits\ConsoleUITrait;
-use phpDocumentor\Reflection\DocBlock\Tag;
 
 AppHelper::requireOneAllPHPFilesInDir(DirHelper::getWorkingDir('app'));
 
 class OpsApp
 {
     use ConsoleUITrait;
-
-    const APP_NAME = 'OPS APP (PHP)';
-    const APP_VERSION = '3.2.17';
-    const APP_MAIN_COMMAND = 'ops-app';
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -71,12 +66,8 @@ class OpsApp
         $param2 = $argv[3] ?? null; // to use if needed
 
         // === validation ===
-        if ($command === CommandEnum::ON_REQUIRE_FILE) {
-            self::lineTag('DETECTION')->print("ON_REQUIRE_FILE");
-            return; // END
-        }
         if (!$command) {
-            self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", OpsApp::APP_MAIN_COMMAND);
+            self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", AppInfoEnum::APP_MAIN_COMMAND);
             $this->help();
             exit(); // END
         }
@@ -212,9 +203,9 @@ class OpsApp
     private function help()
     {
         self::LineNew()->print('')
-            ->printTitle("%s v%s", self::APP_NAME, self::APP_VERSION)
-            ->setTag(TagEnum::INFO)->print("usage:  %s COMMAND", OpsApp::APP_MAIN_COMMAND)
-            ->setTag(TagEnum::NONE)->print("               %s COMMAND PARAM1 PARAM2 ...", OpsApp::APP_MAIN_COMMAND)
+            ->printTitle("%s v%s", AppInfoEnum::APP_NAME, AppInfoEnum::APP_VERSION)
+            ->setTag(TagEnum::INFO)->print("usage:  %s COMMAND", AppInfoEnum::APP_MAIN_COMMAND)
+            ->setTag(TagEnum::NONE)->print("               %s COMMAND PARAM1 PARAM2 ...", AppInfoEnum::APP_MAIN_COMMAND)
             ->setTag(TagEnum::NONE)->print('')
             ->setTag(TagEnum::INFO)->print("Support commands:");
         /**
@@ -244,7 +235,7 @@ class OpsApp
     public static function version(Version $newVersion = null): string
     {
         return self::colorFormat(
-            sprintf("%s v%s", self::APP_NAME, $newVersion ? $newVersion->toString() : self::APP_VERSION),
+            sprintf("%s v%s", AppInfoEnum::APP_NAME, $newVersion ? $newVersion->toString() : AppInfoEnum::APP_VERSION),
             UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD
         );
     }
@@ -253,5 +244,5 @@ class OpsApp
 // === end class zone ====
 
 // === execute zone ===
-(new OpsApp())->run($argv ?? [CommandEnum::ON_REQUIRE_FILE]);
+(new OpsApp())->run($argv);
 // === end execute zone ===

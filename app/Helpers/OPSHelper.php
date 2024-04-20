@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Release;
+use App\Enum\AppInfoEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
@@ -120,21 +121,21 @@ class OPSHelper
     private static function createAlias()
     {
         $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/ops-app/%s", getenv('ENGAGEPLUS_CACHES_DIR'), Release::RELEASE_PATH);
-        $alias = sprintf("alias %s=\"php %s\"", OpsApp::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
+        $alias = sprintf("alias %s=\"php %s\"", AppInfoEnum::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
         $shellConfigurationFiles = [
             DirHelper::getHomeDir('.zshrc'), // Mac
             DirHelper::getHomeDir('.bashrc'), // Ubuntu
         ];
         foreach ($shellConfigurationFiles as $shellConfigurationFile) {
             if (is_file($shellConfigurationFile)) {
-                self::lineNew()->printSubTitle("create alias '%s' at '%s'", OpsApp::APP_MAIN_COMMAND, $shellConfigurationFile);
+                self::lineNew()->printSubTitle("create alias '%s' at '%s'", AppInfoEnum::APP_MAIN_COMMAND, $shellConfigurationFile);
                 // already setup
                 if (StrHelper::contains(file_get_contents($shellConfigurationFile), $alias)) {
-                    self::lineNew()->setIcon(IconEnum::DOT)->print("already setup alias '%s'", OpsApp::APP_MAIN_COMMAND);
+                    self::lineNew()->setIcon(IconEnum::DOT)->print("already setup alias '%s'", AppInfoEnum::APP_MAIN_COMMAND);
                 } else {
                     // setup alias
                     //    remove old alias (wrong path, old date alias)
-                    $oldAliases = StrHelper::findLinesContainsTextInFile($shellConfigurationFile, OpsApp::APP_MAIN_COMMAND);
+                    $oldAliases = StrHelper::findLinesContainsTextInFile($shellConfigurationFile, AppInfoEnum::APP_MAIN_COMMAND);
                     foreach ($oldAliases as $oldAlias) {
                         StrHelper::replaceTextInFile([
                             'script path', 'command-name', // param 0,1
@@ -347,7 +348,7 @@ class OPSHelper
                 break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
-                    ->print("should be like eg:   '%s' validate branch", OpsApp::APP_MAIN_COMMAND);
+                    ->print("should be like eg:   '%s' validate branch", AppInfoEnum::APP_MAIN_COMMAND);
                 break;
         }
     }
