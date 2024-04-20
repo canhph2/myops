@@ -1,5 +1,5 @@
 <?php
-// === [34;1mOPS APP (PHP) v3.2.21[0m ===
+// === [34;1mOPS APP (PHP) v3.2.22[0m ===
 
 // === Generated libraries classes ===
 
@@ -1262,7 +1262,7 @@ class Duration
 class AppInfoEnum
 {
     const APP_NAME = 'OPS APP (PHP)';
-    const APP_VERSION = '3.2.21';
+    const APP_VERSION = '3.2.22';
     const APP_MAIN_COMMAND = 'ops-app';
     const RELEASE_PATH = '.release/OpsApp.php';
 }
@@ -1325,14 +1325,20 @@ class CommandEnum
      * @return array
      * key => value | key is command, value is description
      */
-    public static function SUPPORT_COMMANDS():array
+    public static function SUPPORT_COMMANDS(): array
     {
         return [
             // group title
             "OPS APP" => [],
+            'Required notes:' => [
+                '[Alias required] add these commands below in a beginning of your shell script file:',
+                "        # load shell configuration",
+                "        [[ -f ~/.zshrc ]] && source ~/.zshrc # MAC",
+                "        [[ -f ~/.bashrc ]] && source ~/.bashrc # Ubuntu",
+            ],
             self::HELP => ['show list support command and usage'],
             self::RELEASE => [
-                sprintf("combine all PHP files into '.release/OpsApp.php' and install a alias '%s'",AppInfoEnum::APP_MAIN_COMMAND),
+                sprintf("combine all PHP files into '.release/OpsApp.php' and install a alias '%s'", AppInfoEnum::APP_MAIN_COMMAND),
                 "default version increasing is 'patch'",
                 "feature should be 'minor'",
             ],

@@ -58,14 +58,20 @@ class CommandEnum
      * @return array
      * key => value | key is command, value is description
      */
-    public static function SUPPORT_COMMANDS():array
+    public static function SUPPORT_COMMANDS(): array
     {
         return [
             // group title
             "OPS APP" => [],
+            'Required notes:' => [
+                '[Alias required] add these commands below in a beginning of your shell script file:',
+                "        # load shell configuration",
+                "        [[ -f ~/.zshrc ]] && source ~/.zshrc # MAC",
+                "        [[ -f ~/.bashrc ]] && source ~/.bashrc # Ubuntu",
+            ],
             self::HELP => ['show list support command and usage'],
             self::RELEASE => [
-                sprintf("combine all PHP files into '.release/OpsApp.php' and install a alias '%s'",AppInfoEnum::APP_MAIN_COMMAND),
+                sprintf("combine all PHP files into '.release/OpsApp.php' and install a alias '%s'", AppInfoEnum::APP_MAIN_COMMAND),
                 "default version increasing is 'patch'",
                 "feature should be 'minor'",
             ],
