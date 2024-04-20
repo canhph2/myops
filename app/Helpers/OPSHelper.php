@@ -128,7 +128,7 @@ class OPSHelper
             if (is_file($shellConfigurationFile)) {
                 self::lineNew()->printSubTitle("create alias '%s' at '%s'", OpsApp::APP_MAIN_COMMAND, $shellConfigurationFile);
                 // already setup
-                if (Str::contains(file_get_contents($shellConfigurationFile), $alias)) {
+                if (StrHelper::contains(file_get_contents($shellConfigurationFile), $alias)) {
                     self::lineNew()->setIcon(IconEnum::DOT)->print("already setup alias '%s'", OpsApp::APP_MAIN_COMMAND);
                 } else {
                     // setup alias
