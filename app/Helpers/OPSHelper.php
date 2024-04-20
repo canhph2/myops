@@ -150,7 +150,7 @@ class OPSHelper
                 // validate alias
                 self::validate([
                     'script path', 'command-name', // param 0,1
-                    ValidationTypeEnum::FILE_CONTAINS_TEXT, "'$shellConfigurationFile'", $alias
+                    ValidationTypeEnum::FILE_CONTAINS_TEXT, "$shellConfigurationFile", $alias
                 ]);
             }
         }
