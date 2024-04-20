@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Classes\GitHubRepositoryInfo;
+use App\Classes\Release;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
@@ -118,7 +119,7 @@ class OPSHelper
      */
     private static function createAlias()
     {
-        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/ops-app/.release/OpsApp.php", getenv('ENGAGEPLUS_CACHES_DIR'));
+        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/ops-app/%s", getenv('ENGAGEPLUS_CACHES_DIR'), Release::RELEASE_PATH);
         $alias = sprintf("alias %s=\"php %s\"", OpsApp::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
         $shellConfigurationFiles = [
             DirHelper::getHomeDir('.zshrc'), // Mac
@@ -164,7 +165,7 @@ class OPSHelper
      * and put to PHP env
      * @return void
      */
-    private static function parseEnoughDataForSync(string $opsEnvAllData)
+    public static function parseEnoughDataForSync(string $opsEnvAllData)
     {
         $tempArr = explode(PHP_EOL, $opsEnvAllData);
         foreach ($tempArr as $line) {

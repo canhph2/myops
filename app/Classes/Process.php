@@ -6,8 +6,11 @@ use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
+use App\Helpers\AWSHelper;
 use App\Helpers\DirHelper;
+use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
+use App\OpsApp;
 use App\Traits\ConsoleUITrait;
 
 class Process
@@ -196,6 +199,26 @@ class Process
             }
         }
         // === handle ===
+        //    handle alias when run alias 'ops-app' in Process
+        $isContainsAlias = false;
+        foreach ($this->commands as $command) {
+            if (StrHelper::startWith($command, OpsApp::APP_MAIN_COMMAND)) {
+                $isContainsAlias = true;
+                break;
+            }
+        }
+        if ($isContainsAlias) {
+            // load env into PHP
+            OPSHelper::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
+            $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/ops-app/%s", getenv('ENGAGEPLUS_CACHES_DIR'), Release::RELEASE_PATH);
+            // replace alias
+            for ($i = 0; $i < count($this->commands); $i++) {
+                if (StrHelper::startWith($this->commands[$i], OpsApp::APP_MAIN_COMMAND)) {
+                    $this->commands[$i] = "php '$EngagePlusCachesRepositoryOpsAppReleasePath' " . substr($this->commands[$i], strlen(OpsApp::APP_MAIN_COMMAND));
+                }
+            }
+        }
+        //
         if ($this->commands) {
             $resultCode = null;
             exec(join(';', $this->commands), $this->output, $exitCode);
@@ -226,7 +249,8 @@ class Process
      * will execMultiInWorkDir | skip check dir | return output string
      * @return string|null
      */
-    public function execMultiInWorkDirAndGetOutputStr():?string{
+    public function execMultiInWorkDirAndGetOutputStr(): ?string
+    {
         return $this->execMultiInWorkDir(true)->getOutputStrAll();
     }
 
