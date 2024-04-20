@@ -7,9 +7,7 @@ use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
-use App\Helpers\AWSHelper;
 use App\Helpers\DirHelper;
-use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
 use App\Traits\ConsoleUITrait;
 
@@ -208,13 +206,10 @@ class Process
             }
         }
         if ($isContainsAlias) {
-            // load env into PHP
-            OPSHelper::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
-            $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/ops-app/%s", getenv('ENGAGEPLUS_CACHES_DIR'), Release::RELEASE_PATH);
             // replace alias
             for ($i = 0; $i < count($this->commands); $i++) {
                 if (StrHelper::startWith($this->commands[$i], AppInfoEnum::APP_MAIN_COMMAND)) {
-                    $this->commands[$i] = "php '$EngagePlusCachesRepositoryOpsAppReleasePath'" . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
+                    $this->commands[$i] = "php " . Release::RELEASE_PATH . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
                 }
             }
         }

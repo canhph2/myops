@@ -16,11 +16,10 @@ require_once 'app/Helpers/StrHelper.php';
 //
 require_once 'tests/TestApp/BaseTestCase.php';
 
-use App\Enum\TagEnum;
-use App\Helpers\DirHelper;
 use App\Classes\Process;
 use App\Classes\Version;
-use App\OpsApp;
+use App\Enum\TagEnum;
+use App\Helpers\DirHelper;
 
 
 class OpsLibTest extends BaseTestCase

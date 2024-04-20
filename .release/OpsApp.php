@@ -1,5 +1,5 @@
 <?php
-// === [34;1mOPS APP (PHP) v3.2.18[0m ===
+// === [34;1mOPS APP (PHP) v3.2.19[0m ===
 
 // === Generated libraries classes ===
 
@@ -216,9 +216,7 @@ class Release
 // [REMOVED] use App\Enum\IconEnum;
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\TagEnum;
-// [REMOVED] use App\Helpers\AWSHelper;
 // [REMOVED] use App\Helpers\DirHelper;
-// [REMOVED] use App\Helpers\OPSHelper;
 // [REMOVED] use App\Helpers\StrHelper;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
@@ -417,13 +415,10 @@ class Process
             }
         }
         if ($isContainsAlias) {
-            // load env into PHP
-            OPSHelper::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
-            $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/ops-app/%s", getenv('ENGAGEPLUS_CACHES_DIR'), Release::RELEASE_PATH);
             // replace alias
             for ($i = 0; $i < count($this->commands); $i++) {
                 if (StrHelper::startWith($this->commands[$i], AppInfoEnum::APP_MAIN_COMMAND)) {
-                    $this->commands[$i] = "php '$EngagePlusCachesRepositoryOpsAppReleasePath'" . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
+                    $this->commands[$i] = "php " . Release::RELEASE_PATH . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
                 }
             }
         }
@@ -1269,7 +1264,7 @@ class Duration
 class AppInfoEnum
 {
     const APP_NAME = 'OPS APP (PHP)';
-    const APP_VERSION = '3.2.18';
+    const APP_VERSION = '3.2.19';
     const APP_MAIN_COMMAND = 'ops-app';
 }
 
