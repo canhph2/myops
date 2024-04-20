@@ -214,7 +214,7 @@ class Process
             // replace alias
             for ($i = 0; $i < count($this->commands); $i++) {
                 if (StrHelper::startWith($this->commands[$i], OpsApp::APP_MAIN_COMMAND)) {
-                    $this->commands[$i] = "php '$EngagePlusCachesRepositoryOpsAppReleasePath' " . substr($this->commands[$i], strlen(OpsApp::APP_MAIN_COMMAND));
+                    $this->commands[$i] = "php '$EngagePlusCachesRepositoryOpsAppReleasePath'" . substr($this->commands[$i], strlen(OpsApp::APP_MAIN_COMMAND));
                 }
             }
         }
