@@ -1313,6 +1313,9 @@ class CommandEnum
     const TITLE = 'title';
     const SUB_TITLE = 'sub-title';
 
+    // === others ==
+    const ON_REQUIRE_FILE = 'ON_REQUIRE_FILE';
+
     /**
      * @return array
      * key => value | key is command, value is description
@@ -3265,7 +3268,7 @@ class OpsApp
 
     }
 
-    public function run($argv)
+    public function run(array $argv)
     {
         // === params ===
         $command = $argv[1] ?? null;
@@ -3273,6 +3276,10 @@ class OpsApp
         $param2 = $argv[3] ?? null; // to use if needed
 
         // === validation ===
+        if ($command === CommandEnum::ON_REQUIRE_FILE) {
+            self::lineTag('DETECTION')->print("ON_REQUIRE_FILE");
+            return; // END
+        }
         if (!$command) {
             self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", OpsApp::APP_MAIN_COMMAND);
             $this->help();
@@ -3451,7 +3458,7 @@ class OpsApp
 // === end class zone ====
 
 // === execute zone ===
-(new OpsApp())->run($argv);
+(new OpsApp())->run($argv ?? [CommandEnum::ON_REQUIRE_FILE]);
 // === end execute zone ===
 
 // === end Generated app class ===
