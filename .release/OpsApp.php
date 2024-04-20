@@ -1,5 +1,5 @@
 <?php
-// === [34;1mOPS APP (PHP) v3.2.5[0m ===
+// === [34;1mOPS APP (PHP) v3.2.6[0m ===
 
 // === Generated libraries classes ===
 
@@ -122,9 +122,6 @@ class Release
         file_put_contents(self::RELEASE_PATH, sprintf("\n// === %s ===\n", OpsApp::version($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
-        //    copy release file to home directory | TODO Replace aliasy
-//        self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("copy release file to home directory");
-//        exec(sprintf("cp -f '%s/.release/ops-app' '%s/ops-app'", DirHelper::getWorkingDir(), DirHelper::getHomeDir()));
         //
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
@@ -1303,12 +1300,12 @@ class CommandEnum
             "OPS APP" => [],
             self::HELP => ['show list support command and usage'],
             self::RELEASE => [
-                sprintf("combine all PHP files into '%s' and copy it to '%s'",str_replace('~/', '.release/', OpsApp::APP_MAIN_COMMAND) ,OpsApp::APP_MAIN_COMMAND),
+                sprintf("combine all PHP files into '.release/OpsApp.php' and install a alias '%s'",OpsApp::APP_MAIN_COMMAND),
                 "default version increasing is 'patch'",
                 "feature should be 'minor'",
             ],
             self::VERSION => ["show app version"],
-            self::SYNC => [sprintf("sync new release code to '%s'", OpsApp::APP_MAIN_COMMAND)],
+            self::SYNC => [sprintf("sync new release code to caches dir and create an alias '%s'", OpsApp::APP_MAIN_COMMAND)],
             // group title
             "AWS Related" => [],
             self::LOAD_ENV_OPS => [
@@ -1639,6 +1636,7 @@ class DirHelper
 // [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
 // [REMOVED] use App\Classes\Process;
+// [REMOVED] use App\OpsApp;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
 /**
@@ -1709,10 +1707,8 @@ class OPSHelper
     }
 
     /**
-     * sync new release code to home dir (~) at ~/ops-app
-     * sync strategy:
-     * - clone 'ops-app' project at caches folder
-     * - copy new ops-lib file into home dir(~) at ~/ops-app
+     * - sync new release code to caches dir in machine '~/.caches_engageplus/ops-app'
+     * - create an alias 'ops-app' link to the release file at '~/.caches_engageplus/ops-app/.release/OpsApp.php'
      */
     public static function sync()
     {
@@ -1726,26 +1722,63 @@ class OPSHelper
             'ops-app', // param 2, in this case is repository
             'main', // param 3, in this case is branch
         ]);
-        // sync new lib
-        $EngagePlusCachesRepositoryOpsLibDir = sprintf("%s/ops-app", getenv('ENGAGEPLUS_CACHES_DIR'));
-        (new Process("SYNC OPS LIB", DirHelper::getWorkingDir(), [
-            'rm ~/ops-app',
-            sprintf(
-                "cp -f '%s/.release/ops-app' '%s/ops-app'",
-                $EngagePlusCachesRepositoryOpsLibDir,
-                DirHelper::getHomeDir()
-            ),
-        ]))->execMultiInWorkDir()->printOutput();
+        // create an alias 'ops-app'
+        self::createAlias();
         //
         self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("sync done");
         self::LineNew()->printSeparatorLine();
         // show open new session to show right version
         (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
-            'php ~/ops-app version'
+            'ops-app version'
         ]))->execMultiInWorkDir(true)->printOutput();
         //
         self::LineNew()->printSeparatorLine();
+    }
+
+    /**
+     * create alias of release app (this app) in shell configuration files
+     *
+     * @return void
+     */
+    private static function createAlias()
+    {
+        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/ops-app/.release/OpsApp.php", getenv('ENGAGEPLUS_CACHES_DIR'));
+        $alias = sprintf("alias %s=\"php %s\"", OpsApp::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
+        $shellConfigurationFiles = [
+            DirHelper::getHomeDir('.zshrc'), // Mac
+            DirHelper::getHomeDir('.bashrc'), // Ubuntu
+        ];
+        foreach ($shellConfigurationFiles as $shellConfigurationFile) {
+            if (is_file($shellConfigurationFile)) {
+                self::lineNew()->printSubTitle("create alias '%s' at '%s'", OpsApp::APP_MAIN_COMMAND, $shellConfigurationFile);
+                // already setup
+                if (Str::contains(file_get_contents($shellConfigurationFile), $alias)) {
+                    self::lineNew()->setIcon(IconEnum::DOT)->print("already setup alias '%s'", OpsApp::APP_MAIN_COMMAND);
+                } else {
+                    // setup alias
+                    //    remove old alias (wrong path, old date alias)
+                    $oldAliases = StrHelper::findLinesContainsTextInFile($shellConfigurationFile, OpsApp::APP_MAIN_COMMAND);
+                    foreach ($oldAliases as $oldAlias) {
+                        StrHelper::replaceTextInFile([
+                            'script path', 'command-name', // param 0,1
+                            $oldAlias, '', $shellConfigurationFile
+                        ]);
+                    }
+                    //    add new alias
+                    if (file_put_contents($shellConfigurationFile, $alias, FILE_APPEND)) {
+                        self::lineNew()->setIcon(IconEnum::CHECK)->print("adding alias done");
+                    } else {
+                        self::lineNew()->setIcon(IconEnum::X)->print("adding alias failured");
+                    }
+                }
+                // validate alias
+                self::validate([
+                    'script path', 'command-name', // param 0,1
+                    ValidationTypeEnum::FILE_CONTAINS_TEXT, "'$shellConfigurationFile'", $alias
+                ]);
+            }
+        }
     }
 
     /**
@@ -1938,7 +1971,7 @@ class OPSHelper
                 break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
-                    ->print("should be like eg:   php ~/ops-lib validate branch");
+                    ->print("should be like eg:   '%s' validate branch", OpsApp::APP_MAIN_COMMAND);
                 break;
         }
     }
@@ -2923,6 +2956,7 @@ class StrHelper
     }
 
     // === text processing ===
+
     /**
      * required
      * - "search text"  (param 2)
@@ -2974,6 +3008,19 @@ class StrHelper
             $line = str_replace($token, $hiddenToken, $line);
         }
         return $line;
+    }
+
+    /**
+     * @param string $filePath
+     * @param string $searchText
+     * @return array
+     */
+    public static function findLinesContainsTextInFile(string $filePath, string $searchText): array
+    {
+        return array_filter(explode(PHP_EOL, file_get_contents($filePath)), function ($line) use ($searchText) {
+            return self::contains($line, $searchText);
+        });
+
     }
 }
 
@@ -3164,7 +3211,7 @@ class OpsApp
     use ConsoleUITrait;
 
     const APP_NAME = 'OPS APP (PHP)';
-    const APP_VERSION = '3.2.5';
+    const APP_VERSION = '3.2.6';
     const APP_MAIN_COMMAND = 'ops-app';
 
     const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKHBocCB+L29wcy1hcHAgYnJhbmNoKQpleHBvcnQgUkVQT1NJVE9SWT0kKHBocCB+L29wcy1hcHAgcmVwb3NpdG9yeSkKZXhwb3J0IEhFQURfQ09NTUlUX0lEPSQocGhwIH4vb3BzLWFwcCBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBoYW5kbGUgYnJhbmNoZXMgdmFycyA9PT0KaWYgWyAiJHtCUkFOQ0h9IiA9ICJkZXZlbG9wIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1kZXYKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9ZGV2ZWxvcC1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0iZGV2ZWxvcC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAwCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJzdGFnaW5nIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1zdGcKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9c3RhZ2luZy1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0ic3RhZ2luZy1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAxCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjEwMCIKICBleHBvcnQgRUJfTUFJTF9DQVRDSEVSX1BPUlQ9IiAgICAiICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UgfCA0IHNwYWNlcyB0byBwYXNzIGVtcHR5IHN0cmluZwogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAyCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKIyA9PT0gRU5EID09PQoKIyA9PT0gQVdTIEFjY291bnQgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEFXU19BQ0NPVU5UX0lEPSI5ODIwODA2NzI5ODMiCmV4cG9ydCBSRUdJT049ImFwLWVhc3QtMSIKIyAgICBFQ1IgY29uZmlndXJhdGlvbgojICAgICAgICBiYXNlIGFuZCBjYWNoZXMgcmVwb3NpdG9yaWVzCmV4cG9ydCBFQ1JfUkVQT19BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19QQVlNRU5UX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtcGF5bWVudC1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlZPSUNFX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW52b2ljZS1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlRFR1JBVElPTl9BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW50ZWdyYXRpb24tYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19FTUFJTF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWVtYWlsLXNlcnZpY2UtcmVwb3NpdG9yeSIKIyAgICAgICAgbm9ybWFsIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgRWxhc3RpYyBCZWFuc3RhbGsgY29uZmlndXJhdGlvbgpleHBvcnQgUzNfRUJfQVBQX1ZFUlNJT05fQlVDS0VUX05BTUU9ImVsYXN0aWNiZWFuc3RhbGstJHtSRUdJT059LSR7QVdTX0FDQ09VTlRfSUR9IgpleHBvcnQgRUJfQVBQX1ZFUlNJT05fRk9MREVSX05BTUU9ImVuZ2FnZXBsdXMiCmV4cG9ydCBFQl9BUFBfTkFNRT0iZW5nYWdlcGx1cyIKIyA9PT0gRU5EID09PQoKIyA9PT0gRW5nYWdlUGx1cyBjb25maWd1cmF0aW9uID09PQpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRk9MREVSPSIuY2FjaGVzX2VuZ2FnZXBsdXMiCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19ESVI9IiQocGhwIH4vb3BzLWFwcCBob21lLWRpcikvJHtFTkdBR0VQTFVTX0NBQ0hFU19GT0xERVJ9IgpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfUkVQT1NJVE9SWV9ESVI9IiR7RU5HQUdFUExVU19DQUNIRVNfRElSfS8ke1JFUE9TSVRPUll9IgojID09PSBFTkQgPT09CgojID09PSBnZXQgREVWSUNFIGZyb20gcGFyYW0gMSA9PT0KZXhwb3J0IERFVklDRT0iJDEiCiMgPT09IEVORCA9PT0K';
@@ -3202,7 +3249,7 @@ class OpsApp
 
         // === validation ===
         if (!$command) {
-            self::LineTag(TagEnum::ERROR)->print("missing command, should be 'php %s COMMAND'", OpsApp::APP_MAIN_COMMAND);
+            self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", OpsApp::APP_MAIN_COMMAND);
             $this->help();
             exit(); // END
         }
@@ -3339,8 +3386,8 @@ class OpsApp
     {
         self::LineNew()->print('')
             ->printTitle("%s v%s", self::APP_NAME, self::APP_VERSION)
-            ->setTag(TagEnum::INFO)->print("usage:  php %s COMMAND", OpsApp::APP_MAIN_COMMAND)
-            ->setTag(TagEnum::NONE)->print("               php %s COMMAND PARAM1 PARAM2 ...", OpsApp::APP_MAIN_COMMAND)
+            ->setTag(TagEnum::INFO)->print("usage:  %s COMMAND", OpsApp::APP_MAIN_COMMAND)
+            ->setTag(TagEnum::NONE)->print("               %s COMMAND PARAM1 PARAM2 ...", OpsApp::APP_MAIN_COMMAND)
             ->setTag(TagEnum::NONE)->print('')
             ->setTag(TagEnum::INFO)->print("Support commands:");
         /**
