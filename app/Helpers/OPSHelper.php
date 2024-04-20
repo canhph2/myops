@@ -141,10 +141,10 @@ class OPSHelper
                         ]);
                     }
                     //    add new alias
-                    if (file_put_contents($shellConfigurationFile, $alias, FILE_APPEND)) {
+                    if (file_put_contents($shellConfigurationFile, $alias . PHP_EOL, FILE_APPEND)) {
                         self::lineNew()->setIcon(IconEnum::CHECK)->print("adding alias done");
                     } else {
-                        self::lineNew()->setIcon(IconEnum::X)->print("adding alias failured");
+                        self::lineNew()->setIcon(IconEnum::X)->print("adding alias failure");
                     }
                 }
                 // validate alias
