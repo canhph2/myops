@@ -1,5 +1,5 @@
 <?php
-// === [34;1mOPS APP (PHP) v3.2.19[0m ===
+// === [34;1mOPS APP (PHP) v3.2.20[0m ===
 
 // === Generated libraries classes ===
 
@@ -76,8 +76,6 @@ class Release
         ];
     }
 
-    const RELEASE_PATH = '.release/OpsApp.php';
-
     public function __construct()
     {
 
@@ -121,7 +119,7 @@ class Release
         $newVersion = AppHelper::increaseVersion($part);
         //    combine files
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
-        file_put_contents(self::RELEASE_PATH, sprintf("\n// === %s ===\n", OpsApp::version($newVersion)));
+        file_put_contents(AppInfoEnum::RELEASE_PATH, sprintf("\n// === %s ===\n", OpsApp::version($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
         //
@@ -186,7 +184,7 @@ class Release
         );
         //
         file_put_contents(
-            self::RELEASE_PATH,
+            AppInfoEnum::RELEASE_PATH,
             sprintf("\n// === Generated app class ===\n\n%s\n\n// === end Generated app class ===\n\n", $appClassContentClassOnly),
             FILE_APPEND
         ); // init file
@@ -202,7 +200,7 @@ class Release
             $librariesClassesContent .= $this->handlePHPClassContent(self::GET_FILES_LIST()[$i]);
         }
         file_put_contents(
-            self::RELEASE_PATH,
+            AppInfoEnum::RELEASE_PATH,
             sprintf("\n// === Generated libraries classes ===\n\n%s\n\n// === end Generated libraries classes ===\n\n", $librariesClassesContent),
             FILE_APPEND
         ); // init file
@@ -418,7 +416,7 @@ class Process
             // replace alias
             for ($i = 0; $i < count($this->commands); $i++) {
                 if (StrHelper::startWith($this->commands[$i], AppInfoEnum::APP_MAIN_COMMAND)) {
-                    $this->commands[$i] = "php " . Release::RELEASE_PATH . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
+                    $this->commands[$i] = "php " . AppInfoEnum::RELEASE_PATH . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
                 }
             }
         }
@@ -1264,8 +1262,9 @@ class Duration
 class AppInfoEnum
 {
     const APP_NAME = 'OPS APP (PHP)';
-    const APP_VERSION = '3.2.19';
+    const APP_VERSION = '3.2.20';
     const APP_MAIN_COMMAND = 'ops-app';
+    const RELEASE_PATH = '.release/OpsApp.php';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1778,7 +1777,7 @@ class OPSHelper
      */
     private static function createAlias()
     {
-        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/ops-app/%s", getenv('ENGAGEPLUS_CACHES_DIR'), Release::RELEASE_PATH);
+        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/ops-app/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
         $alias = sprintf("alias %s=\"php %s\"", AppInfoEnum::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
         $shellConfigurationFiles = [
             DirHelper::getHomeDir('.zshrc'), // Mac

@@ -209,7 +209,7 @@ class Process
             // replace alias
             for ($i = 0; $i < count($this->commands); $i++) {
                 if (StrHelper::startWith($this->commands[$i], AppInfoEnum::APP_MAIN_COMMAND)) {
-                    $this->commands[$i] = "php " . Release::RELEASE_PATH . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
+                    $this->commands[$i] = "php " . AppInfoEnum::RELEASE_PATH . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
                 }
             }
         }

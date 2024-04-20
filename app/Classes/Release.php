@@ -71,8 +71,6 @@ class Release
         ];
     }
 
-    const RELEASE_PATH = '.release/OpsApp.php';
-
     public function __construct()
     {
 
@@ -116,7 +114,7 @@ class Release
         $newVersion = AppHelper::increaseVersion($part);
         //    combine files
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
-        file_put_contents(self::RELEASE_PATH, sprintf("<?php\n// === %s ===\n", OpsApp::version($newVersion)));
+        file_put_contents(AppInfoEnum::RELEASE_PATH, sprintf("<?php\n// === %s ===\n", OpsApp::version($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
         //
@@ -181,7 +179,7 @@ class Release
         );
         //
         file_put_contents(
-            self::RELEASE_PATH,
+            AppInfoEnum::RELEASE_PATH,
             sprintf("\n// === Generated app class ===\n\n%s\n\n// === end Generated app class ===\n\n", $appClassContentClassOnly),
             FILE_APPEND
         ); // init file
@@ -197,7 +195,7 @@ class Release
             $librariesClassesContent .= $this->handlePHPClassContent(self::GET_FILES_LIST()[$i]);
         }
         file_put_contents(
-            self::RELEASE_PATH,
+            AppInfoEnum::RELEASE_PATH,
             sprintf("\n// === Generated libraries classes ===\n\n%s\n\n// === end Generated libraries classes ===\n\n", $librariesClassesContent),
             FILE_APPEND
         ); // init file
