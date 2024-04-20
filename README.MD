@@ -1,4 +1,4 @@
-# ops-app v3.2.6
+# ops-app v3.2.7
 *DevOps | CICD | Ops App (PHP)*
 
 ## === Usage ===
@@ -47,6 +47,7 @@ alias ops-app="php <HOME DIR>/<ENGAGE CACHES DIR>/ops-app/.release/OpsApp.php"
   - Combine and release
 ```shell
 php app/OpsApp.php release
+php app/OpsApp.php sync
 php vendor/phpunit/phpunit/phpunit tests
 ```
 
