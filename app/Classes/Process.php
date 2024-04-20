@@ -33,7 +33,7 @@ class Process
     private $outputParentIndentLevel = IndentLevelEnum::MAIN_LINE;
 
     /** @var bool */
-    private $isExistOnError;
+    private $isExitOnError;
 
     /**
      * @param string|null $workName
@@ -50,7 +50,7 @@ class Process
         $this->workDir = $workDir;
         $this->commands = $commands;
         // default
-        $this->isExistOnError = true; // default
+        $this->isExitOnError = true; // default
     }
 
     /**
@@ -154,18 +154,18 @@ class Process
     /**
      * @return bool
      */
-    public function isExistOnError(): bool
+    public function isExitOnError(): bool
     {
-        return $this->isExistOnError;
+        return $this->isExitOnError;
     }
 
     /**
-     * @param bool $isExistOnError
+     * @param bool $isExitOnError
      * @return Process
      */
-    public function setIsExistOnError(bool $isExistOnError): Process
+    public function setIsExitOnError(bool $isExitOnError): Process
     {
-        $this->isExistOnError = $isExistOnError;
+        $this->isExitOnError = $isExitOnError;
         return $this;
     }
 
@@ -222,7 +222,7 @@ class Process
         if ($this->commands) {
             $resultCode = null;
             exec(join(';', $this->commands), $this->output, $exitCode);
-            if ($exitCode && $this->isExistOnError) {
+            if ($exitCode && $this->isExitOnError) {
                 $this->printOutput();
                 self::LineTag(TagEnum::ERROR)->print("detect execute shell command failed, exit app | exit code = $exitCode");
                 exit($exitCode); // END app

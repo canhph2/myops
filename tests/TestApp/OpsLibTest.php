@@ -2,6 +2,7 @@
 
 namespace TestApp;
 
+require_once 'app/OpsApp.php';
 require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Classes/Version.php';
 require_once 'app/Classes/Process.php';
@@ -19,13 +20,14 @@ use App\Enum\TagEnum;
 use App\Helpers\DirHelper;
 use App\Classes\Process;
 use App\Classes\Version;
+use App\OpsApp;
 
 
 class OpsLibTest extends BaseTestCase
 {
     public function testAllFunctions()
     {
-        $this->assertIsString("OpsLibTest test string");
+        $this->assertIsString(OpsApp::APP_NAME . " test string");
     }
 
     public function testVersionObject()
@@ -46,8 +48,10 @@ class OpsLibTest extends BaseTestCase
 
     public function testCommandVersion()
     {
-        $oldVersion = exec("ops-app version");
-        $this->customAssertIsStringAndContainsString( "OPS APP (PHP)", $oldVersion);
+        $oldVersion = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
+            "ops-app version"
+        ]))->execMulti()->getOutputStrAll();
+        $this->customAssertIsStringAndContainsString("OPS APP (PHP)", $oldVersion);
         $this->customAssertIsStringAndContainsString("v", $oldVersion);
         $this->customAssertIsStringAndContainsString(".", $oldVersion);
     }
@@ -64,12 +68,18 @@ class OpsLibTest extends BaseTestCase
 
     public function testReplaceTextInFile()
     {
-        exec('ops-app tmp add');
+        (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
+            "ops-app tmp add"
+        ]))->execMulti();
         // create a test file
         $contentOrigin = "line 1 with AA BB CC";
         file_put_contents("tmp/test.txt", $contentOrigin);
-        exec("ops-app replace-text-in-file 'BB' 'NEW TEST OK' 'tmp/test.txt'");
-        $contentNew = exec("cat tmp/test.txt");
+        (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
+            "ops-app replace-text-in-file 'BB' 'NEW TEST OK' 'tmp/test.txt'"
+        ]))->execMulti();
+        $contentNew = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
+            "cat tmp/test.txt"
+        ]))->execMulti()->getOutputStrAll();
         self::assertTrue($contentOrigin !== $contentNew);
     }
 
@@ -77,7 +87,7 @@ class OpsLibTest extends BaseTestCase
     {
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "ops-app elb-update-version"
-        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
+        ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("missing BRANCH or REPOSITORY or ENV", $result1);
     }
 
@@ -85,36 +95,37 @@ class OpsLibTest extends BaseTestCase
     {
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "ops-app get-secret-env env-email-dev"
-        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
+        ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::SUCCESS, $result1);
         //
         $result2 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "ops-app get-secret-env WRONG-ENVFILE"
-        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
+        ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result2);
     }
 
-    public function testUITitleSubTitleFuncs(){
+    public function testUITitleSubTitleFuncs()
+    {
         // validate title
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "ops-app title"
-        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
+        ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result1);
         // title
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "ops-app title 'this is test title'"
-        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
+        ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("===", $result1);
         $this->customAssertIsStringAndContainsString("test title", $result1);
         // validate sub title
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "ops-app sub-title"
-        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
+        ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result1);
         // sub title
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "ops-app sub-title 'this is test sub title'"
-        ]))->setIsExistOnError(false)->execMulti()->getOutputStrAll();
+        ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("--", $result1);
         $this->customAssertIsStringAndContainsString("test sub title", $result1);
         // validate
