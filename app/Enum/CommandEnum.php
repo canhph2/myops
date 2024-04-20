@@ -62,12 +62,12 @@ class CommandEnum
             "OPS APP" => [],
             self::HELP => ['show list support command and usage'],
             self::RELEASE => [
-                sprintf("combine all PHP files into '%s' and copy it to '%s'",str_replace('~/', '.release/', OpsApp::APP_MAIN_COMMAND) ,OpsApp::APP_MAIN_COMMAND),
+                sprintf("combine all PHP files into '.release/OpsApp.php' and install a alias '%s'",OpsApp::APP_MAIN_COMMAND),
                 "default version increasing is 'patch'",
                 "feature should be 'minor'",
             ],
             self::VERSION => ["show app version"],
-            self::SYNC => [sprintf("sync new release code to '%s'", OpsApp::APP_MAIN_COMMAND)],
+            self::SYNC => [sprintf("sync new release code to caches dir and create an alias '%s'", OpsApp::APP_MAIN_COMMAND)],
             // group title
             "AWS Related" => [],
             self::LOAD_ENV_OPS => [

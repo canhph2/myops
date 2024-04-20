@@ -11,6 +11,7 @@ use App\Enum\TagEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\Classes\Process;
+use App\OpsApp;
 use App\Traits\ConsoleUITrait;
 
 /**
@@ -81,10 +82,8 @@ class OPSHelper
     }
 
     /**
-     * sync new release code to home dir (~) at ~/ops-app
-     * sync strategy:
-     * - clone 'ops-app' project at caches folder
-     * - copy new ops-lib file into home dir(~) at ~/ops-app
+     * - sync new release code to caches dir in machine '~/.caches_engageplus/ops-app'
+     * - create an alias 'ops-app' link to the release file at '~/.caches_engageplus/ops-app/.release/OpsApp.php'
      */
     public static function sync()
     {
@@ -98,26 +97,63 @@ class OPSHelper
             'ops-app', // param 2, in this case is repository
             'main', // param 3, in this case is branch
         ]);
-        // sync new lib
-        $EngagePlusCachesRepositoryOpsLibDir = sprintf("%s/ops-app", getenv('ENGAGEPLUS_CACHES_DIR'));
-        (new Process("SYNC OPS LIB", DirHelper::getWorkingDir(), [
-            'rm ~/ops-app',
-            sprintf(
-                "cp -f '%s/.release/ops-app' '%s/ops-app'",
-                $EngagePlusCachesRepositoryOpsLibDir,
-                DirHelper::getHomeDir()
-            ),
-        ]))->execMultiInWorkDir()->printOutput();
+        // create an alias 'ops-app'
+        self::createAlias();
         //
         self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("sync done");
         self::LineNew()->printSeparatorLine();
         // show open new session to show right version
         (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
-            'php ~/ops-app version'
+            'ops-app version'
         ]))->execMultiInWorkDir(true)->printOutput();
         //
         self::LineNew()->printSeparatorLine();
+    }
+
+    /**
+     * create alias of release app (this app) in shell configuration files
+     *
+     * @return void
+     */
+    private static function createAlias()
+    {
+        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/ops-app/.release/OpsApp.php", getenv('ENGAGEPLUS_CACHES_DIR'));
+        $alias = sprintf("alias %s=\"php %s\"", OpsApp::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
+        $shellConfigurationFiles = [
+            DirHelper::getHomeDir('.zshrc'), // Mac
+            DirHelper::getHomeDir('.bashrc'), // Ubuntu
+        ];
+        foreach ($shellConfigurationFiles as $shellConfigurationFile) {
+            if (is_file($shellConfigurationFile)) {
+                self::lineNew()->printSubTitle("create alias '%s' at '%s'", OpsApp::APP_MAIN_COMMAND, $shellConfigurationFile);
+                // already setup
+                if (Str::contains(file_get_contents($shellConfigurationFile), $alias)) {
+                    self::lineNew()->setIcon(IconEnum::DOT)->print("already setup alias '%s'", OpsApp::APP_MAIN_COMMAND);
+                } else {
+                    // setup alias
+                    //    remove old alias (wrong path, old date alias)
+                    $oldAliases = StrHelper::findLinesContainsTextInFile($shellConfigurationFile, OpsApp::APP_MAIN_COMMAND);
+                    foreach ($oldAliases as $oldAlias) {
+                        StrHelper::replaceTextInFile([
+                            'script path', 'command-name', // param 0,1
+                            $oldAlias, '', $shellConfigurationFile
+                        ]);
+                    }
+                    //    add new alias
+                    if (file_put_contents($shellConfigurationFile, $alias, FILE_APPEND)) {
+                        self::lineNew()->setIcon(IconEnum::CHECK)->print("adding alias done");
+                    } else {
+                        self::lineNew()->setIcon(IconEnum::X)->print("adding alias failured");
+                    }
+                }
+                // validate alias
+                self::validate([
+                    'script path', 'command-name', // param 0,1
+                    ValidationTypeEnum::FILE_CONTAINS_TEXT, "'$shellConfigurationFile'", $alias
+                ]);
+            }
+        }
     }
 
     /**
@@ -310,7 +346,7 @@ class OPSHelper
                 break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
-                    ->print("should be like eg:   php ~/ops-lib validate branch");
+                    ->print("should be like eg:   '%s' validate branch", OpsApp::APP_MAIN_COMMAND);
                 break;
         }
     }

@@ -117,9 +117,6 @@ class Release
         file_put_contents(self::RELEASE_PATH, sprintf("<?php\n// === %s ===\n", OpsApp::version($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
-        //    copy release file to home directory | TODO Replace aliasy
-//        self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("copy release file to home directory");
-//        exec(sprintf("cp -f '%s/.release/ops-app' '%s/ops-app'", DirHelper::getWorkingDir(), DirHelper::getHomeDir()));
         //
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub

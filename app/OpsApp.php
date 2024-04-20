@@ -70,7 +70,7 @@ class OpsApp
 
         // === validation ===
         if (!$command) {
-            self::LineTag(TagEnum::ERROR)->print("missing command, should be 'php %s COMMAND'", OpsApp::APP_MAIN_COMMAND);
+            self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", OpsApp::APP_MAIN_COMMAND);
             $this->help();
             exit(); // END
         }
@@ -207,8 +207,8 @@ class OpsApp
     {
         self::LineNew()->print('')
             ->printTitle("%s v%s", self::APP_NAME, self::APP_VERSION)
-            ->setTag(TagEnum::INFO)->print("usage:  php %s COMMAND", OpsApp::APP_MAIN_COMMAND)
-            ->setTag(TagEnum::NONE)->print("               php %s COMMAND PARAM1 PARAM2 ...", OpsApp::APP_MAIN_COMMAND)
+            ->setTag(TagEnum::INFO)->print("usage:  %s COMMAND", OpsApp::APP_MAIN_COMMAND)
+            ->setTag(TagEnum::NONE)->print("               %s COMMAND PARAM1 PARAM2 ...", OpsApp::APP_MAIN_COMMAND)
             ->setTag(TagEnum::NONE)->print('')
             ->setTag(TagEnum::INFO)->print("Support commands:");
         /**

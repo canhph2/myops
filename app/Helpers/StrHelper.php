@@ -48,6 +48,7 @@ class StrHelper
     }
 
     // === text processing ===
+
     /**
      * required
      * - "search text"  (param 2)
@@ -99,5 +100,18 @@ class StrHelper
             $line = str_replace($token, $hiddenToken, $line);
         }
         return $line;
+    }
+
+    /**
+     * @param string $filePath
+     * @param string $searchText
+     * @return array
+     */
+    public static function findLinesContainsTextInFile(string $filePath, string $searchText): array
+    {
+        return array_filter(explode(PHP_EOL, file_get_contents($filePath)), function ($line) use ($searchText) {
+            return self::contains($line, $searchText);
+        });
+
     }
 }
