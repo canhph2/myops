@@ -26,7 +26,6 @@ jobs:
       - name: GitHub Actions build and deploy
         run: |
           # [Alias required] load shell configuration
-          [[ -f ~/.zshrc ]] && . ~/.zshrc # MAC
-          [[ -f ~/.bashrc ]] && . ~/.bashrc # Ubuntu
+          source ~/.bashrc
           chmod u+x ".ops/sync-and-notify-Slack.sh"
           . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'
