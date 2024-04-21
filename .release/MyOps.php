@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.2.25 ===
+// === MyOps v3.2.26 ===
 
 // === Generated libraries classes ===
 
@@ -1265,7 +1265,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.25';
+    const APP_VERSION = '3.2.26';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1795,7 +1795,7 @@ class OPSHelper
                 self::lineNew()->printSubTitle("create alias '%s' at '%s'", AppInfoEnum::APP_MAIN_COMMAND, $shellConfigurationFile);
                 // already setup
                 if (StrHelper::contains(file_get_contents($shellConfigurationFile), $alias)) {
-                    self::lineNew()->setIcon(IconEnum::DOT)->print("already setup alias '%s'", AppInfoEnum::APP_MAIN_COMMAND);
+                    self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)->print("already setup alias '%s'", AppInfoEnum::APP_MAIN_COMMAND);
                 } else {
                     // setup alias
                     //    remove old alias (wrong path, old date alias)
@@ -1808,9 +1808,9 @@ class OPSHelper
                     }
                     //    add new alias
                     if (file_put_contents($shellConfigurationFile, $alias . PHP_EOL, FILE_APPEND)) {
-                        self::lineNew()->setIcon(IconEnum::CHECK)->print("adding alias done");
+                        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)->print("adding alias done");
                     } else {
-                        self::lineNew()->setIcon(IconEnum::X)->print("adding alias failure");
+                        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)->print("adding alias failure");
                     }
                 }
                 // validate alias

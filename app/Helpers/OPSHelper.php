@@ -131,7 +131,7 @@ class OPSHelper
                 self::lineNew()->printSubTitle("create alias '%s' at '%s'", AppInfoEnum::APP_MAIN_COMMAND, $shellConfigurationFile);
                 // already setup
                 if (StrHelper::contains(file_get_contents($shellConfigurationFile), $alias)) {
-                    self::lineNew()->setIcon(IconEnum::DOT)->print("already setup alias '%s'", AppInfoEnum::APP_MAIN_COMMAND);
+                    self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)->print("already setup alias '%s'", AppInfoEnum::APP_MAIN_COMMAND);
                 } else {
                     // setup alias
                     //    remove old alias (wrong path, old date alias)
@@ -144,9 +144,9 @@ class OPSHelper
                     }
                     //    add new alias
                     if (file_put_contents($shellConfigurationFile, $alias . PHP_EOL, FILE_APPEND)) {
-                        self::lineNew()->setIcon(IconEnum::CHECK)->print("adding alias done");
+                        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)->print("adding alias done");
                     } else {
-                        self::lineNew()->setIcon(IconEnum::X)->print("adding alias failure");
+                        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)->print("adding alias failure");
                     }
                 }
                 // validate alias

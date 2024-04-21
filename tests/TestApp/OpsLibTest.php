@@ -50,7 +50,7 @@ class OpsLibTest extends BaseTestCase
         $oldVersion = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "myops version"
         ]))->execMulti()->getOutputStrAll();
-        $this->customAssertIsStringAndContainsString("OPS APP (PHP)", $oldVersion);
+        $this->customAssertIsStringAndContainsString("MyOps v", $oldVersion);
         $this->customAssertIsStringAndContainsString("v", $oldVersion);
         $this->customAssertIsStringAndContainsString(".", $oldVersion);
     }
