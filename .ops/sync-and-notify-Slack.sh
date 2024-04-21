@@ -9,6 +9,7 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 #[[ -f ~/.bashrc ]] && cat ~/.bashrc # Ubuntu
 
 #. ~/.bashrc # source
+echo "The script is being run by user: $USER"
 
 alias myops="php /home/ubuntu/.caches_engageplus/myops/.release/MyOps.php"
 
