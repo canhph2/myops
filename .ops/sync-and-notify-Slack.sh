@@ -8,6 +8,8 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 
 [[ -f ~/.bashrc ]] && cat ~/.bashrc # Ubuntu
 
+.~/.bashrc # source
+
 myops version
 
 eval "$(myops load-env-ops)"
