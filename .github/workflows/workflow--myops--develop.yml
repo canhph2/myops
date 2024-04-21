@@ -20,11 +20,12 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      - shell: bash
+      - shell: bash -leo pipefail {0}
         run: |
           source ~/.bashrc
           echo "test"
           l
+          myops version
       - name: Build And Deploy
         run: |
           chmod u+x ".ops/sync-and-notify-Slack.sh"
