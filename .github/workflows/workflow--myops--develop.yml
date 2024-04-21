@@ -27,5 +27,6 @@ jobs:
         run: |
           # [Alias required] load shell configuration
           source ~/.bashrc
+          alias l='ls -CF'
           chmod u+x ".ops/sync-and-notify-Slack.sh"
           . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'

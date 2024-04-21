@@ -11,6 +11,7 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 #. ~/.bashrc # source
 echo "The script is being run by user: $USER"
 # test system alias
+alias l='ls -CF'
 l
 
 myops version
