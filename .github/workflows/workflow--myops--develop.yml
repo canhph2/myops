@@ -22,8 +22,9 @@ jobs:
       - uses: actions/checkout@v3
       - shell: bash -leo pipefail {0}
         run: |
-          source ~/.bashrc
+          . ~/.bashrc
           echo "test"
+          myops version
           l
           myops version
       - name: Build And Deploy
