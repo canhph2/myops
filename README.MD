@@ -1,4 +1,4 @@
-# MyOps v3.2.32
+# MyOps v3.2.33
 *DevOps | CICD | Ops App (PHP)*
 
 ## === Usage ===
@@ -53,6 +53,8 @@ alias myops="php <HOME DIR>/<ENGAGE CACHES DIR>/myops/.release/MyOps.php"
   - Combine and release
 ```shell
 php app/MyOps.php release
+```
+```shell
 php app/MyOps.php sync
 php vendor/phpunit/phpunit/phpunit tests
 ```
