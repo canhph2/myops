@@ -6,6 +6,8 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 
 # usage:    sh _ops/build-and-deploy-with-caches.sh 'DEVICE_NAME'
 
+[[ -f ~/.bashrc ]] && cat ~/.bashrc # Ubuntu
+
 myops version
 
 eval "$(myops load-env-ops)"
