@@ -270,6 +270,7 @@ class Process
             }
         }
         self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Output:");
+        var_dump($this->getOutputFilteredEmpty()); // todo test
         foreach ($this->getOutputFilteredEmpty() as $outputLine) {
             if ($outputLine) {
                 self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->print(StrHelper::hideSensitiveInformation($outputLine));

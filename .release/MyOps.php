@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.2.44 ===
+// === MyOps v3.2.45 ===
 
 // === Generated libraries classes ===
 
@@ -483,6 +483,7 @@ class Process
             }
         }
         self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Output:");
+        var_dump($this->getOutputFilteredEmpty()); // todo test
         foreach ($this->getOutputFilteredEmpty() as $outputLine) {
             if ($outputLine) {
                 self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->print(StrHelper::hideSensitiveInformation($outputLine));
@@ -1280,7 +1281,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.44';
+    const APP_VERSION = '3.2.45';
 }
 
 // [REMOVED] namespace App\Enum;
