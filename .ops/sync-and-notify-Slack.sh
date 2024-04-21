@@ -6,9 +6,11 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 
 # usage:    sh _ops/build-and-deploy-with-caches.sh 'DEVICE_NAME'
 
-[[ -f ~/.bashrc ]] && cat ~/.bashrc # Ubuntu
+#[[ -f ~/.bashrc ]] && cat ~/.bashrc # Ubuntu
 
-. ~/.bashrc # source
+#. ~/.bashrc # source
+
+alias myops="php /home/ubuntu/.caches_engageplus/myops/.release/MyOps.php"
 
 myops version
 
