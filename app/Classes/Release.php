@@ -121,7 +121,7 @@ class Release
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
         //        ask what news
-        $whatNewsDefault = sprintf("Release %s on %s UTC",  MyOps::version(null, false), (new DateTime())->format('Y-m-d H:i:s'));
+        $whatNewsDefault = sprintf("Release %s on %s UTC",  MyOps::version($newVersion, false), (new DateTime())->format('Y-m-d H:i:s'));
         $whatNewsInput = readline("What are news in this release?   ( default = .e.g, '$whatNewsDefault' )  :");
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
