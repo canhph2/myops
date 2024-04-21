@@ -3,9 +3,9 @@
 name: workflow--myops--develop
 
 # load shell configuration (Ubuntu)
-#defaults:
-#  run:
-#    shell: bash -leo pipefail {0}
+defaults:
+  run:
+    shell: bash -ileo pipefail {0}
 
 # Controls when the workflow will run
 on:
@@ -20,13 +20,6 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      - shell: bash -leo pipefail {0}
-        run: |
-          . ~/.bashrc
-          echo "test"
-          myops version
-          l
-          myops version
       - name: Build And Deploy
         run: |
           chmod u+x ".ops/sync-and-notify-Slack.sh"
