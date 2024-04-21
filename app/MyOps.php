@@ -25,6 +25,7 @@ use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
 use App\Services\SlackService;
 use App\Traits\ConsoleUITrait;
+use DateTime;
 
 AppHelper::requireOneAllPHPFilesInDir(DirHelper::getWorkingDir('app'));
 
@@ -84,7 +85,11 @@ class MyOps
                 $this->help();
                 break;
             case CommandEnum::RELEASE:
-                (new Release())->handle($argv);
+                // ask what news
+                $whatNewsDefault = sprintf(".e.g, release %s on %s UTC",  MyOps::version(null, false), (new DateTime())->format('Y-m-d H:i:s'));
+                $whatNewsInput = readline("What are news in this release?   ( default = '$whatNewsDefault' )  :");
+                // release
+                (new Release())->handle($argv, $whatNewsInput);
                 break;
             case CommandEnum::VERSION:
                 self::LineNew()->print(MyOps::version());

@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.2.27 ===
+// === MyOps v3.2.28 ===
 
 // === Generated libraries classes ===
 
@@ -101,7 +101,7 @@ class Release
         }
     }
 
-    public function handle(array $argv): void
+    public function handle(array $argv, string $whatNewsInput = null): void
     {
         // validate
         if (!$this->validate()) {
@@ -127,7 +127,6 @@ class Release
         //    push new release to GitHub
         //        ask what news
         $whatNewsDefault = sprintf("release %s on %s UTC", MyOps::version($newVersion, false), (new DateTime())->format('Y-m-d H:i:s'));
-        $whatNewsInput = readline("What are news in this release?   ( default = '$whatNewsDefault' )  :");
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
@@ -1268,7 +1267,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.27';
+    const APP_VERSION = '3.2.28';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3306,7 +3305,11 @@ class MyOps
                 $this->help();
                 break;
             case CommandEnum::RELEASE:
-                (new Release())->handle($argv);
+                // ask what news
+                $whatNewsDefault = sprintf(".e.g, release %s on %s UTC",  MyOps::version(null, false), (new DateTime())->format('Y-m-d H:i:s'));
+                $whatNewsInput = readline("What are news in this release?   ( default = '$whatNewsDefault' )  :");
+                // release
+                (new Release())->handle($argv, $whatNewsInput);
                 break;
             case CommandEnum::VERSION:
                 self::LineNew()->print(MyOps::version());
