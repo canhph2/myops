@@ -106,11 +106,21 @@ class Process
     }
 
     /**
+     * @return array
+     */
+    public function getOutput(): array
+    {
+        return $this->output ?? [];
+    }
+
+    /**
      * @return array|null
      */
-    public function getOutput(): ?array
+    private function getOutputFilteredEmpty(): array
     {
-        return $this->output;
+        return array_filter($this->output ?? [], function ($line) {
+            return trim($line);
+        });
     }
 
     /**
@@ -260,8 +270,8 @@ class Process
             }
         }
         self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Output:");
-        if ($this->output) {
-            foreach ($this->output as $outputLine) {
+        foreach ($this->getOutputFilteredEmpty() as $outputLine) {
+            if ($outputLine) {
                 self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->print(StrHelper::hideSensitiveInformation($outputLine));
             }
         }
