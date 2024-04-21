@@ -18,6 +18,7 @@ use App\Enum\TagEnum;
 use App\Enum\UIEnum;
 use App\Helpers\AppHelper;
 use App\Helpers\AWSHelper;
+use App\Helpers\Data;
 use App\Helpers\DirHelper;
 use App\Helpers\DockerHelper;
 use App\Helpers\GitHubHelper;
@@ -89,7 +90,7 @@ class MyOps
                 (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
-                self::LineNew()->print(MyOps::version());
+                self::lineColorFormat(UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD)->print(MyOps::getAppVersionStr());
                 break;
             case CommandEnum::SYNC:
                 OPSHelper::sync();
@@ -234,10 +235,10 @@ class MyOps
         self::LineNew()->printSeparatorLine();
     }
 
-    public static function version(Version $newVersion = null, bool $format = true): string
+    public static function getAppVersionStr(Version $newVersion = null): string
     {
-        $versionText = sprintf("%s v%s", AppInfoEnum::APP_NAME, $newVersion ? $newVersion->toString() : AppInfoEnum::APP_VERSION);
-        return $format ? self::colorFormat($versionText, UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD) : $versionText;
+        return sprintf("%s v%s", AppInfoEnum::APP_NAME,
+            $newVersion ? $newVersion->toString() : AppInfoEnum::APP_VERSION);
     }
 }
 

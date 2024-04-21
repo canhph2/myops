@@ -14,6 +14,7 @@ use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\Helpers\AppHelper;
 use App\Helpers\AWSHelper;
+use App\Helpers\Data;
 use App\Helpers\DirHelper;
 use App\Helpers\DockerHelper;
 use App\Helpers\GitHubHelper;
@@ -62,6 +63,7 @@ class Release
             DirHelper::getClassPathAndFileName(AppHelper::class),
             DirHelper::getClassPathAndFileName(DockerHelper::class),
             DirHelper::getClassPathAndFileName(StrHelper::class),
+            DirHelper::getClassPathAndFileName(Data::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
@@ -114,14 +116,14 @@ class Release
         $newVersion = AppHelper::increaseVersion($part);
         //    combine files
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
-        file_put_contents(AppInfoEnum::RELEASE_PATH, sprintf("<?php\n// === %s ===\n", MyOps::version($newVersion, false)));
+        file_put_contents(AppInfoEnum::RELEASE_PATH, sprintf("<?php\n// === %s ===\n", MyOps::getAppVersionStr($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
         //
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
         //        ask what news
-        $whatNewsDefault = sprintf("Release %s on %s UTC",  MyOps::version($newVersion, false), (new DateTime())->format('Y-m-d H:i:s'));
+        $whatNewsDefault = sprintf("Release %s on %s UTC",  MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
         $whatNewsInput = ucfirst(readline("What are news in this release?  (default = '$whatNewsDefault')  :"));
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
@@ -130,7 +132,7 @@ class Release
         ]))->execMultiInWorkDir()->printOutput();
         //
         self::LineNew()->printSeparatorLine()
-            ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::version($newVersion, false));
+            ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::getAppVersionStr($newVersion));
     }
 
     /**

@@ -55,6 +55,26 @@ trait ConsoleUITrait
         return (new TextLine())->setTagMultiple($tags);
     }
 
+    /**
+     * @param int $color
+     * @return TextLine
+     */
+    private static function lineColor(int $color): TextLine
+    {
+        return (new TextLine())->setcolor($color);
+    }
+
+    /**
+     * @param int $color
+     * @param int $format
+     * @return TextLine
+     */
+    private static function lineColorFormat(int $color, int $format): TextLine
+    {
+        return (new TextLine())->setcolor($color)->setformat($format);
+    }
+
+
     // === colors ===
     private static function color(string $text, int $color): string
     {

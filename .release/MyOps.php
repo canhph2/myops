@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.2.42 ===
+// === MyOps v3.2.43 ===
 
 // === Generated libraries classes ===
 
@@ -19,6 +19,7 @@
 // [REMOVED] use App\Enum\ValidationTypeEnum;
 // [REMOVED] use App\Helpers\AppHelper;
 // [REMOVED] use App\Helpers\AWSHelper;
+// [REMOVED] use App\Helpers\Data;
 // [REMOVED] use App\Helpers\DirHelper;
 // [REMOVED] use App\Helpers\DockerHelper;
 // [REMOVED] use App\Helpers\GitHubHelper;
@@ -67,6 +68,7 @@ class Release
             DirHelper::getClassPathAndFileName(AppHelper::class),
             DirHelper::getClassPathAndFileName(DockerHelper::class),
             DirHelper::getClassPathAndFileName(StrHelper::class),
+            DirHelper::getClassPathAndFileName(Data::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
@@ -119,14 +121,14 @@ class Release
         $newVersion = AppHelper::increaseVersion($part);
         //    combine files
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
-        file_put_contents(AppInfoEnum::RELEASE_PATH, sprintf("\n// === %s ===\n", MyOps::version($newVersion, false)));
+        file_put_contents(AppInfoEnum::RELEASE_PATH, sprintf("\n// === %s ===\n", MyOps::getAppVersionStr($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
         //
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
         //        ask what news
-        $whatNewsDefault = sprintf("Release %s on %s UTC",  MyOps::version($newVersion, false), (new DateTime())->format('Y-m-d H:i:s'));
+        $whatNewsDefault = sprintf("Release %s on %s UTC",  MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
         $whatNewsInput = ucfirst(readline("What are news in this release?  (default = '$whatNewsDefault')  :"));
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
@@ -135,7 +137,7 @@ class Release
         ]))->execMultiInWorkDir()->printOutput();
         //
         self::LineNew()->printSeparatorLine()
-            ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::version($newVersion, false));
+            ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::getAppVersionStr($newVersion));
     }
 
     /**
@@ -1268,7 +1270,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.42';
+    const APP_VERSION = '3.2.43';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3069,6 +3071,48 @@ class StrHelper
     }
 }
 
+// [REMOVED] namespace App\Helpers;
+
+/**
+ * a data helper
+ */
+class Data
+{
+    /**
+     * - support query:
+     *    -    DATA::get($objOrArr, 'field1', 'subField2', ...moreFields)
+     *    -    DATA::get($objOrArr, 'field1.subField2.moreFields...')
+     */
+    public static function get($objOrArr = null, ...$fields)
+    {
+        // validate
+        if (!$objOrArr) return null; // END
+        // handle
+        //    fields
+        $finalFields = [];
+        foreach ($fields as $field) {
+            $finalFields = array_merge($finalFields, StrHelper::contains($field, '.') ? explode('.', $field) : [$field]);
+        }
+        //    value
+        $lastObjOrArr = $objOrArr;
+        foreach ($finalFields as $field) {
+            $lastObjOrArr = is_array($lastObjOrArr) ? ($lastObjOrArr[$field] ?? null) : ($lastObjOrArr->$field ?? null);
+        }
+        return $lastObjOrArr;
+    }
+
+    /**
+     * - in case empty data will return an empty array []
+     * - support query:
+     *    -    DATA::getArr($objOrArr, 'field1', 'subField2', ...moreFields)
+     *    -    DATA::getArr($objOrArr, 'field1.subField2.moreFields...')
+     */
+    public static function getArr($objOrArr = null, ...$fields)
+    {
+        return self::get($objOrArr, ...$fields) ?? [];
+    }
+}
+
 // [REMOVED] namespace App\Services;
 
 // [REMOVED] use App\Enum\GitHubEnum;
@@ -3235,6 +3279,26 @@ trait ConsoleUITrait
         return (new TextLine())->setTagMultiple($tags);
     }
 
+    /**
+     * @param int $color
+     * @return TextLine
+     */
+    private static function lineColor(int $color): TextLine
+    {
+        return (new TextLine())->setcolor($color);
+    }
+
+    /**
+     * @param int $color
+     * @param int $format
+     * @return TextLine
+     */
+    private static function lineColorFormat(int $color, int $format): TextLine
+    {
+        return (new TextLine())->setcolor($color)->setformat($format);
+    }
+
+
     // === colors ===
     private static function color(string $text, int $color): string
     {
@@ -3311,7 +3375,7 @@ class MyOps
                 (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
-                self::LineNew()->print(MyOps::version());
+                self::lineColorFormat(UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD)->print(MyOps::getAppVersionStr());
                 break;
             case CommandEnum::SYNC:
                 OPSHelper::sync();
@@ -3456,10 +3520,10 @@ class MyOps
         self::LineNew()->printSeparatorLine();
     }
 
-    public static function version(Version $newVersion = null, bool $format = true): string
+    public static function getAppVersionStr(Version $newVersion = null): string
     {
-        $versionText = sprintf("%s v%s", AppInfoEnum::APP_NAME, $newVersion ? $newVersion->toString() : AppInfoEnum::APP_VERSION);
-        return $format ? self::colorFormat($versionText, UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD) : $versionText;
+        return sprintf("%s v%s", AppInfoEnum::APP_NAME,
+            $newVersion ? $newVersion->toString() : AppInfoEnum::APP_VERSION);
     }
 }
 
