@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.2.38 ===
+// === MyOps v3.2.39 ===
 
 // === Generated libraries classes ===
 
@@ -127,7 +127,7 @@ class Release
         //    push new release to GitHub
         //        ask what news
         $whatNewsDefault = sprintf("Release %s on %s UTC",  MyOps::version($newVersion, false), (new DateTime())->format('Y-m-d H:i:s'));
-        $whatNewsInput = readline("What are news in this release?   ( default = .e.g, '$whatNewsDefault' )  :");
+        $whatNewsInput = readline("What are news in this release?  (default = '$whatNewsDefault')  :");
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
@@ -1268,7 +1268,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.38';
+    const APP_VERSION = '3.2.39';
 }
 
 // [REMOVED] namespace App\Enum;
