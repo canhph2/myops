@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.2.30 ===
+// === MyOps v3.2.31 ===
 
 // === Generated libraries classes ===
 
@@ -1266,7 +1266,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.30';
+    const APP_VERSION = '3.2.31';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1334,7 +1334,7 @@ class CommandEnum
             AppInfoEnum::APP_NAME => [],
             'Required notes:' => [
                 '[Alias required] add these commands below in a beginning of your shell script file:',
-                "        # load shell configuration",
+                "        # [Alias required] load shell configuration",
                 "        [[ -f ~/.zshrc ]] && source ~/.zshrc # MAC",
                 "        [[ -f ~/.bashrc ]] && source ~/.bashrc # Ubuntu",
             ],
@@ -1414,21 +1414,22 @@ class CommandEnum
 class GitHubEnum
 {
     // === GitHub commands ===
-    public const INIT_REPOSITORY_COMMAND = 'git init';
-    public const RESET_BRANCH_COMMAND = 'git reset --hard HEAD'; // rollback all changing
-    public const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
-    public const PULL_COMMAND = 'git pull'; // get the newest code
-    public const ADD_ALL_FILES_COMMAND = 'git add -A';
-    public const PUSH_COMMAND = 'git push';
-    public const GET_REMOTE_ORIGIN_URL_COMMAND = 'git config --get remote.origin.url';
-    public const GET_REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
-    public const GET_HEAD_COMMIT_ID_COMMAND = 'git rev-parse --short HEAD';
+    const INIT_REPOSITORY_COMMAND = 'git init';
+    const RESET_BRANCH_COMMAND = 'git reset --hard HEAD'; // rollback all changing
+    const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
+    const PULL_COMMAND = 'git pull'; // get the newest code
+    const ADD_ALL_FILES_COMMAND = 'git add -A';
+    const PUSH_COMMAND = 'git push';
+    const GET_REMOTE_ORIGIN_URL_COMMAND = 'git config --get remote.origin.url';
+    const GET_REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
+    const GET_HEAD_COMMIT_ID_COMMAND = 'git rev-parse --short HEAD';
 
     // === Git branches ===
-    public const MAIN = 'main';
-    public const MASTER = 'master';
-    public const STAGING = 'staging';
-    public const DEVELOP = 'develop';
+    const MAIN = 'main';
+    const MASTER = 'master';
+    const STAGING = 'staging';
+    const DEVELOP = 'develop';
+    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP];
 
     /**
      * @return array
@@ -2026,7 +2027,7 @@ class OPSHelper
      */
     private static function validateBranch()
     {
-        if (in_array(getenv('BRANCH'), ['develop', 'staging', 'master'])) {
+        if (in_array(getenv('BRANCH'), GitHubEnum::SUPPORT_BRANCHES)) {
             self::LineTag(TagEnum::SUCCESS)->print("validation branch got OK result: %s", getenv('BRANCH'));
         } else {
             self::LineTag(TagEnum::ERROR)->print("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
@@ -3087,8 +3088,8 @@ class SlackService
      */
     private static function selectSlackChannel(): ?string
     {
-        // ops-lib | testing
-        if (getenv('REPOSITORY') === 'ops-lib') {
+        // myops | testing
+        if (getenv('REPOSITORY') === 'myops') {
             return getenv('SLACK_CHANNEL'); // END
         }
         // database-utils

@@ -361,7 +361,7 @@ class OPSHelper
      */
     private static function validateBranch()
     {
-        if (in_array(getenv('BRANCH'), ['develop', 'staging', 'master'])) {
+        if (in_array(getenv('BRANCH'), GitHubEnum::SUPPORT_BRANCHES)) {
             self::LineTag(TagEnum::SUCCESS)->print("validation branch got OK result: %s", getenv('BRANCH'));
         } else {
             self::LineTag(TagEnum::ERROR)->print("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
