@@ -232,12 +232,10 @@ class MyOps
         self::LineNew()->printSeparatorLine();
     }
 
-    public static function version(Version $newVersion = null): string
+    public static function version(Version $newVersion = null, bool $format = true): string
     {
-        return self::colorFormat(
-            sprintf("%s v%s", AppInfoEnum::APP_NAME, $newVersion ? $newVersion->toString() : AppInfoEnum::APP_VERSION),
-            UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD
-        );
+        $versionText = sprintf("%s v%s", AppInfoEnum::APP_NAME, $newVersion ? $newVersion->toString() : AppInfoEnum::APP_VERSION);
+        return $format ? self::colorFormat($versionText, UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD) : $versionText;
     }
 }
 

@@ -114,7 +114,7 @@ class Release
         $newVersion = AppHelper::increaseVersion($part);
         //    combine files
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
-        file_put_contents(AppInfoEnum::RELEASE_PATH, sprintf("<?php\n// === %s ===\n", MyOps::version($newVersion)));
+        file_put_contents(AppInfoEnum::RELEASE_PATH, sprintf("<?php\n// === %s ===\n", MyOps::version($newVersion, false)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
         //
@@ -122,12 +122,12 @@ class Release
         //    push new release to GitHub
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND,
-            sprintf("git commit -m 'release %s on %s UTC'", MyOps::version($newVersion), (new DateTime())->format('Y-m-d H:i:s')),
+            sprintf("git commit -m 'release %s on %s UTC'", MyOps::version($newVersion, false), (new DateTime())->format('Y-m-d H:i:s')),
             GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
         //
         self::LineNew()->printSeparatorLine()
-            ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::version($newVersion));
+            ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::version($newVersion, false));
     }
 
     /**
