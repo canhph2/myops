@@ -3,9 +3,9 @@
 name: workflow--myops--develop
 
 # load shell configuration (Ubuntu)
-defaults:
-  run:
-    shell: bash -leo pipefail {0}
+#defaults:
+#  run:
+#    shell: bash -leo pipefail {0}
 
 # Controls when the workflow will run
 on:
