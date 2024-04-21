@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.2.23 ===
+// === MyOps v3.2.24 ===
 
 // === Generated libraries classes ===
 
@@ -169,7 +169,8 @@ class Release
     private function handleAppClass(): void
     {
         $appClassContent = $this->handlePHPClassContent(self::GET_FILES_LIST()[count(self::GET_FILES_LIST()) - 1]);
-        $appClassContentClassOnly = sprintf("class OpsApp%s", explode('class OpsApp', $appClassContent)[1]);
+        $classAppName = sprintf("class %s", AppInfoEnum::APP_NAME);
+        $appClassContentClassOnly = sprintf("%s%s", $classAppName, explode($classAppName, $appClassContent)[1]);
         // handle shell data
         $appClassContentClassOnly = str_replace(
             "const SHELL_DATA_BASE_64 = '';",
@@ -1262,7 +1263,7 @@ class Duration
 class AppInfoEnum
 {
     const APP_NAME = 'MyOps';
-    const APP_VERSION = '3.2.23';
+    const APP_VERSION = '3.2.24';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
 }
@@ -3246,7 +3247,222 @@ trait ConsoleUITrait
 
 // === Generated app class ===
 
-class OpsApp
+class MyOps
+{
+    use ConsoleUITrait;
+
+    const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKG15b3BzIGJyYW5jaCkKZXhwb3J0IFJFUE9TSVRPUlk9JChteW9wcyByZXBvc2l0b3J5KQpleHBvcnQgSEVBRF9DT01NSVRfSUQ9JChteW9wcyBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBoYW5kbGUgYnJhbmNoZXMgdmFycyA9PT0KaWYgWyAiJHtCUkFOQ0h9IiA9ICJkZXZlbG9wIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1kZXYKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9ZGV2ZWxvcC1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0iZGV2ZWxvcC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAwCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJzdGFnaW5nIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1zdGcKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9c3RhZ2luZy1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0ic3RhZ2luZy1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAxCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjEwMCIKICBleHBvcnQgRUJfTUFJTF9DQVRDSEVSX1BPUlQ9IiAgICAiICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UgfCA0IHNwYWNlcyB0byBwYXNzIGVtcHR5IHN0cmluZwogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAyCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKIyA9PT0gRU5EID09PQoKIyA9PT0gQVdTIEFjY291bnQgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEFXU19BQ0NPVU5UX0lEPSI5ODIwODA2NzI5ODMiCmV4cG9ydCBSRUdJT049ImFwLWVhc3QtMSIKIyAgICBFQ1IgY29uZmlndXJhdGlvbgojICAgICAgICBiYXNlIGFuZCBjYWNoZXMgcmVwb3NpdG9yaWVzCmV4cG9ydCBFQ1JfUkVQT19BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19QQVlNRU5UX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtcGF5bWVudC1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlZPSUNFX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW52b2ljZS1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlRFR1JBVElPTl9BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW50ZWdyYXRpb24tYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19FTUFJTF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWVtYWlsLXNlcnZpY2UtcmVwb3NpdG9yeSIKIyAgICAgICAgbm9ybWFsIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgRWxhc3RpYyBCZWFuc3RhbGsgY29uZmlndXJhdGlvbgpleHBvcnQgUzNfRUJfQVBQX1ZFUlNJT05fQlVDS0VUX05BTUU9ImVsYXN0aWNiZWFuc3RhbGstJHtSRUdJT059LSR7QVdTX0FDQ09VTlRfSUR9IgpleHBvcnQgRUJfQVBQX1ZFUlNJT05fRk9MREVSX05BTUU9ImVuZ2FnZXBsdXMiCmV4cG9ydCBFQl9BUFBfTkFNRT0iZW5nYWdlcGx1cyIKIyA9PT0gRU5EID09PQoKIyA9PT0gRW5nYWdlUGx1cyBjb25maWd1cmF0aW9uID09PQpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRk9MREVSPSIuY2FjaGVzX2VuZ2FnZXBsdXMiCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19ESVI9IiQobXlvcHMgaG9tZS1kaXIpLyR7RU5HQUdFUExVU19DQUNIRVNfRk9MREVSfSIKZXhwb3J0IEVOR0FHRVBMVVNfQ0FDSEVTX1JFUE9TSVRPUllfRElSPSIke0VOR0FHRVBMVVNfQ0FDSEVTX0RJUn0vJHtSRVBPU0lUT1JZfSIKIyA9PT0gRU5EID09PQoKIyA9PT0gZ2V0IERFVklDRSBmcm9tIHBhcmFtIDEgPT09CmV4cG9ydCBERVZJQ0U9IiQxIgojID09PSBFTkQgPT09Cg==';
+
+    public static function getShellData()
+    {
+        return self::SHELL_DATA_BASE_64
+            ? base64_decode(self::SHELL_DATA_BASE_64)
+            : file_get_contents('app/_shell_/handle-env-ops.sh');
+    }
+
+    const ELB_TEMPLATE_BASE_64 = 'eyJibG9ja2RldmljZVRlbXBsYXRlIjoib3B0aW9uX3NldHRpbmdzOlxuICBhd3M6YXV0b3NjYWxpbmc6bGF1bmNoY29uZmlndXJhdGlvbjpcbiAgICBCbG9ja0RldmljZU1hcHBpbmdzOiBcL2RldlwveHZkY3o9Ol8yTkRfRElTS19TSVpFXzp0cnVlOmdwMlxuIiwiRG9ja2VycnVuVGVtcGxhdGUiOiJ7XG4gIFwiQVdTRUJEb2NrZXJydW5WZXJzaW9uXCI6IDIsXG4gIFwiY29udGFpbmVyRGVmaW5pdGlvbnNcIjogW1xuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9BUElcIixcbiAgICAgIFwiZXNzZW50aWFsXCI6IHRydWUsXG4gICAgICBcIm1lbW9yeVJlc2VydmF0aW9uXCI6IDI1NixcbiAgICAgIFwicG9ydE1hcHBpbmdzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiaG9zdFBvcnRcIjogODAsXG4gICAgICAgICAgXCJjb250YWluZXJQb3J0XCI6IDgwODBcbiAgICAgICAgfVxuICAgICAgICBfTUFJTF9DQVRDSEVSX1BPUlRfXG4gICAgICBdLFxuICAgICAgXCJsaW5rc1wiOiBbXG4gICAgICAgIFwicGF5bWVudC1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW52b2ljZS1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW50ZWdyYXRpb24tYXBpXCJcbiAgICAgIF1cbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludm9pY2Utc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlZPSUNFX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcInBheW1lbnQtc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9QQVlNRU5UX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludGVncmF0aW9uLWFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlRFR1JBVElPTl9BUElcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9XG4gIF1cbn1cbiJ9';
+
+    public static function getELBTemplate()
+    {
+        return self::ELB_TEMPLATE_BASE_64
+            ? json_decode(base64_decode(self::ELB_TEMPLATE_BASE_64), true)
+            : [
+                'blockdeviceTemplate' => file_get_contents('app/_AWS_/ELB-template/.ebextensions/blockdevice-xvdcz.config.TEMPLATE'),
+                'DockerrunTemplate' => file_get_contents('app/_AWS_/ELB-template/Dockerrun.aws.json.TEMPLATE'),
+            ];
+    }
+
+    public function __construct()
+    {
+
+    }
+
+    public function run(array $argv)
+    {
+        // === params ===
+        $command = $argv[1] ?? null;
+        $param1 = $argv[2] ?? null; // to use if needed
+        $param2 = $argv[3] ?? null; // to use if needed
+
+        // === validation ===
+        if (!$command) {
+            self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", AppInfoEnum::APP_MAIN_COMMAND);
+            $this->help();
+            exit(); // END
+        }
+        if (!array_key_exists($command, CommandEnum::SUPPORT_COMMANDS())) {
+            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", $command);
+            $this->help();
+            exit(); // END
+        }
+
+        // === handle ===
+        switch ($command) {
+            // === this app ===
+            case CommandEnum::HELP:
+                $this->help();
+                break;
+            case CommandEnum::RELEASE:
+                (new Release())->handle($argv);
+                break;
+            case CommandEnum::VERSION:
+                self::LineNew()->print(MyOps::version());
+                break;
+            case CommandEnum::SYNC:
+                OPSHelper::sync();
+                break;
+            // === AWS related ===
+            case CommandEnum::LOAD_ENV_OPS:
+                echo AWSHelper::loadOpsEnvAndHandleMore();
+                break;
+            case CommandEnum::GET_SECRET_ENV:
+                // validate
+                if (!$param1) {
+                    self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                        ->print("required secret name");
+                    exit(); // END
+                }
+                // handle
+                AWSHelper::getSecretEnv($param1, $param2);
+                break;
+            case CommandEnum::ELB_UPDATE_VERSION:
+                AWSHelper::ELBUpdateVersion();
+                break;
+            // === Git / GitHub ===
+            case CommandEnum::BRANCH:
+                echo exec(GitHubEnum::GET_BRANCH_COMMAND);
+                break;
+            case CommandEnum::REPOSITORY:
+                echo basename(str_replace('.git', '', exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND)));
+                break;
+            case CommandEnum::HEAD_COMMIT_ID:
+                echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
+                break;
+            case CommandEnum::HANDLE_CACHES_AND_GIT:
+                GitHubHelper::handleCachesAndGit($argv);
+                break;
+            case CommandEnum::FORCE_CHECKOUT:
+                GitHubHelper::forceCheckout();
+                break;
+            //        GitHub Actions
+            case CommandEnum::BUILD_ALL_PROJECTS:
+                GitHubHelper::buildAllProject();
+                break;
+            // === Docker ===
+            case CommandEnum::DOCKER_KEEP_IMAGE_BY:
+                DockerHelper::keepImageBy($argv);
+                break;
+            case CommandEnum::DOCKER_FILE_ADD_ENVS:
+                DockerHelper::DockerfileAddEnvs($argv);
+                break;
+            // === utils ===
+            case CommandEnum::HOME_DIR:
+                echo DirHelper::getHomeDir();
+                break;
+            case  CommandEnum::SCRIPT_DIR:
+                echo DirHelper::getScriptDir();
+                break;
+            case CommandEnum::WORKING_DIR:
+                echo DirHelper::getWorkingDir();
+                break;
+            case CommandEnum::REPLACE_TEXT_IN_FILE:
+                StrHelper::replaceTextInFile($argv);
+                break;
+            case CommandEnum::SLACK:
+                SlackService::sendMessage($argv);
+                break;
+            case CommandEnum::TMP:
+                DirHelper::tmp($argv);
+                break;
+            case CommandEnum::POST_WORK:
+                OPSHelper::postWork($argv);
+                break;
+            case CommandEnum::CLEAR_OPS_DIR:
+                OPSHelper::clearOpsDir();
+                break;
+            // === private ===
+            case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
+                echo OPSHelper::getS3WhiteListIpsDevelopment();
+                break;
+            case CommandEnum::UPDATE_GITHUB_TOKEN_ALL_PROJECT:
+                OPSHelper::updateGitHubTokenAllProjects();
+                break;
+            // === validation ===
+            case CommandEnum::VALIDATE:
+                OPSHelper::validate($argv);
+                break;
+            // === UI/Text ===
+            case CommandEnum::TITLE:
+                // validate
+                if (!$param1) {
+                    self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                        ->print("required title text");
+                    exit(); // END
+                }
+                // handle
+                self::LineNew()->printTitle($param1);
+                break;
+            case CommandEnum::SUB_TITLE:
+                // validate
+                if (!$param1) {
+                    self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                        ->print("required sub title text");
+                    exit(); // END
+                }
+                // handle
+                self::LineNew()->printSubTitle($param1);
+                break;
+            // === other ===
+            default:
+                echo "[ERROR] Unknown error";
+                break;
+        }
+    }
+
+    private function help()
+    {
+        self::LineNew()->print('')
+            ->printTitle("%s v%s", AppInfoEnum::APP_NAME, AppInfoEnum::APP_VERSION)
+            ->setTag(TagEnum::INFO)->print("usage:  %s COMMAND", AppInfoEnum::APP_MAIN_COMMAND)
+            ->setTag(TagEnum::NONE)->print("               %s COMMAND PARAM1 PARAM2 ...", AppInfoEnum::APP_MAIN_COMMAND)
+            ->setTag(TagEnum::NONE)->print('')
+            ->setTag(TagEnum::INFO)->print("Support commands:");
+        /**
+         * @var  $command string
+         * @var  $descriptionArr array
+         */
+        foreach (CommandEnum::SUPPORT_COMMANDS() as $command => $descriptionArr) {
+            switch (count($descriptionArr)) {
+                case 0: // group command's title
+                    self::LineNew()->printSubTitle($command);
+                    break;
+                case 1: // group command's items - single line description
+                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)
+                        ->print("%s     : %s", $command, $descriptionArr[0]);
+                    break;
+                default: // group command's items - multiple line description
+                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->print($command);
+                    foreach ($descriptionArr as $descriptionLine) {
+                        self::LineIndent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->print($descriptionLine);
+                    }
+                    break;
+            }
+        }
+        self::LineNew()->printSeparatorLine();
+    }
+
+    public static function version(Version $newVersion = null, bool $format = true): string
+    {
+        $versionText = sprintf("%s v%s", AppInfoEnum::APP_NAME, $newVersion ? $newVersion->toString() : AppInfoEnum::APP_VERSION);
+        return $format ? self::colorFormat($versionText, UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD) : $versionText;
+    }
+}
+
+// === end class zone ====
+
+// === execute zone ===
+(new MyOps())->run($argv);
+// === end execute zone ===
 
 // === end Generated app class ===
 

@@ -164,7 +164,8 @@ class Release
     private function handleAppClass(): void
     {
         $appClassContent = $this->handlePHPClassContent(self::GET_FILES_LIST()[count(self::GET_FILES_LIST()) - 1]);
-        $appClassContentClassOnly = sprintf("class OpsApp%s", explode('class OpsApp', $appClassContent)[1]);
+        $classAppName = sprintf("class %s", AppInfoEnum::APP_NAME);
+        $appClassContentClassOnly = sprintf("%s%s", $classAppName, explode($classAppName, $appClassContent)[1]);
         // handle shell data
         $appClassContentClassOnly = str_replace(
             "const SHELL_DATA_BASE_64 = '';",
