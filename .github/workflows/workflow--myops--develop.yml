@@ -24,6 +24,6 @@ jobs:
       # it will post msg to slack channel (engage-deploy-notification)
       - uses: actions/checkout@v3
       - name: GitHub Actions build and deploy
-        run : |
-            chmod u+x ".ops/sync-and-notify-Slack.sh"
-            . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'
+        run: |
+          chmod u+x ".ops/sync-and-notify-Slack.sh"
+          . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'
