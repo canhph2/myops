@@ -109,7 +109,6 @@ class Release
             return; // END
         }
         // handle
-        self::LineNew()->printTitle("release");
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
         //    combine files

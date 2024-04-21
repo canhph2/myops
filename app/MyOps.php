@@ -85,6 +85,7 @@ class MyOps
                 $this->help();
                 break;
             case CommandEnum::RELEASE:
+                self::LineNew()->printTitle("release");
                 // ask what news
                 $whatNewsDefault = sprintf(".e.g, release %s on %s UTC",  MyOps::version(null, false), (new DateTime())->format('Y-m-d H:i:s'));
                 $whatNewsInput = readline("What are news in this release?   ( default = '$whatNewsDefault' )  :");
