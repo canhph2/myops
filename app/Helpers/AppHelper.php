@@ -60,8 +60,8 @@ class AppHelper
         //    README.MD
         $readmePath = "README.MD";
         file_put_contents($readmePath, preg_replace(
-            '/myops v(\d+\.\d+\.\d+)/',
-            sprintf("myops v%s", $newVersion->toString()),
+            '/' . AppInfoEnum::APP_NAME . ' v(\d+\.\d+\.\d+)/',
+            sprintf("%s v%s", AppInfoEnum::APP_NAME, $newVersion->toString()),
             file_get_contents($readmePath)
         ));
         //    VERSION.MD

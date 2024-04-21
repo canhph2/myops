@@ -62,7 +62,7 @@ class CommandEnum
     {
         return [
             // group title
-            "OPS APP" => [],
+            AppInfoEnum::APP_NAME => [],
             'Required notes:' => [
                 '[Alias required] add these commands below in a beginning of your shell script file:',
                 "        # load shell configuration",

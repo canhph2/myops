@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.2.24 ===
+// === MyOps v3.2.25 ===
 
 // === Generated libraries classes ===
 
@@ -1263,9 +1263,9 @@ class Duration
 class AppInfoEnum
 {
     const APP_NAME = 'MyOps';
-    const APP_VERSION = '3.2.24';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
+    const APP_VERSION = '3.2.25';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1330,7 +1330,7 @@ class CommandEnum
     {
         return [
             // group title
-            "OPS APP" => [],
+            AppInfoEnum::APP_NAME => [],
             'Required notes:' => [
                 '[Alias required] add these commands below in a beginning of your shell script file:',
                 "        # load shell configuration",
@@ -2732,8 +2732,8 @@ class AppHelper
         //    README.MD
         $readmePath = "README.MD";
         file_put_contents($readmePath, preg_replace(
-            '/myops v(\d+\.\d+\.\d+)/',
-            sprintf("myops v%s", $newVersion->toString()),
+            '/' . AppInfoEnum::APP_NAME . ' v(\d+\.\d+\.\d+)/',
+            sprintf("%s v%s", AppInfoEnum::APP_NAME, $newVersion->toString()),
             file_get_contents($readmePath)
         ));
         //    VERSION.MD
