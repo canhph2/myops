@@ -76,12 +76,27 @@ trait ConsoleUITrait
 
 
     // === colors ===
-    private static function color(string $text, int $color): string
+
+    /**
+     * @param string $text
+     * @param int $color
+     * @param bool $isEndLine
+     * @return string
+     */
+    private static function color(string $text, int $color, bool $isEndLine = false): string
     {
-        return sprintf("\033[%dm%s\033[0m", $color, $text);
+        return sprintf("\033[%dm%s\033[0m%s", $color, $text, $isEndLine ? PHP_EOL : '');
     }
-    private static function colorFormat(string $text, int $color, int $format): string
+
+    /**
+     * @param string $text
+     * @param int $color
+     * @param int $format
+     * @param bool $isEndLine
+     * @return string
+     */
+    private static function colorFormat(string $text, int $color, int $format, bool $isEndLine = false): string
     {
-        return sprintf("\033[%d;%dm%s\033[0m", $color, $format, $text);
+        return sprintf("\033[%d;%dm%s\033[0m%s", $color, $format, $text, $isEndLine ? PHP_EOL : '');
     }
 }

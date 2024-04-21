@@ -202,18 +202,18 @@ class TextLine
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
-        $finalText = sprintf("%s\n", $this->toString());
+        $finalText = sprintf("%s", $this->toString());
         //     case 1: set both color and format
         if ($this->color !== UIEnum::COLOR_NO_SET && $this->format !== UIEnum::FORMAT_NO_SET) {
-            echo self::colorFormat($finalText, $this->color, $this->format);
+            echo self::colorFormat($finalText, $this->color, $this->format, true);
             //
             // case 2: set color only
         } else if ($this->color !== UIEnum::COLOR_NO_SET) {
-            echo self::color($finalText, $this->color);
+            echo self::color($finalText, $this->color, true);
             //
             // case 3: no set both color and format
         } else {
-            echo $finalText;
+            echo $finalText.PHP_EOL;
         }
         //
         return $this;

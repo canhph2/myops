@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.2.45 ===
+// === MyOps v3.2.46 ===
 
 // === Generated libraries classes ===
 
@@ -327,16 +327,6 @@ class Process
     }
 
     /**
-     * @return array|null
-     */
-    private function getOutputFilteredEmpty(): array
-    {
-        return array_filter($this->output ?? [], function ($line) {
-            return trim($line);
-        });
-    }
-
-    /**
      * @return string
      */
     public function getOutputStrAll(): string
@@ -483,11 +473,8 @@ class Process
             }
         }
         self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Output:");
-        var_dump($this->getOutputFilteredEmpty()); // todo test
-        foreach ($this->getOutputFilteredEmpty() as $outputLine) {
-            if ($outputLine) {
-                self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->print(StrHelper::hideSensitiveInformation($outputLine));
-            }
+        foreach ($this->output as $outputLine) {
+            self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->print(StrHelper::hideSensitiveInformation($outputLine));
         }
         //
         return $this;
@@ -1041,18 +1028,18 @@ class TextLine
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
-        $finalText = sprintf("%s\n", $this->toString());
+        $finalText = sprintf("%s", $this->toString());
         //     case 1: set both color and format
         if ($this->color !== UIEnum::COLOR_NO_SET && $this->format !== UIEnum::FORMAT_NO_SET) {
-            echo self::colorFormat($finalText, $this->color, $this->format);
+            echo self::colorFormat($finalText, $this->color, $this->format, true);
             //
             // case 2: set color only
         } else if ($this->color !== UIEnum::COLOR_NO_SET) {
-            echo self::color($finalText, $this->color);
+            echo self::color($finalText, $this->color, true);
             //
             // case 3: no set both color and format
         } else {
-            echo $finalText;
+            echo $finalText.PHP_EOL;
         }
         //
         return $this;
@@ -1281,7 +1268,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.45';
+    const APP_VERSION = '3.2.46';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3311,13 +3298,28 @@ trait ConsoleUITrait
 
 
     // === colors ===
-    private static function color(string $text, int $color): string
+
+    /**
+     * @param string $text
+     * @param int $color
+     * @param bool $isEndLine
+     * @return string
+     */
+    private static function color(string $text, int $color, bool $isEndLine = false): string
     {
-        return sprintf("\033[%dm%s\033[0m", $color, $text);
+        return sprintf("\033[%dm%s\033[0m%s", $color, $text, $isEndLine ? PHP_EOL : '');
     }
-    private static function colorFormat(string $text, int $color, int $format): string
+
+    /**
+     * @param string $text
+     * @param int $color
+     * @param int $format
+     * @param bool $isEndLine
+     * @return string
+     */
+    private static function colorFormat(string $text, int $color, int $format, bool $isEndLine = false): string
     {
-        return sprintf("\033[%d;%dm%s\033[0m", $color, $format, $text);
+        return sprintf("\033[%d;%dm%s\033[0m%s", $color, $format, $text, $isEndLine ? PHP_EOL : '');
     }
 }
 
