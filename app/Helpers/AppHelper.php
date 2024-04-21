@@ -3,7 +3,7 @@
 namespace App\Helpers;
 
 use App\Enum\AppInfoEnum;
-use App\OpsApp;
+use App\MyOps;
 use App\Classes\Release;
 use App\Classes\Version;
 
@@ -60,8 +60,8 @@ class AppHelper
         //    README.MD
         $readmePath = "README.MD";
         file_put_contents($readmePath, preg_replace(
-            '/ops-app v(\d+\.\d+\.\d+)/',
-            sprintf("ops-app v%s", $newVersion->toString()),
+            '/myops v(\d+\.\d+\.\d+)/',
+            sprintf("myops v%s", $newVersion->toString()),
             file_get_contents($readmePath)
         ));
         //    VERSION.MD

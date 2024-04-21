@@ -48,7 +48,7 @@ class OpsLibTest extends BaseTestCase
     public function testCommandVersion()
     {
         $oldVersion = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "ops-app version"
+            "myops version"
         ]))->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("OPS APP (PHP)", $oldVersion);
         $this->customAssertIsStringAndContainsString("v", $oldVersion);
@@ -58,7 +58,7 @@ class OpsLibTest extends BaseTestCase
     public function testLoadOpsEnv()
     {
         $envContent = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "ops-app load-env-ops"
+            "myops load-env-ops"
         ]))->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("SLACK_BOT_TOKEN", $envContent);
         $this->customAssertIsStringAndContainsString("GITHUB_PERSONAL_ACCESS_TOKEN", $envContent);
@@ -68,13 +68,13 @@ class OpsLibTest extends BaseTestCase
     public function testReplaceTextInFile()
     {
         (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "ops-app tmp add"
+            "myops tmp add"
         ]))->execMulti();
         // create a test file
         $contentOrigin = "line 1 with AA BB CC";
         file_put_contents("tmp/test.txt", $contentOrigin);
         (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "ops-app replace-text-in-file 'BB' 'NEW TEST OK' 'tmp/test.txt'"
+            "myops replace-text-in-file 'BB' 'NEW TEST OK' 'tmp/test.txt'"
         ]))->execMulti();
         $contentNew = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "cat tmp/test.txt"
@@ -85,7 +85,7 @@ class OpsLibTest extends BaseTestCase
     public function testELBUpdateVersion()
     {
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "ops-app elb-update-version"
+            "myops elb-update-version"
         ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("missing BRANCH or REPOSITORY or ENV", $result1);
     }
@@ -93,12 +93,12 @@ class OpsLibTest extends BaseTestCase
     public function testAWSGetENV()
     {
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "ops-app get-secret-env env-email-dev"
+            "myops get-secret-env env-email-dev"
         ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::SUCCESS, $result1);
         //
         $result2 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "ops-app get-secret-env WRONG-ENVFILE"
+            "myops get-secret-env WRONG-ENVFILE"
         ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result2);
     }
@@ -107,23 +107,23 @@ class OpsLibTest extends BaseTestCase
     {
         // validate title
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "ops-app title"
+            "myops title"
         ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result1);
         // title
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "ops-app title 'this is test title'"
+            "myops title 'this is test title'"
         ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("===", $result1);
         $this->customAssertIsStringAndContainsString("test title", $result1);
         // validate sub title
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "ops-app sub-title"
+            "myops sub-title"
         ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString(TagEnum::ERROR, $result1);
         // sub title
         $result1 = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "ops-app sub-title 'this is test sub title'"
+            "myops sub-title 'this is test sub title'"
         ]))->setIsExitOnError(false)->execMulti()->getOutputStrAll();
         $this->customAssertIsStringAndContainsString("--", $result1);
         $this->customAssertIsStringAndContainsString("test sub title", $result1);

@@ -1,9 +1,9 @@
 # === REQUIRED: get env-ops and append to this file
 
 # === load Repository Info ===
-export BRANCH=$(php ~/ops-app branch)
-export REPOSITORY=$(php ~/ops-app repository)
-export HEAD_COMMIT_ID=$(php ~/ops-app head-commit-id)
+export BRANCH=$(myops branch)
+export REPOSITORY=$(myops repository)
+export HEAD_COMMIT_ID=$(myops head-commit-id)
 # === END ===
 
 # === constants ===
@@ -89,7 +89,7 @@ export EB_APP_NAME="engageplus"
 
 # === EngagePlus configuration ===
 export ENGAGEPLUS_CACHES_FOLDER=".caches_engageplus"
-export ENGAGEPLUS_CACHES_DIR="$(php ~/ops-app home-dir)/${ENGAGEPLUS_CACHES_FOLDER}"
+export ENGAGEPLUS_CACHES_DIR="$(myops home-dir)/${ENGAGEPLUS_CACHES_FOLDER}"
 export ENGAGEPLUS_CACHES_REPOSITORY_DIR="${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 # === END ===
 

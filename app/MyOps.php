@@ -28,7 +28,7 @@ use App\Traits\ConsoleUITrait;
 
 AppHelper::requireOneAllPHPFilesInDir(DirHelper::getWorkingDir('app'));
 
-class OpsApp
+class MyOps
 {
     use ConsoleUITrait;
 
@@ -87,7 +87,7 @@ class OpsApp
                 (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
-                self::LineNew()->print(OpsApp::version());
+                self::LineNew()->print(MyOps::version());
                 break;
             case CommandEnum::SYNC:
                 OPSHelper::sync();
@@ -244,5 +244,5 @@ class OpsApp
 // === end class zone ====
 
 // === execute zone ===
-(new OpsApp())->run($argv);
+(new MyOps())->run($argv);
 // === end execute zone ===

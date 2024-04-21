@@ -1,4 +1,4 @@
-# ops-app v3.2.22
+# myops v3.2.22
 *DevOps | CICD | Ops App (PHP)*
 
 ## === Usage ===
@@ -16,38 +16,38 @@
 sh _ops/build-and-deploy-with-caches.sh 'Developer (manual)'
 ```
 ---
-### ops-app | to sync new code (manually) | require installed
+### myops | to sync new code (manually) | require installed
 ```shell
-ops-app sync
+myops sync
 ```
 
 ---
 ## === Project Notes ===
 
 ### Note 0 | Install
-- **First time**, copy full `.release/OpsApp.php` to machine, and run installing `ops-app sync`
-- Next time, just sync new version `ops-app sync`
+- **First time**, copy full `.release/MyOps.php` to machine, and run installing `myops sync`
+- Next time, just sync new version `myops sync`
 
 ### Note 1 | How to work
-1. Combine / build all files into 1 file php at `.release/OpsApp.php` (`PHP`)
+1. Combine / build all files into 1 file php at `.release/MyOps.php` (`PHP`)
    - Test all functions when release a new code
    - Handling with version
-2. Install in new machine or sync an exist app, this command should run fine `ops-app sync`
+2. Install in new machine or sync an exist app, this command should run fine `myops sync`
 
 ### Note 2 | Usage
-- use alias `ops-app` anywhere in Mac / Linux / Docker image (OS)
+- use alias `myops` anywhere in Mac / Linux / Docker image (OS)
 - shell configuration files of Mac at `~/.zshrc`, of Ubuntu at `~/.bashrc`
 ```shell
-alias ops-app="php <HOME DIR>/<ENGAGE CACHES DIR>/ops-app/.release/OpsApp.php"
+alias myops="php <HOME DIR>/<ENGAGE CACHES DIR>/myops/.release/MyOps.php"
 ```
-- Usage: `ops-app COMMAND PARAM1`
+- Usage: `myops COMMAND PARAM1`
 - In this project (development and library):
-- [RELEASE] Building project will combine at `.release/OpsApp.php`
+- [RELEASE] Building project will combine at `.release/MyOps.php`
   - Add new files to FILES_LIST in Release class
   - Combine and release
 ```shell
-php app/OpsApp.php release
-php app/OpsApp.php sync
+php app/MyOps.php release
+php app/MyOps.php sync
 php vendor/phpunit/phpunit/phpunit tests
 ```
 

@@ -197,7 +197,7 @@ class Process
             }
         }
         // === handle ===
-        //    handle alias when run alias 'ops-app' in Process
+        //    handle alias when run alias 'myops' in Process
         $isContainsAlias = false;
         foreach ($this->commands as $command) {
             if (StrHelper::startWith($command, AppInfoEnum::APP_MAIN_COMMAND)) {

@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-use App\OpsApp;
+use App\MyOps;
 
 class CommandEnum
 {
@@ -71,7 +71,7 @@ class CommandEnum
             ],
             self::HELP => ['show list support command and usage'],
             self::RELEASE => [
-                sprintf("combine all PHP files into '.release/OpsApp.php' and install a alias '%s'", AppInfoEnum::APP_MAIN_COMMAND),
+                sprintf("combine all PHP files into '.release/MyOps.php' and install a alias '%s'", AppInfoEnum::APP_MAIN_COMMAND),
                 "default version increasing is 'patch'",
                 "feature should be 'minor'",
             ],

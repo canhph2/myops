@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-use App\OpsApp;
+use App\MyOps;
 use App\Classes\Process;
 use App\Enum\TagEnum;
 use App\Services\SlackService;
@@ -51,7 +51,7 @@ class AWSHelper
 
     /**
      * should run with command in shell:
-     *      val "$(php ~/ops-app load-env-ops)"
+     *      val "$(myops load-env-ops)"
      *
      * @return string
      */
@@ -60,7 +60,7 @@ class AWSHelper
         $opsEnvSecretName = 'env-ops';
         $opsEnvData = json_decode(exec(sprintf("aws secretsmanager get-secret-value --secret-id %s --query SecretString --output json", $opsEnvSecretName)));
         //
-        return sprintf("#!/bin/bash\n%s\n%s", $opsEnvData, OpsApp::getShellData());
+        return sprintf("#!/bin/bash\n%s\n%s", $opsEnvData, MyOps::getShellData());
     }
 
     /**
@@ -158,12 +158,12 @@ class AWSHelper
                     sprintf("%s:%s", getenv('ECR_REPO_PAYMENT_SERVICE'), $TAG_PAYMENT_SERVICE_NAME),
                     sprintf("%s:%s", getenv('ECR_REPO_INTEGRATION_API'), $TAG_INTEGRATION_API_NAME)
                 ],
-                OpsApp::getELBTemplate()["DockerrunTemplate"]
+                MyOps::getELBTemplate()["DockerrunTemplate"]
             );
             //    write files
             file_put_contents(
                 sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME),
-                str_replace("_2ND_DISK_SIZE_", getenv('EB_2ND_DISK_SIZE'), OpsApp::getELBTemplate()["blockdeviceTemplate"])
+                str_replace("_2ND_DISK_SIZE_", getenv('EB_2ND_DISK_SIZE'), MyOps::getELBTemplate()["blockdeviceTemplate"])
             );
             file_put_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME), $DockerrunContent);
             //    validate configs files again

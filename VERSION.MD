@@ -3,7 +3,7 @@
 ---
 ## === v3 ===
 - 3.2.0 | Optimize text and console UI
-- 3.1.0 | change project name `ops-app`, update position of *ops-app* strategy
+- 3.1.0 | change project name `myops`, update position of *myops* strategy
 ## === v2 ===
 - 2.19.0 | [GitHub Actions] add 'build-all-projects' command
 - 2.18.0 | add clear '_ops' dir function

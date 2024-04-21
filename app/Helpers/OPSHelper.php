@@ -13,7 +13,7 @@ use App\Enum\TagEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\Classes\Process;
-use App\OpsApp;
+use App\MyOps;
 use App\Traits\ConsoleUITrait;
 
 /**
@@ -84,8 +84,8 @@ class OPSHelper
     }
 
     /**
-     * - sync new release code to caches dir in machine '~/.caches_engageplus/ops-app'
-     * - create an alias 'ops-app' link to the release file at '~/.caches_engageplus/ops-app/.release/OpsApp.php'
+     * - sync new release code to caches dir in machine '~/.caches_engageplus/myops'
+     * - create an alias 'myops' link to the release file at '~/.caches_engageplus/myops/.release/MyOps.php'
      */
     public static function sync()
     {
@@ -96,10 +96,10 @@ class OPSHelper
         GitHubHelper::handleCachesAndGit([
             'script path',
             'command-name', // param 1
-            'ops-app', // param 2, in this case is repository
+            'myops', // param 2, in this case is repository
             'main', // param 3, in this case is branch
         ]);
-        // create an alias 'ops-app'
+        // create an alias 'myops'
         self::createAlias();
         //
         self::LineNew()->printSeparatorLine()
@@ -107,7 +107,7 @@ class OPSHelper
         self::LineNew()->printSeparatorLine();
         // show open new session to show right version
         (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
-            'ops-app version'
+            'myops version'
         ]))->execMultiInWorkDir(true)->printOutput();
         //
         self::LineNew()->printSeparatorLine();
@@ -120,7 +120,7 @@ class OPSHelper
      */
     private static function createAlias()
     {
-        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/ops-app/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
+        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
         $alias = sprintf("alias %s=\"php %s\"", AppInfoEnum::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
         $shellConfigurationFiles = [
             DirHelper::getHomeDir('.zshrc'), // Mac
@@ -161,7 +161,7 @@ class OPSHelper
     /**
      * need to get
      * - ENGAGEPLUS_CACHES_FOLDER
-     * - ENGAGEPLUS_CACHES_DIR="$(php ~/ops-app home-dir)/${ENGAGEPLUS_CACHES_FOLDER}"
+     * - ENGAGEPLUS_CACHES_DIR="$(myops home-dir)/${ENGAGEPLUS_CACHES_FOLDER}"
      * - GITHUB_PERSONAL_ACCESS_TOKEN
      * and put to PHP env
      * @return void
@@ -356,7 +356,7 @@ class OPSHelper
     /**
      * allow branches: develop, staging, master
      * should combine with exit 1 in shell:
-     *     php ~/ops-app validate branch || exit 1
+     *     myops validate branch || exit 1
      * @return void
      */
     private static function validateBranch()
@@ -372,7 +372,7 @@ class OPSHelper
     /**
      * Docker should is running
      * should combine with exit 1 in shell:
-     *      php ~/ops-app validate docker || exit 1
+     *      myops validate docker || exit 1
      */
     private static function validateDocker()
     {
@@ -387,7 +387,7 @@ class OPSHelper
 
     /**
      * should have env var: BRANCH
-     *     php ~/ops-app validate device || exit 1
+     *     myops validate device || exit 1
      * @return void
      */
     private static function validateDevice()
