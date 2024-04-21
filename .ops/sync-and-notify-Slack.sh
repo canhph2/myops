@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e # tells the shell to exit if a command returns a non-zero exit status
 # [Alias required] load shell configuration
-[[ -f ~/.zshrc ]] && source ~/.zshrc # MAC
-[[ -f ~/.bashrc ]] && source ~/.bashrc # Ubuntu
+#[[ -f ~/.zshrc ]] && source ~/.zshrc # MAC
+#[[ -f ~/.bashrc ]] && source ~/.bashrc # Ubuntu
 
 # usage:    sh _ops/build-and-deploy-with-caches.sh 'DEVICE_NAME'
 
@@ -12,8 +12,6 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 echo "The script is being run by user: $USER"
 # test system alias
 l
-
-alias myops="php /home/ubuntu/.caches_engageplus/myops/.release/MyOps.php"
 
 myops version
 
