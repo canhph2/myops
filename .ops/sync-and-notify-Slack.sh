@@ -10,6 +10,8 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 
 #. ~/.bashrc # source
 echo "The script is being run by user: $USER"
+# test system alias
+l
 
 alias myops="php /home/ubuntu/.caches_engageplus/myops/.release/MyOps.php"
 
