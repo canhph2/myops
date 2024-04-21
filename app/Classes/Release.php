@@ -120,10 +120,13 @@ class Release
         //
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
+        //        ask what news
+        $whatNewsDefault = sprintf("release %s on %s UTC", MyOps::version($newVersion, false), (new DateTime())->format('Y-m-d H:i:s'));
+        $whatNewsInput = readline("What are news in this release?   ( default = '$whatNewsDefault' )  :");
+        $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
+        //        push
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
-            GitHubEnum::ADD_ALL_FILES_COMMAND,
-            sprintf("git commit -m 'release %s on %s UTC'", MyOps::version($newVersion, false), (new DateTime())->format('Y-m-d H:i:s')),
-            GitHubEnum::PUSH_COMMAND,
+            GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNews'", GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
         //
         self::LineNew()->printSeparatorLine()
