@@ -90,6 +90,12 @@ class MyOps
                 (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
+                // filter color
+                if($param1 === 'no-format-color'){
+                    self::lineNew()->print(MyOps::getAppVersionStr());
+                    break;
+                }
+                // default
                 self::lineColorFormat(UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD)->print(MyOps::getAppVersionStr());
                 break;
             case CommandEnum::SYNC:

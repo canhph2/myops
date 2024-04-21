@@ -75,7 +75,7 @@ class CommandEnum
                 "default version increasing is 'patch'",
                 "feature should be 'minor'",
             ],
-            self::VERSION => ["show app version"],
+            self::VERSION => ["show app version, (without format and color, using option 'no-format-color'"],
             self::SYNC => [sprintf("sync new release code to caches dir and create an alias '%s'", AppInfoEnum::APP_MAIN_COMMAND)],
             // group title
             "AWS Related" => [],

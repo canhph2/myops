@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.2.46 ===
+// === MyOps v3.2.47 ===
 
 // === Generated libraries classes ===
 
@@ -1268,7 +1268,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.46';
+    const APP_VERSION = '3.2.47';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1346,7 +1346,7 @@ class CommandEnum
                 "default version increasing is 'patch'",
                 "feature should be 'minor'",
             ],
-            self::VERSION => ["show app version"],
+            self::VERSION => ["show app version, (without format and color, using option 'no-format-color'"],
             self::SYNC => [sprintf("sync new release code to caches dir and create an alias '%s'", AppInfoEnum::APP_MAIN_COMMAND)],
             // group title
             "AWS Related" => [],
@@ -3388,6 +3388,12 @@ class MyOps
                 (new Release())->handle($argv);
                 break;
             case CommandEnum::VERSION:
+                // filter color
+                if($param1 === 'no-format-color'){
+                    self::lineNew()->print(MyOps::getAppVersionStr());
+                    break;
+                }
+                // default
                 self::lineColorFormat(UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD)->print(MyOps::getAppVersionStr());
                 break;
             case CommandEnum::SYNC:
