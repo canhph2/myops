@@ -1,0 +1,29 @@
+# This is a basic workflow to help you get started with Actions
+#    DEVELOP environment
+name: workflow--myops--develop
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "develop" ]
+
+  workflow_dispatch:
+
+env:
+  #All environment variables
+  VAR1: "var 1 "
+
+jobs:
+
+  build-and-deploy:
+    # The type of runner that the job will run on
+    runs-on: self-hosted
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # it will post msg to slack channel (engage-deploy-notification)
+      - uses: actions/checkout@v3
+      - name: GitHub Actions build and deploy
+        run : |
+            chmod u+x ".ops/sync-and-notify-Slack.sh"
+            . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'

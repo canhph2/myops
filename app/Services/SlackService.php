@@ -21,8 +21,8 @@ class SlackService
      */
     private static function selectSlackChannel(): ?string
     {
-        // ops-lib | testing
-        if (getenv('REPOSITORY') === 'ops-lib') {
+        // myops | testing
+        if (getenv('REPOSITORY') === 'myops') {
             return getenv('SLACK_CHANNEL'); // END
         }
         // database-utils

@@ -65,7 +65,7 @@ class CommandEnum
             AppInfoEnum::APP_NAME => [],
             'Required notes:' => [
                 '[Alias required] add these commands below in a beginning of your shell script file:',
-                "        # load shell configuration",
+                "        # [Alias required] load shell configuration",
                 "        [[ -f ~/.zshrc ]] && source ~/.zshrc # MAC",
                 "        [[ -f ~/.bashrc ]] && source ~/.bashrc # Ubuntu",
             ],

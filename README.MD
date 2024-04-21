@@ -16,7 +16,7 @@
 sh _ops/build-and-deploy-with-caches.sh 'Developer (manual)'
 ```
 ---
-### myops | to sync new code (manually) | require installed
+### To sync new code (manually) | require installed
 ```shell
 myops sync
 ```
@@ -27,6 +27,12 @@ myops sync
 ### Note 0 | Install
 - **First time**, copy full `.release/MyOps.php` to machine, and run installing `myops sync`
 - Next time, just sync new version `myops sync`
+- [Alias required] add these commands below in a beginning of your shell script file:
+```shell
+# [Alias required] load shell configuration
+[[ -f ~/.zshrc ]] && source ~/.zshrc # MAC
+[[ -f ~/.bashrc ]] && source ~/.bashrc # Ubuntu
+```
 
 ### Note 1 | How to work
 1. Combine / build all files into 1 file php at `.release/MyOps.php` (`PHP`)
