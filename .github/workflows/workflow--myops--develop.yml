@@ -23,10 +23,12 @@ jobs:
     steps:
       # it will post msg to slack channel (engage-deploy-notification)
       - uses: actions/checkout@v3
+      - name: Set up aliases
+        run: |
+          alias l='ls -CF'
+          echo "Aliases defined successfully."
       - name: GitHub Actions build and deploy
         run: |
-          # [Alias required] load shell configuration
-          source ~/.bashrc
-          alias l='ls -CF'
+          l
           chmod u+x ".ops/sync-and-notify-Slack.sh"
           . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'
