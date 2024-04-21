@@ -2,6 +2,11 @@
 #    DEVELOP environment
 name: workflow--myops--develop
 
+# load shell configuration (Ubuntu)
+defaults:
+  run:
+    shell: bash -leo pipefail {0}
+
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
@@ -23,12 +28,8 @@ jobs:
     steps:
       # it will post msg to slack channel (engage-deploy-notification)
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
-        with:
-          name: script-with-aliases
       - name: GitHub Actions build and deploy
         run: |
-          source script-with-aliases.sh
           l
           chmod u+x ".ops/sync-and-notify-Slack.sh"
           . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'
