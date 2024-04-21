@@ -96,8 +96,9 @@ class Release
         }
     }
 
-    public function handle(array $argv, string $whatNewsInput = null): void
+    public function handle(array $argv): void
     {
+        self::LineNew()->printTitle("release");
         // validate
         if (!$this->validate()) {
             return; // END
@@ -120,7 +121,8 @@ class Release
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
         //        ask what news
-        $whatNewsDefault = sprintf("release %s on %s UTC", MyOps::version($newVersion, false), (new DateTime())->format('Y-m-d H:i:s'));
+        $whatNewsDefault = sprintf(".e.g, release %s on %s UTC",  MyOps::version(null, false), (new DateTime())->format('Y-m-d H:i:s'));
+        $whatNewsInput = readline("What are news in this release?   ( default = '$whatNewsDefault' )  :");
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
