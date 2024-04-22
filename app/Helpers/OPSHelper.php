@@ -145,10 +145,7 @@ class OPSHelper
                     }
                 }
                 // validate alias
-                self::validate([
-                    'script path', 'command-name', // param 0,1
-                    ValidationTypeEnum::FILE_CONTAINS_TEXT, "$shellConfigurationFile", $alias
-                ]);
+                self::validateFileContainsText($shellConfigurationFile, $alias);
             }
         }
     }
@@ -342,7 +339,7 @@ class OPSHelper
                 break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
-                    ->print("should be like eg:   '%s' validate branch", AppInfoEnum::APP_MAIN_COMMAND);
+                    ->print("should be like eg:   '%s validate branch'", AppInfoEnum::APP_MAIN_COMMAND);
                 break;
         }
     }
@@ -394,11 +391,11 @@ class OPSHelper
         }
     }
 
-    private static function validateFileContainsText()
+    private static function validateFileContainsText(string $customFilePath = null, ...$customSearchTexts)
     {
         // validate
-        $filePath = self::args()->arg2;
-        $searchTextArr = [];
+        $filePath = $customFilePath ?? self::args()->arg2;
+        $searchTextArr = count($customSearchTexts) ? $customSearchTexts : [];
         for ($i = 3; $i < 20; $i++) {
             if (count(self::args()->argsAll) > $i)
                 if (self::args()->argsAll[$i]) {
