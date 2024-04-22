@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.2.57 ===
+// === MyOps v3.2.61 ===
 
 // === Generated libraries classes ===
 
@@ -20,7 +20,6 @@ if (!function_exists('dd')) {
         die();
     }
 }
-
 
 // === end helpers functions ===
 
@@ -46,13 +45,14 @@ if (!function_exists('dd')) {
 // [REMOVED] use App\Helpers\StrHelper;
 // [REMOVED] use App\MyOps;
 // [REMOVED] use App\Services\SlackService;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
-// [REMOVED] use BaseHelper;
 // [REMOVED] use DateTime;
 
 class Release
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait;
+    use  ConsoleUITrait;
 
     /**
      * @return array
@@ -71,6 +71,7 @@ class Release
             DirHelper::getClassPathAndFileName(TextLine::class),
             DirHelper::getClassPathAndFileName(GitHubRepositoryInfo::class),
             DirHelper::getClassPathAndFileName(Duration::class),
+            DirHelper::getClassPathAndFileName(MyOpsConsoleArguments::class),
             // === Enum ===
             DirHelper::getClassPathAndFileName(AppInfoEnum::class),
             DirHelper::getClassPathAndFileName(CommandEnum::class),
@@ -94,6 +95,7 @@ class Release
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
+            DirHelper::getClassPathAndFileName(ConsoleBaseTrait::class),
             DirHelper::getClassPathAndFileName(ConsoleUITrait::class),
             // App file always on bottom
             DirHelper::getClassPathAndFileName(MyOps::class),
@@ -125,7 +127,7 @@ class Release
         }
     }
 
-    public function handle(array $argv): void
+    public function handle(): void
     {
         self::LineNew()->printTitle("release");
         // validate
@@ -133,7 +135,7 @@ class Release
             return; // END
         }
         //    validate version part
-        $part = $argv[2] ?? Version::PATCH; // default, empty = patch
+        $part = self::args()->arg1 ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
             self::LineTag(TagEnum::ERROR)->print("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END
@@ -150,7 +152,7 @@ class Release
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
         //        ask what news
-        $whatNewsDefault = sprintf("Release %s on %s UTC",  MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
+        $whatNewsDefault = sprintf("Release %s on %s UTC", MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
         $whatNewsInput = ucfirst(readline("What are news in this release?  (default = '$whatNewsDefault')  :"));
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
@@ -1283,6 +1285,49 @@ class Duration
     }
 }
 
+// [REMOVED] namespace App\Classes;
+
+class MyOpsConsoleArguments
+{
+    /** @var string|null */
+    public $command;
+
+    /** @var string|null */
+    public $arg1;
+
+    /** @var string|null */
+    public $arg2;
+
+    /** @var string|null */
+    public $arg3;
+
+    /** @var string|null */
+    public $arg4;
+
+    /** @var array */
+    public $argsAll;
+
+    /**
+     * @param string|null $command
+     * @param string|null $arg1
+     * @param string|null $arg2
+     * @param string|null $arg3
+     * @param string|null $arg4
+     * @param array $argsAll
+     */
+    public function __construct(string $command = null, string $arg1 = null, string $arg2 = null,
+                                string $arg3 = null, string $arg4 = null, array $argsAll = [])
+    {
+        $this->command = $command;
+        $this->arg1 = $arg1;
+        $this->arg2 = $arg2;
+        $this->arg3 = $arg3;
+        $this->arg4 = $arg4;
+        $this->argsAll = $argsAll;
+    }
+
+}
+
 // [REMOVED] namespace App\Enum;
 
 class AppInfoEnum
@@ -1290,7 +1335,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.57';
+    const APP_VERSION = '3.2.61';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3246,6 +3291,79 @@ class SlackService
 
 // [REMOVED] namespace App\Traits;
 
+// [REMOVED] use App\Classes\MyOpsConsoleArguments;
+
+trait ConsoleBaseTrait
+{
+    /**
+     * index:
+     * - 0 : script file
+     * - 1 : arg 1
+     * - 2 : arg 2
+     * ...
+     * @return array
+     */
+    private static function getArguments(): array
+    {
+        return $_SERVER['argv'];
+    }
+
+    /**
+     * get argument 1
+     * @return string|null
+     */
+    private static function getArg1(): ?string
+    {
+        return self::getArguments()[1] ?? null;
+    }
+
+    /**
+     * get argument 2
+     * @return string|null
+     */
+    private static function getArg2(): ?string
+    {
+        return self::getArguments()[2] ?? null;
+    }
+
+    /**
+     * get argument 3
+     * @return string|null
+     */
+    private static function getArg3(): ?string
+    {
+        return self::getArguments()[3] ?? null;
+    }
+
+    /**
+     * get argument 4
+     * @return string|null
+     */
+    private static function getArg4(): ?string
+    {
+        return self::getArguments()[4] ?? null;
+    }
+
+    /**
+     * get argument 5
+     * @return string|null
+     */
+    private static function getArg5(): ?string
+    {
+        return self::getArguments()[5] ?? null;
+    }
+
+    // === MyOps console trait ===
+    private static function args(): MyOpsConsoleArguments
+    {
+        return new MyOpsConsoleArguments(self::getArg1(), self::getArg2(), self::getArg3(),
+            self::getArg4(), self::getArg5(), array_slice(self::getArguments(), 2));
+    }
+
+}
+
+// [REMOVED] namespace App\Traits;
+
 // [REMOVED] use App\Classes\TextLine;
 // [REMOVED] use App\Enum\IndentLevelEnum;
 
@@ -3352,7 +3470,7 @@ trait ConsoleUITrait
 
 class MyOps
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKG15b3BzIGJyYW5jaCkKZXhwb3J0IFJFUE9TSVRPUlk9JChteW9wcyByZXBvc2l0b3J5KQpleHBvcnQgSEVBRF9DT01NSVRfSUQ9JChteW9wcyBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBoYW5kbGUgYnJhbmNoZXMgdmFycyA9PT0KaWYgWyAiJHtCUkFOQ0h9IiA9ICJkZXZlbG9wIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1kZXYKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9ZGV2ZWxvcC1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0iZGV2ZWxvcC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAwCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJzdGFnaW5nIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1zdGcKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9c3RhZ2luZy1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0ic3RhZ2luZy1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAxCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjEwMCIKICBleHBvcnQgRUJfTUFJTF9DQVRDSEVSX1BPUlQ9IiAgICAiICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UgfCA0IHNwYWNlcyB0byBwYXNzIGVtcHR5IHN0cmluZwogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAyCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKIyA9PT0gRU5EID09PQoKIyA9PT0gQVdTIEFjY291bnQgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEFXU19BQ0NPVU5UX0lEPSI5ODIwODA2NzI5ODMiCmV4cG9ydCBSRUdJT049ImFwLWVhc3QtMSIKIyAgICBFQ1IgY29uZmlndXJhdGlvbgojICAgICAgICBiYXNlIGFuZCBjYWNoZXMgcmVwb3NpdG9yaWVzCmV4cG9ydCBFQ1JfUkVQT19BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19QQVlNRU5UX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtcGF5bWVudC1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlZPSUNFX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW52b2ljZS1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlRFR1JBVElPTl9BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW50ZWdyYXRpb24tYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19FTUFJTF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWVtYWlsLXNlcnZpY2UtcmVwb3NpdG9yeSIKIyAgICAgICAgbm9ybWFsIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgRWxhc3RpYyBCZWFuc3RhbGsgY29uZmlndXJhdGlvbgpleHBvcnQgUzNfRUJfQVBQX1ZFUlNJT05fQlVDS0VUX05BTUU9ImVsYXN0aWNiZWFuc3RhbGstJHtSRUdJT059LSR7QVdTX0FDQ09VTlRfSUR9IgpleHBvcnQgRUJfQVBQX1ZFUlNJT05fRk9MREVSX05BTUU9ImVuZ2FnZXBsdXMiCmV4cG9ydCBFQl9BUFBfTkFNRT0iZW5nYWdlcGx1cyIKIyA9PT0gRU5EID09PQoKIyA9PT0gRW5nYWdlUGx1cyBjb25maWd1cmF0aW9uID09PQpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRk9MREVSPSIuY2FjaGVzX2VuZ2FnZXBsdXMiCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19ESVI9IiQobXlvcHMgaG9tZS1kaXIpLyR7RU5HQUdFUExVU19DQUNIRVNfRk9MREVSfSIKZXhwb3J0IEVOR0FHRVBMVVNfQ0FDSEVTX1JFUE9TSVRPUllfRElSPSIke0VOR0FHRVBMVVNfQ0FDSEVTX0RJUn0vJHtSRVBPU0lUT1JZfSIKIyA9PT0gRU5EID09PQoKIyA9PT0gZ2V0IERFVklDRSBmcm9tIHBhcmFtIDEgPT09CmV4cG9ydCBERVZJQ0U9IiQxIgojID09PSBFTkQgPT09Cg==';
 
@@ -3382,36 +3500,31 @@ class MyOps
 
     public function run(array $argv)
     {
-        // === params ===
-        $command = $argv[1] ?? null;
-        $param1 = $argv[2] ?? null; // to use if needed
-        $param2 = $argv[3] ?? null; // to use if needed
-
         // === validation ===
-        if (!$command) {
+        if (!self::args()->command) {
             self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", AppInfoEnum::APP_MAIN_COMMAND);
             $this->help();
             exit(); // END
         }
-        if (!array_key_exists($command, CommandEnum::SUPPORT_COMMANDS())) {
-            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", $command);
+        if (!array_key_exists(self::args()->command, CommandEnum::SUPPORT_COMMANDS())) {
+            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", self::args()->command);
             $this->help();
             exit(); // END
         }
 
         // === handle ===
-        switch ($command) {
+        switch (self::args()->command) {
             // === this app ===
             case CommandEnum::HELP:
                 $this->help();
                 break;
             case CommandEnum::RELEASE:
                 // release
-                (new Release())->handle($argv);
+                (new Release())->handle();
                 break;
             case CommandEnum::VERSION:
                 // filter color
-                if ($param1 === 'no-format-color') {
+                if (self::args()->arg1 === 'no-format-color') {
                     self::lineNew()->print(MyOps::getAppVersionStr());
                     break;
                 }
@@ -3427,13 +3540,13 @@ class MyOps
                 break;
             case CommandEnum::GET_SECRET_ENV:
                 // validate
-                if (!$param1) {
+                if (!self::args()->arg1) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required secret name");
                     exit(); // END
                 }
                 // handle
-                AWSHelper::getSecretEnv($param1, $param2);
+                AWSHelper::getSecretEnv(self::args()->arg1, self::args()->arg2);
                 break;
             case CommandEnum::ELB_UPDATE_VERSION:
                 AWSHelper::ELBUpdateVersion();
@@ -3504,23 +3617,23 @@ class MyOps
             // === UI/Text ===
             case CommandEnum::TITLE:
                 // validate
-                if (!$param1) {
+                if (!self::args()->arg1) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->printTitle($param1);
+                self::LineNew()->printTitle(self::args()->arg1);
                 break;
             case CommandEnum::SUB_TITLE:
                 // validate
-                if (!$param1) {
+                if (!self::args()->arg1) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required sub title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->printSubTitle($param1);
+                self::LineNew()->printSubTitle(self::args()->arg1);
                 break;
             // === other ===
             default:

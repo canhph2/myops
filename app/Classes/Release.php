@@ -22,13 +22,14 @@ use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
 use App\MyOps;
 use App\Services\SlackService;
+use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
-use BaseHelper;
 use DateTime;
 
 class Release
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait;
+    use  ConsoleUITrait;
 
     /**
      * @return array
@@ -47,6 +48,7 @@ class Release
             DirHelper::getClassPathAndFileName(TextLine::class),
             DirHelper::getClassPathAndFileName(GitHubRepositoryInfo::class),
             DirHelper::getClassPathAndFileName(Duration::class),
+            DirHelper::getClassPathAndFileName(MyOpsConsoleArguments::class),
             // === Enum ===
             DirHelper::getClassPathAndFileName(AppInfoEnum::class),
             DirHelper::getClassPathAndFileName(CommandEnum::class),
@@ -70,6 +72,7 @@ class Release
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
+            DirHelper::getClassPathAndFileName(ConsoleBaseTrait::class),
             DirHelper::getClassPathAndFileName(ConsoleUITrait::class),
             // App file always on bottom
             DirHelper::getClassPathAndFileName(MyOps::class),
@@ -101,7 +104,7 @@ class Release
         }
     }
 
-    public function handle(array $argv): void
+    public function handle(): void
     {
         self::LineNew()->printTitle("release");
         // validate
@@ -109,7 +112,7 @@ class Release
             return; // END
         }
         //    validate version part
-        $part = $argv[2] ?? Version::PATCH; // default, empty = patch
+        $part = self::args()->arg1 ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
             self::LineTag(TagEnum::ERROR)->print("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END
@@ -126,7 +129,7 @@ class Release
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
         //        ask what news
-        $whatNewsDefault = sprintf("Release %s on %s UTC",  MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
+        $whatNewsDefault = sprintf("Release %s on %s UTC", MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
         $whatNewsInput = ucfirst(readline("What are news in this release?  (default = '$whatNewsDefault')  :"));
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
