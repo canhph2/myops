@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.3.1 ===
+// === MyOps v3.3.2 ===
 
 // === Generated libraries classes ===
 
@@ -1335,7 +1335,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.3.1';
+    const APP_VERSION = '3.3.2';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1500,27 +1500,57 @@ class GitHubEnum
     const DEVELOP = 'develop';
     const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP];
 
+    // === GitHub users ===
+    const INFOHKENGAGE = 'infohkengage';
+    const CONGNQNEXLESOFT = 'congnqnexlesoft';
+
+    // === projects / modules / services ===
+    //    backend
+    const ENGAGE_API = 'engage-api';
+    const ENGAGE_BOOKING_API = 'engage-booking-api';
+    const INVOICE_SERVICE = 'invoice-service';
+    const PAYMENT_SERVICE = 'payment-service';
+    const INTEGRATION_API = 'integration-api';
+    const EMAIL_SERVICE = 'email-service';
+    //    frontend
+    const ENGAGE_SPA = 'engage-spa';
+    const ENGAGE_BOOKING_SPA = 'engage-booking-spa';
+    //    mobile
+    const ENGAGE_MOBILE_APP = 'Engage-Mobile-App';
+    const ENGAGE_TEACHER_APP = 'engage-teacher-app';
+    //    support
+    const ENGAGE_API_DEPLOY = 'engage-api-deploy';
+    const ENGAGE_DATABASE_UTILS = 'engage-database-utils';
+    const MYOPS = 'myops';
+    const DOCKER_BASE_IMAGES = 'docker-base-images';
+    const ENGAGE_SELENIUM_TEST_1 = 'engage-selenium-test-1';
+
     /**
      * @return array
      */
     public static function GET_REPOSITORIES_INFO(): array
     {
         return [
-            new GitHubRepositoryInfo('engage-api', 'infohkengage', true),
-            new GitHubRepositoryInfo('engage-spa', 'infohkengage', true),
-            new GitHubRepositoryInfo('engage-booking-api', 'infohkengage', true),
-            new GitHubRepositoryInfo('engage-booking-spa', 'infohkengage', true),
-            new GitHubRepositoryInfo('invoice-service', 'infohkengage', true),
-            new GitHubRepositoryInfo('payment-service', 'infohkengage', true),
-            new GitHubRepositoryInfo('integration-api', 'infohkengage', true),
-            new GitHubRepositoryInfo('email-service', 'infohkengage', true),
-            //
-            new GitHubRepositoryInfo('engage-api-deploy', 'infohkengage'),
-            //
-            new GitHubRepositoryInfo('engage-database-utils', 'congnqnexlesoft'),
-            new GitHubRepositoryInfo('myops', 'congnqnexlesoft'),
-            new GitHubRepositoryInfo('docker-base-images', 'congnqnexlesoft'),
-            new GitHubRepositoryInfo('engage-selenium-test-1', 'congnqnexlesoft'),
+            // === projects / modules / services ===
+            //    backend
+            new GitHubRepositoryInfo(self::ENGAGE_API, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_API, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::INVOICE_SERVICE, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::PAYMENT_SERVICE, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::INTEGRATION_API, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::EMAIL_SERVICE, self::INFOHKENGAGE, true),
+            //    frontend
+            new GitHubRepositoryInfo(self::ENGAGE_SPA, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_SPA, self::INFOHKENGAGE, true),
+            //    mobile
+            new GitHubRepositoryInfo(self::ENGAGE_MOBILE_APP, self::INFOHKENGAGE),
+            new GitHubRepositoryInfo(self::ENGAGE_TEACHER_APP, self::INFOHKENGAGE),
+            //    support
+            new GitHubRepositoryInfo(self::ENGAGE_API_DEPLOY, self::INFOHKENGAGE),
+            new GitHubRepositoryInfo(self::ENGAGE_DATABASE_UTILS, self::CONGNQNEXLESOFT),
+            new GitHubRepositoryInfo(self::MYOPS, self::CONGNQNEXLESOFT, true),
+            new GitHubRepositoryInfo(self::DOCKER_BASE_IMAGES, self::CONGNQNEXLESOFT),
+            new GitHubRepositoryInfo(self::ENGAGE_SELENIUM_TEST_1, self::CONGNQNEXLESOFT),
         ];
     }
 }
@@ -1828,12 +1858,7 @@ class OPSHelper
         // load env into PHP
         self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
         // load caches of this source code
-        GitHubHelper::handleCachesAndGit([
-            'script path',
-            'command-name', // param 1
-            'myops', // param 2, in this case is repository
-            'main', // param 3, in this case is branch
-        ]);
+        GitHubHelper::handleCachesAndGit(GitHubEnum::MYOPS, GitHubHelper::getCurrentBranch());
         // create an alias 'myops'
         self::createAlias();
         //
@@ -2264,13 +2289,14 @@ class GitHubHelper
         ))->execMultiInWorkDir()->printOutput();
     }
 
-    public static function getBranchUsingCommand(string $workDir): ?string
+    /**
+     * @return string|null
+     */
+    public static function getCurrentBranch(): ?string
     {
-        $process = (new Process(__FUNCTION__, $workDir, [
+        return (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
-        ]))->execMultiInWorkDir()
-            ->printOutput();
-        return $process->getOutput() ? $process->getOutput()[count($process->getOutput()) - 1] : null;
+        ]))->execMultiInWorkDirAndGetOutputStr();
     }
 
     /**
@@ -2290,15 +2316,18 @@ class GitHubHelper
 
     /**
      * require envs: GITHUB_PERSONAL_ACCESS_TOKEN
+     * @param string|null $customRepository
+     * @param string|null $customBranch
+     * @return void
      */
-    public static function handleCachesAndGit()
+    public static function handleCachesAndGit(string $customRepository = null, string $customBranch = null): void
     {
         // === validate ===
         //    validate env vars
-        $repository = self::args()->arg1 ?? getenv('REPOSITORY');
-        $branch = self::args()->arg2 ?? getenv('BRANCH');
-        if ($repository === 'engage-api-deploy') {
-            $branch = self::args()->arg2 ?? getenv('API_DEPLOY_BRANCH');
+        $repository = $customRepository ?? getenv('REPOSITORY');
+        $branch = $customBranch ?? getenv('BRANCH');
+        if ($repository === GitHubEnum::ENGAGE_API_DEPLOY) {
+            $branch = $customBranch ?? getenv('API_DEPLOY_BRANCH');
         }
         $engagePlusCachesDir = getenv('ENGAGEPLUS_CACHES_DIR');
         $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
@@ -2311,8 +2340,8 @@ class GitHubHelper
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        self::LineTag(self::args()->arg1 ? 'CUSTOM' : 'ENV')->print("REPOSITORY = %s", $repository)
-            ->setTag(self::args()->arg2 ? 'CUSTOM' : 'ENV')->print("BRANCH = %s", $branch)
+        self::LineTag($customRepository ? 'CUSTOM' : 'ENV')->print("REPOSITORY = %s", $repository)
+            ->setTag($customBranch ? 'CUSTOM' : 'ENV')->print("BRANCH = %s", $branch)
             ->print("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
@@ -2445,7 +2474,7 @@ class GitHubHelper
                             ->print($message);
                         if ($duration->totalMinutes && $duration->totalMinutes > $lastSendingMinute && $duration->totalMinutes % 3 === 0) { // notify every A minutes
                             SlackService::sendMessageInternalUsing(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
-                            $lastSendingMinute =   $duration->totalMinutes;
+                            $lastSendingMinute = $duration->totalMinutes;
                         }
                         sleep(30); // loop with interval = A seconds
                     }
@@ -3197,11 +3226,11 @@ class SlackService
     private static function selectSlackChannel(): ?string
     {
         // myops | testing
-        if (getenv('REPOSITORY') === 'myops') {
+        if (getenv('REPOSITORY') === GitHubEnum::MYOPS) {
             return getenv('SLACK_CHANNEL'); // END
         }
         // database-utils
-        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('REPOSITORY') === 'engage-database-utils') {
+        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('REPOSITORY') === GitHubEnum::ENGAGE_DATABASE_UTILS) {
             return getenv('SLACK_CHANNEL_PRODUCTION'); // END
         }
         // master branches

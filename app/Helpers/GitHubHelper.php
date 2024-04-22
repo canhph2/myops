@@ -84,13 +84,14 @@ class GitHubHelper
         ))->execMultiInWorkDir()->printOutput();
     }
 
-    public static function getBranchUsingCommand(string $workDir): ?string
+    /**
+     * @return string|null
+     */
+    public static function getCurrentBranch(): ?string
     {
-        $process = (new Process(__FUNCTION__, $workDir, [
+        return (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
-        ]))->execMultiInWorkDir()
-            ->printOutput();
-        return $process->getOutput() ? $process->getOutput()[count($process->getOutput()) - 1] : null;
+        ]))->execMultiInWorkDirAndGetOutputStr();
     }
 
     /**
@@ -110,15 +111,18 @@ class GitHubHelper
 
     /**
      * require envs: GITHUB_PERSONAL_ACCESS_TOKEN
+     * @param string|null $customRepository
+     * @param string|null $customBranch
+     * @return void
      */
-    public static function handleCachesAndGit()
+    public static function handleCachesAndGit(string $customRepository = null, string $customBranch = null): void
     {
         // === validate ===
         //    validate env vars
-        $repository = self::args()->arg1 ?? getenv('REPOSITORY');
-        $branch = self::args()->arg2 ?? getenv('BRANCH');
-        if ($repository === 'engage-api-deploy') {
-            $branch = self::args()->arg2 ?? getenv('API_DEPLOY_BRANCH');
+        $repository = $customRepository ?? getenv('REPOSITORY');
+        $branch = $customBranch ?? getenv('BRANCH');
+        if ($repository === GitHubEnum::ENGAGE_API_DEPLOY) {
+            $branch = $customBranch ?? getenv('API_DEPLOY_BRANCH');
         }
         $engagePlusCachesDir = getenv('ENGAGEPLUS_CACHES_DIR');
         $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
@@ -131,8 +135,8 @@ class GitHubHelper
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        self::LineTag(self::args()->arg1 ? 'CUSTOM' : 'ENV')->print("REPOSITORY = %s", $repository)
-            ->setTag(self::args()->arg2 ? 'CUSTOM' : 'ENV')->print("BRANCH = %s", $branch)
+        self::LineTag($customRepository ? 'CUSTOM' : 'ENV')->print("REPOSITORY = %s", $repository)
+            ->setTag($customBranch ? 'CUSTOM' : 'ENV')->print("BRANCH = %s", $branch)
             ->print("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
@@ -265,7 +269,7 @@ class GitHubHelper
                             ->print($message);
                         if ($duration->totalMinutes && $duration->totalMinutes > $lastSendingMinute && $duration->totalMinutes % 3 === 0) { // notify every A minutes
                             SlackService::sendMessageInternalUsing(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
-                            $lastSendingMinute =   $duration->totalMinutes;
+                            $lastSendingMinute = $duration->totalMinutes;
                         }
                         sleep(30); // loop with interval = A seconds
                     }

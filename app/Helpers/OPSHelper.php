@@ -93,12 +93,7 @@ class OPSHelper
         // load env into PHP
         self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
         // load caches of this source code
-        GitHubHelper::handleCachesAndGit([
-            'script path',
-            'command-name', // param 1
-            'myops', // param 2, in this case is repository
-            'main', // param 3, in this case is branch
-        ]);
+        GitHubHelper::handleCachesAndGit(GitHubEnum::MYOPS, GitHubHelper::getCurrentBranch());
         // create an alias 'myops'
         self::createAlias();
         //

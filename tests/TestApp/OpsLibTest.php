@@ -2,6 +2,7 @@
 
 namespace TestApp;
 
+require_once 'app/Traits/ConsoleBaseTrait.php';
 require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Classes/Version.php';
 require_once 'app/Classes/Process.php';

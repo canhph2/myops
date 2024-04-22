@@ -24,27 +24,57 @@ class GitHubEnum
     const DEVELOP = 'develop';
     const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP];
 
+    // === GitHub users ===
+    const INFOHKENGAGE = 'infohkengage';
+    const CONGNQNEXLESOFT = 'congnqnexlesoft';
+
+    // === projects / modules / services ===
+    //    backend
+    const ENGAGE_API = 'engage-api';
+    const ENGAGE_BOOKING_API = 'engage-booking-api';
+    const INVOICE_SERVICE = 'invoice-service';
+    const PAYMENT_SERVICE = 'payment-service';
+    const INTEGRATION_API = 'integration-api';
+    const EMAIL_SERVICE = 'email-service';
+    //    frontend
+    const ENGAGE_SPA = 'engage-spa';
+    const ENGAGE_BOOKING_SPA = 'engage-booking-spa';
+    //    mobile
+    const ENGAGE_MOBILE_APP = 'Engage-Mobile-App';
+    const ENGAGE_TEACHER_APP = 'engage-teacher-app';
+    //    support
+    const ENGAGE_API_DEPLOY = 'engage-api-deploy';
+    const ENGAGE_DATABASE_UTILS = 'engage-database-utils';
+    const MYOPS = 'myops';
+    const DOCKER_BASE_IMAGES = 'docker-base-images';
+    const ENGAGE_SELENIUM_TEST_1 = 'engage-selenium-test-1';
+
     /**
      * @return array
      */
     public static function GET_REPOSITORIES_INFO(): array
     {
         return [
-            new GitHubRepositoryInfo('engage-api', 'infohkengage', true),
-            new GitHubRepositoryInfo('engage-spa', 'infohkengage', true),
-            new GitHubRepositoryInfo('engage-booking-api', 'infohkengage', true),
-            new GitHubRepositoryInfo('engage-booking-spa', 'infohkengage', true),
-            new GitHubRepositoryInfo('invoice-service', 'infohkengage', true),
-            new GitHubRepositoryInfo('payment-service', 'infohkengage', true),
-            new GitHubRepositoryInfo('integration-api', 'infohkengage', true),
-            new GitHubRepositoryInfo('email-service', 'infohkengage', true),
-            //
-            new GitHubRepositoryInfo('engage-api-deploy', 'infohkengage'),
-            //
-            new GitHubRepositoryInfo('engage-database-utils', 'congnqnexlesoft'),
-            new GitHubRepositoryInfo('myops', 'congnqnexlesoft'),
-            new GitHubRepositoryInfo('docker-base-images', 'congnqnexlesoft'),
-            new GitHubRepositoryInfo('engage-selenium-test-1', 'congnqnexlesoft'),
+            // === projects / modules / services ===
+            //    backend
+            new GitHubRepositoryInfo(self::ENGAGE_API, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_API, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::INVOICE_SERVICE, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::PAYMENT_SERVICE, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::INTEGRATION_API, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::EMAIL_SERVICE, self::INFOHKENGAGE, true),
+            //    frontend
+            new GitHubRepositoryInfo(self::ENGAGE_SPA, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_SPA, self::INFOHKENGAGE, true),
+            //    mobile
+            new GitHubRepositoryInfo(self::ENGAGE_MOBILE_APP, self::INFOHKENGAGE),
+            new GitHubRepositoryInfo(self::ENGAGE_TEACHER_APP, self::INFOHKENGAGE),
+            //    support
+            new GitHubRepositoryInfo(self::ENGAGE_API_DEPLOY, self::INFOHKENGAGE),
+            new GitHubRepositoryInfo(self::ENGAGE_DATABASE_UTILS, self::CONGNQNEXLESOFT),
+            new GitHubRepositoryInfo(self::MYOPS, self::CONGNQNEXLESOFT, true),
+            new GitHubRepositoryInfo(self::DOCKER_BASE_IMAGES, self::CONGNQNEXLESOFT),
+            new GitHubRepositoryInfo(self::ENGAGE_SELENIUM_TEST_1, self::CONGNQNEXLESOFT),
         ];
     }
 }
