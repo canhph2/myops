@@ -63,7 +63,7 @@ class MyOps
 
     }
 
-    public function run(array $argv)
+    public function run()
     {
         // === validation ===
         if (!self::args()->command) {
@@ -127,7 +127,7 @@ class MyOps
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
                 break;
             case CommandEnum::HANDLE_CACHES_AND_GIT:
-                GitHubHelper::handleCachesAndGit($argv);
+                GitHubHelper::handleCachesAndGit();
                 break;
             case CommandEnum::FORCE_CHECKOUT:
                 GitHubHelper::forceCheckout();
@@ -138,10 +138,10 @@ class MyOps
                 break;
             // === Docker ===
             case CommandEnum::DOCKER_KEEP_IMAGE_BY:
-                DockerHelper::keepImageBy($argv);
+                DockerHelper::keepImageBy();
                 break;
             case CommandEnum::DOCKER_FILE_ADD_ENVS:
-                DockerHelper::DockerfileAddEnvs($argv);
+                DockerHelper::DockerfileAddEnvs();
                 break;
             // === utils ===
             case CommandEnum::HOME_DIR:
@@ -154,16 +154,16 @@ class MyOps
                 echo DirHelper::getWorkingDir();
                 break;
             case CommandEnum::REPLACE_TEXT_IN_FILE:
-                StrHelper::replaceTextInFile($argv);
+                StrHelper::replaceTextInFile();
                 break;
             case CommandEnum::SLACK:
-                SlackService::sendMessage($argv);
+                SlackService::sendMessage();
                 break;
             case CommandEnum::TMP:
-                DirHelper::tmp($argv);
+                DirHelper::tmp();
                 break;
             case CommandEnum::POST_WORK:
-                OPSHelper::postWork($argv);
+                OPSHelper::postWork();
                 break;
             case CommandEnum::CLEAR_OPS_DIR:
                 OPSHelper::clearOpsDir();
@@ -177,7 +177,7 @@ class MyOps
                 break;
             // === validation ===
             case CommandEnum::VALIDATE:
-                OPSHelper::validate($argv);
+                OPSHelper::validate();
                 break;
             // === UI/Text ===
             case CommandEnum::TITLE:
@@ -249,5 +249,5 @@ class MyOps
 // === end class zone ====
 
 // === execute zone ===
-(new MyOps())->run($argv);
+(new MyOps())->run();
 // === end execute zone ===

@@ -10,6 +10,7 @@ use App\Enum\TagEnum;
 use App\Enum\UIEnum;
 use App\Classes\DockerImage;
 use App\Classes\Process;
+use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
 /**
@@ -17,7 +18,7 @@ use App\Traits\ConsoleUITrait;
  */
 class DockerHelper
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     public static function isDockerInstalled(): bool
     {
@@ -28,14 +29,13 @@ class DockerHelper
     /**
      * keep image by repository name with specific tag, use for keep latest image
      *
-     * @param array $argv
      * @return void
      */
-    public static function keepImageBy(array $argv): void
+    public static function keepImageBy(): void
     {
         // === param ===
-        $imageRepository = $argv[2] ?? null;
-        $imageTag = $argv[3] ?? null;
+        $imageRepository = self::args()->arg1;
+        $imageTag = self::args()->arg2;
         // === validate ===
         if (!$imageRepository || !$imageTag) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
@@ -88,14 +88,13 @@ class DockerHelper
     /**
      * add ENVs into Dockerfile below FROM line. Required: DockerfilePath, secretName
      *
-     * @param array $argv
      * @return void
      */
-    public static function DockerfileAddEnvs(array $argv): void
+    public static function DockerfileAddEnvs(): void
     {
         // === param ===
-        $DockerfilePath = $argv[2] ?? null;
-        $secretName = $argv[3] ?? null;
+        $DockerfilePath = self::args()->arg1;
+        $secretName = self::args()->arg2;
         // === validate ===
         if (!$DockerfilePath || !$secretName) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])

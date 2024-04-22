@@ -39,14 +39,14 @@ class SlackService
     }
 
     /**
-     * @param array $argv
+     *  //todo check use internal
      * @return void
      */
-    public static function sendMessage(array $argv)
+    public static function sendMessage()
     {
         // === validate ===
         //    validate a message
-        $message = $argv[2] ?? null;
+        $message = self::args()->arg1;
         if (!$message) {
             self::LineTag(TagEnum::ERROR)->print("missing a MESSAGE");
             exit(); // END

@@ -13,7 +13,7 @@ use App\Enum\TagEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\Classes\Process;
-use App\MyOps;
+use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
 /**
@@ -21,7 +21,7 @@ use App\Traits\ConsoleUITrait;
  */
 class OPSHelper
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     const COMPOSER_CONFIG_GITHUB_AUTH_FILE = 'auth.json';
 
@@ -187,13 +187,12 @@ class OPSHelper
     /**
      * do some post works:
      * - cleanup
-     * @param array $argv
      * @return void
      */
-    public static function postWork(array $argv): void
+    public static function postWork(): void
     {
         // === param ===
-        $isSkipCheckDir = ($argv[2] ?? null) === PostWorkEnum::SKIP_CHECK_DIR;
+        $isSkipCheckDir = self::args()->arg1 === PostWorkEnum::SKIP_CHECK_DIR;
         //
         self::LineNew()->printTitle("Post works");
         if ($isSkipCheckDir) {
@@ -331,9 +330,9 @@ class OPSHelper
         return true; // END | case OK
     }
 
-    public static function validate(array $argv)
+    public static function validate()
     {
-        switch ($argv[2] ?? null) {
+        switch (self::args()->arg1) {
             case ValidationTypeEnum::BRANCH:
                 self::validateBranch();
                 break;
@@ -344,7 +343,7 @@ class OPSHelper
                 self::validateDevice();
                 break;
             case ValidationTypeEnum::FILE_CONTAINS_TEXT:
-                self::validateFileContainsText($argv);
+                self::validateFileContainsText();
                 break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
@@ -400,24 +399,24 @@ class OPSHelper
         }
     }
 
-    private static function validateFileContainsText(array $argv)
+    private static function validateFileContainsText()
     {
         // validate
-        $filePath = $argv[3] ?? null;
+        $filePath = self::args()->arg2;
         $searchTextArr = [];
-        for ($i = 4; $i < 20; $i++) {
-            if (count($argv) > $i)
-                if ($argv[$i]) {
-                    $searchTextArr[] = $argv[$i];
+        for ($i = 3; $i < 20; $i++) {
+            if (count(self::args()->argsAll) > $i)
+                if (self::args()->argsAll[$i]) {
+                    $searchTextArr[] = self::args()->argsAll[$i];
                 }
         }
         if (!$filePath || !count($searchTextArr)) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
-            exit(1);
+            exit(1); // END
         }
         if (!is_file($filePath)) {
             self::LineTag(TagEnum::ERROR)->print("'%s' does not exist", $filePath);
-            exit(1);
+            exit(1); // END
         }
         // handle
         $fileContent = file_get_contents($filePath);
@@ -441,7 +440,7 @@ class OPSHelper
                     ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
                     ->print($result['searchText']);
             }
-            exit(1);
+            exit(1); // END
         }
     }
 }

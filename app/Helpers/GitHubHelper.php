@@ -11,6 +11,7 @@ use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
 use App\Services\SlackService;
+use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 use DateTime;
 
@@ -19,7 +20,7 @@ use DateTime;
  */
 class GitHubHelper
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     /**
      * @param string $name
@@ -110,17 +111,14 @@ class GitHubHelper
     /**
      * require envs: GITHUB_PERSONAL_ACCESS_TOKEN
      */
-    public static function handleCachesAndGit(array $argv)
+    public static function handleCachesAndGit()
     {
-        // === param ===
-        $param2 = $argv[2] ?? null;
-        $param3 = $argv[3] ?? null;
         // === validate ===
         //    validate env vars
-        $repository = $param2 ?? getenv('REPOSITORY');
-        $branch = $param3 ?? getenv('BRANCH');
+        $repository = self::args()->arg1 ?? getenv('REPOSITORY');
+        $branch = self::args()->arg2 ?? getenv('BRANCH');
         if ($repository === 'engage-api-deploy') {
-            $branch = $param3 ?? getenv('API_DEPLOY_BRANCH');
+            $branch = self::args()->arg2 ?? getenv('API_DEPLOY_BRANCH');
         }
         $engagePlusCachesDir = getenv('ENGAGEPLUS_CACHES_DIR');
         $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
@@ -133,8 +131,8 @@ class GitHubHelper
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        self::LineTag($param2 ? 'CUSTOM' : 'ENV')->print("REPOSITORY = %s", $repository)
-            ->setTag($param3 ? 'CUSTOM' : 'ENV')->print("BRANCH = %s", $branch)
+        self::LineTag(self::args()->arg1 ? 'CUSTOM' : 'ENV')->print("REPOSITORY = %s", $repository)
+            ->setTag(self::args()->arg2 ? 'CUSTOM' : 'ENV')->print("BRANCH = %s", $branch)
             ->print("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
