@@ -7,7 +7,7 @@ require_once 'app/Helpers/AppHelper.php';
 // Notes: should require all traits here to use in classes
 require_once 'app/Traits/ConsoleBaseTrait.php';
 require_once 'app/Traits/ConsoleUITrait.php';
-//
+// Notes: should put DirHelper at bottom of require zone
 require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
