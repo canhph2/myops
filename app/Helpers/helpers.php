@@ -1,5 +1,7 @@
 <?php
 
+// === helpers functions ===
+
 if (!function_exists('dd')) {
     /**
      * @param mixed ...$vars
@@ -13,3 +15,6 @@ if (!function_exists('dd')) {
         die();
     }
 }
+
+
+// === end helpers functions ===

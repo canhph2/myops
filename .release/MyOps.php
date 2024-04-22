@@ -1,9 +1,11 @@
 <?php
-// === MyOps v3.2.56 ===
+// === MyOps v3.2.57 ===
 
 // === Generated libraries classes ===
 
 
+
+// === helpers functions ===
 
 if (!function_exists('dd')) {
     /**
@@ -18,6 +20,9 @@ if (!function_exists('dd')) {
         die();
     }
 }
+
+
+// === end helpers functions ===
 
 // [REMOVED] namespace App\Classes;
 
@@ -1285,7 +1290,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.56';
+    const APP_VERSION = '3.2.57';
 }
 
 // [REMOVED] namespace App\Enum;
