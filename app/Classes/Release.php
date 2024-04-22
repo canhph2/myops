@@ -23,6 +23,7 @@ use App\Helpers\StrHelper;
 use App\MyOps;
 use App\Services\SlackService;
 use App\Traits\ConsoleUITrait;
+use BaseHelper;
 use DateTime;
 
 class Release
@@ -36,6 +37,8 @@ class Release
     public static function GET_FILES_LIST(): array
     {
         return [
+            // === raw ===
+            'app/Helpers/helpers.php',
             // === Classes ===
             DirHelper::getClassPathAndFileName(Release::class),
             DirHelper::getClassPathAndFileName(Process::class),

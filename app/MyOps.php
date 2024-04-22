@@ -2,6 +2,7 @@
 
 namespace App;
 
+require_once 'app/Helpers/helpers.php';
 require_once 'app/Helpers/AppHelper.php';
 require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Helpers/DirHelper.php';
@@ -91,7 +92,7 @@ class MyOps
                 break;
             case CommandEnum::VERSION:
                 // filter color
-                if($param1 === 'no-format-color'){
+                if ($param1 === 'no-format-color') {
                     self::lineNew()->print(MyOps::getAppVersionStr());
                     break;
                 }

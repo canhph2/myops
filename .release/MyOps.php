@@ -1,9 +1,23 @@
 <?php
-// === MyOps v3.2.54 ===
+// === MyOps v3.2.56 ===
 
 // === Generated libraries classes ===
 
 
+
+if (!function_exists('dd')) {
+    /**
+     * @param mixed ...$vars
+     * @return void
+     */
+    function dd(...$vars): void
+    {
+        foreach ($vars as $var) {
+            var_dump($var);
+        }
+        die();
+    }
+}
 
 // [REMOVED] namespace App\Classes;
 
@@ -28,6 +42,7 @@
 // [REMOVED] use App\MyOps;
 // [REMOVED] use App\Services\SlackService;
 // [REMOVED] use App\Traits\ConsoleUITrait;
+// [REMOVED] use BaseHelper;
 // [REMOVED] use DateTime;
 
 class Release
@@ -41,6 +56,8 @@ class Release
     public static function GET_FILES_LIST(): array
     {
         return [
+            // === raw ===
+            'app/Helpers/helpers.php',
             // === Classes ===
             DirHelper::getClassPathAndFileName(Release::class),
             DirHelper::getClassPathAndFileName(Process::class),
@@ -1268,7 +1285,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.54';
+    const APP_VERSION = '3.2.56';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3389,7 +3406,7 @@ class MyOps
                 break;
             case CommandEnum::VERSION:
                 // filter color
-                if($param1 === 'no-format-color'){
+                if ($param1 === 'no-format-color') {
                     self::lineNew()->print(MyOps::getAppVersionStr());
                     break;
                 }
