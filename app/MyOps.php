@@ -11,6 +11,9 @@ require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
+use App\Classes\Base\CustomCollection;
+use App\Classes\Duration;
+use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Release;
 use App\Classes\Version;
 use App\Enum\AppInfoEnum;
@@ -66,19 +69,19 @@ class MyOps
     public function run()
     {
         // === validation ===
-        if (!self::args()->command) {
+        if (!self::command()) {
             self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", AppInfoEnum::APP_MAIN_COMMAND);
             $this->help();
             exit(); // END
         }
-        if (!array_key_exists(self::args()->command, CommandEnum::SUPPORT_COMMANDS())) {
-            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", self::args()->command);
+        if (!array_key_exists(self::command(), CommandEnum::SUPPORT_COMMANDS())) {
+            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", self::command());
             $this->help();
             exit(); // END
         }
 
         // === handle ===
-        switch (self::args()->command) {
+        switch (self::command()) {
             // === this app ===
             case CommandEnum::HELP:
                 $this->help();
@@ -89,7 +92,7 @@ class MyOps
                 break;
             case CommandEnum::VERSION:
                 // filter color
-                if (self::args()->arg1 === 'no-format-color') {
+                if (self::arg(1) === 'no-format-color') {
                     self::lineNew()->print(MyOps::getAppVersionStr());
                     break;
                 }
@@ -105,13 +108,13 @@ class MyOps
                 break;
             case CommandEnum::GET_SECRET_ENV:
                 // validate
-                if (!self::args()->arg1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required secret name");
                     exit(); // END
                 }
                 // handle
-                AWSHelper::getSecretEnv(self::args()->arg1, self::args()->arg2);
+                AWSHelper::getSecretEnv(self::arg(1), self::arg(2));
                 break;
             case CommandEnum::ELB_UPDATE_VERSION:
                 AWSHelper::ELBUpdateVersion();
@@ -182,23 +185,23 @@ class MyOps
             // === UI/Text ===
             case CommandEnum::TITLE:
                 // validate
-                if (!self::args()->arg1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->printTitle(self::args()->arg1);
+                self::LineNew()->printTitle(self::arg(1));
                 break;
             case CommandEnum::SUB_TITLE:
                 // validate
-                if (!self::args()->arg1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required sub title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->printSubTitle(self::args()->arg1);
+                self::LineNew()->printSubTitle(self::arg(1));
                 break;
             // === other ===
             default:

@@ -71,7 +71,7 @@ class DirHelper
      */
     public static function tmp(): void
     {
-        switch (self::args()->arg1) {
+        switch (self::arg(1)) {
             case 'add':
                 if (is_dir(self::getWorkingDir('tmp'))) {
                     $commands[] = sprintf("rm -rf '%s'", self::getWorkingDir('tmp'));

@@ -46,7 +46,7 @@ class SlackService
     {
         // === validate ===
         //    validate a message
-        $message = self::args()->arg1;
+        $message = self::arg(1);
         if (!$message) {
             self::LineTag(TagEnum::ERROR)->print("missing a MESSAGE");
             exit(); // END

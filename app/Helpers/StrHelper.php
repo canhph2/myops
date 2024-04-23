@@ -61,9 +61,9 @@ class StrHelper
     {
 // === validate ===
 //    validate a message
-        $searchText = self::args()->arg1;
-        $replaceText = self::args()->arg2;
-        $filePath = self::args()->arg3;
+        $searchText = self::arg(1);
+        $replaceText = self::arg(2);
+        $filePath = self::arg(3);
         if (!$searchText || is_null($replaceText) || !$filePath) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                 ->print("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");

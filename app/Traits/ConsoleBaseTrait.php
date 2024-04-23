@@ -2,73 +2,71 @@
 
 namespace App\Traits;
 
-use App\Classes\MyOpsConsoleArguments;
+use App\Classes\Base\CustomCollection;
 
 trait ConsoleBaseTrait
 {
     /**
-     * index:
+     * indexes:
      * - 0 : script file
      * - 1 : arg 1
      * - 2 : arg 2
      * ...
      * @return array
      */
-    private static function getArguments(): array
+    private static function getPHPArgs(): array
     {
         return $_SERVER['argv'];
     }
 
     /**
-     * get argument 1
+     * indexArg:
+     * - 0 : script file
+     * - 1 : arg 1
+     * - 2 : arg 2
+     * ...
+     * @param int $indexPHPArg
      * @return string|null
      */
-    private static function getArg1(): ?string
+    private static function getPHPArg(int $indexPHPArg = 0): ?string
     {
-        return self::getArguments()[1] ?? null;
+        return self::getPHPArgs()[$indexPHPArg] ?? null;
     }
 
     /**
-     * get argument 2
+     * === MyOps console trait ===
+     * - this is MyOps app args organization with format: <app name> (#1) command (#2) arg1 (#3) arg 2
+     * - usage:
+     *   - get MyOps command command()
+     *   - get MyOps arg 1  arg(1)
+     *   - get MyOps arg 2  arg(2)
+     *   - get MyOps arg all args()
+     */
+
+    /**
      * @return string|null
      */
-    private static function getArg2(): ?string
+    private static function command(): ?string
     {
-        return self::getArguments()[2] ?? null;
+        return self::getPHPArg(1);
     }
 
     /**
-     * get argument 3
+     * required: 1 <= $myOpsArgeIndex <= A
+     * @param int $myOpsArgIndex
      * @return string|null
      */
-    private static function getArg3(): ?string
+    private static function arg(int $myOpsArgIndex = 1): ?string
     {
-        return self::getArguments()[3] ?? null;
+        return self::getPHPArg($myOpsArgIndex + 1);
     }
 
     /**
-     * get argument 4
-     * @return string|null
+     * @return CustomCollection
      */
-    private static function getArg4(): ?string
+    private static function args(): CustomCollection
     {
-        return self::getArguments()[4] ?? null;
-    }
-
-    /**
-     * get argument 5
-     * @return string|null
-     */
-    private static function getArg5(): ?string
-    {
-        return self::getArguments()[5] ?? null;
-    }
-
-    // === MyOps console trait ===
-    private static function args(): MyOpsConsoleArguments
-    {
-        return new MyOpsConsoleArguments(self::getArg1(), self::getArg2(), self::getArg3(),
-            self::getArg4(), self::getArg5(), array_slice(self::getArguments(), 2));
+        return new CustomCollection(array_slice(self::getPHPArgs(), 2));
     }
 
 }

@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Classes\Base\CustomCollection;
 use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Release;
 use App\Enum\AppInfoEnum;
@@ -184,7 +185,7 @@ class OPSHelper
     public static function postWork(): void
     {
         // === param ===
-        $isSkipCheckDir = self::args()->arg1 === PostWorkEnum::SKIP_CHECK_DIR;
+        $isSkipCheckDir = self::arg(1) === PostWorkEnum::SKIP_CHECK_DIR;
         //
         self::LineNew()->printTitle("Post works");
         if ($isSkipCheckDir) {
@@ -324,7 +325,7 @@ class OPSHelper
 
     public static function validate()
     {
-        switch (self::args()->arg1) {
+        switch (self::arg(1)) {
             case ValidationTypeEnum::BRANCH:
                 self::validateBranch();
                 break;
@@ -394,15 +395,15 @@ class OPSHelper
     private static function validateFileContainsText(string $customFilePath = null, ...$customSearchTexts)
     {
         // validate
-        $filePath = $customFilePath ?? self::args()->arg2;
-        $searchTextArr = count($customSearchTexts) ? $customSearchTexts : [];
+        $filePath = $customFilePath ?? self::arg(2);
+        $searchTexts = new CustomCollection($customSearchTexts);
         for ($i = 3; $i < 20; $i++) {
-            if (count(self::args()->argsAll) > $i)
-                if (self::args()->argsAll[$i]) {
-                    $searchTextArr[] = self::args()->argsAll[$i];
+            if (self::args()->count() > $i)
+                if (self::args()->get($i)) {
+                    $searchTexts->add(self::args()->get($i));
                 }
         }
-        if (!$filePath || !count($searchTextArr)) {
+        if (!$filePath || $searchTexts->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
             exit(1); // END
         }
@@ -413,7 +414,7 @@ class OPSHelper
         // handle
         $fileContent = file_get_contents($filePath);
         $validationResult = [];
-        foreach ($searchTextArr as $searchText) {
+        foreach ($searchTexts as $searchText) {
             $validationResult[] = [
                 'searchText' => $searchText,
                 'isContains' => StrHelper::contains($fileContent, $searchText)
@@ -422,8 +423,8 @@ class OPSHelper
         $amountValidationPass = count(array_filter($validationResult, function ($item) {
             return $item['isContains'];
         }));
-        if ($amountValidationPass === count($searchTextArr)) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTextArr));
+        if ($amountValidationPass === $searchTexts->count()) {
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
         } else {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->print("file '%s' does not contains (some) text(s):", $filePath);
             foreach ($validationResult as $result) {

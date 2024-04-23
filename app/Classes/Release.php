@@ -2,6 +2,7 @@
 
 namespace App\Classes;
 
+use App\Classes\Base\CustomCollection;
 use App\Enum\AppInfoEnum;
 use App\Enum\CommandEnum;
 use App\Enum\DockerEnum;
@@ -41,6 +42,9 @@ class Release
             // === raw ===
             'app/Helpers/helpers.php',
             // === Classes ===
+            //    base
+            DirHelper::getClassPathAndFileName(CustomCollection::class),
+            //    normal
             DirHelper::getClassPathAndFileName(Release::class),
             DirHelper::getClassPathAndFileName(Process::class),
             DirHelper::getClassPathAndFileName(Version::class),
@@ -48,7 +52,6 @@ class Release
             DirHelper::getClassPathAndFileName(TextLine::class),
             DirHelper::getClassPathAndFileName(GitHubRepositoryInfo::class),
             DirHelper::getClassPathAndFileName(Duration::class),
-            DirHelper::getClassPathAndFileName(MyOpsConsoleArguments::class),
             // === Enum ===
             DirHelper::getClassPathAndFileName(AppInfoEnum::class),
             DirHelper::getClassPathAndFileName(CommandEnum::class),
@@ -112,7 +115,7 @@ class Release
             return; // END
         }
         //    validate version part
-        $part = self::args()->arg1 ?? Version::PATCH; // default, empty = patch
+        $part = self::arg(1) ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
             self::LineTag(TagEnum::ERROR)->print("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END

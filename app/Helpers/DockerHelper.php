@@ -34,8 +34,8 @@ class DockerHelper
     public static function keepImageBy(): void
     {
         // === param ===
-        $imageRepository = self::args()->arg1;
-        $imageTag = self::args()->arg2;
+        $imageRepository = self::arg(1);
+        $imageTag = self::arg(2);
         // === validate ===
         if (!$imageRepository || !$imageTag) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
@@ -93,8 +93,8 @@ class DockerHelper
     public static function DockerfileAddEnvs(): void
     {
         // === param ===
-        $DockerfilePath = self::args()->arg1;
-        $secretName = self::args()->arg2;
+        $DockerfilePath = self::arg(1);
+        $secretName = self::arg(2);
         // === validate ===
         if (!$DockerfilePath || !$secretName) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])

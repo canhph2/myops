@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.3.3 ===
+// === MyOps v3.3.4 ===
 
 // === Generated libraries classes ===
 
@@ -23,8 +23,86 @@ if (!function_exists('dd')) {
 
 // === end helpers functions ===
 
+// [REMOVED] namespace App\Classes\Base;
+
+// [REMOVED] use ArrayIterator;
+// [REMOVED] use IteratorAggregate;
+
+class CustomCollection implements IteratorAggregate
+{
+    /** @var array */
+    private $items;
+
+    /**
+     * @param array $items
+     */
+    public function __construct(array $items = [])
+    {
+        $this->items = $items;
+    }
+
+    /**
+     * @return int
+     */
+    public function count(): int
+    {
+        return count($this->items);
+    }
+
+    public function isEmpty(): bool
+    {
+        return !$this->count();
+    }
+
+    /**
+     * get item at position index A
+     * @param int $index
+     * @return mixed|null
+     */
+    public function get(int $index)
+    {
+        return $this->items[$index] ?? null;
+    }
+
+    /**
+     * add an item to collection
+     * @param $item
+     * @return CustomCollection
+     */
+    public function add($item):CustomCollection
+    {
+        $this->items[] = $item;
+        return $this;
+    }
+
+    /**
+     * @param array|CustomCollection $arrOrCustomCollection
+     * @return CustomCollection
+     */
+    public function merge($arrOrCustomCollection):CustomCollection
+    {
+        $this->items = array_merge($this->items,
+            $arrOrCustomCollection instanceof self ? $arrOrCustomCollection->toArr() : $arrOrCustomCollection);
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function toArr(): array
+    {
+        return $this->items;
+    }
+
+    public function getIterator(): ArrayIterator
+    {
+        return new ArrayIterator($this->items);
+    }
+}
+
 // [REMOVED] namespace App\Classes;
 
+// [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Enum\AppInfoEnum;
 // [REMOVED] use App\Enum\CommandEnum;
 // [REMOVED] use App\Enum\DockerEnum;
@@ -64,6 +142,9 @@ class Release
             // === raw ===
             'app/Helpers/helpers.php',
             // === Classes ===
+            //    base
+            DirHelper::getClassPathAndFileName(CustomCollection::class),
+            //    normal
             DirHelper::getClassPathAndFileName(Release::class),
             DirHelper::getClassPathAndFileName(Process::class),
             DirHelper::getClassPathAndFileName(Version::class),
@@ -71,7 +152,6 @@ class Release
             DirHelper::getClassPathAndFileName(TextLine::class),
             DirHelper::getClassPathAndFileName(GitHubRepositoryInfo::class),
             DirHelper::getClassPathAndFileName(Duration::class),
-            DirHelper::getClassPathAndFileName(MyOpsConsoleArguments::class),
             // === Enum ===
             DirHelper::getClassPathAndFileName(AppInfoEnum::class),
             DirHelper::getClassPathAndFileName(CommandEnum::class),
@@ -135,7 +215,7 @@ class Release
             return; // END
         }
         //    validate version part
-        $part = self::args()->arg1 ?? Version::PATCH; // default, empty = patch
+        $part = self::arg(1) ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
             self::LineTag(TagEnum::ERROR)->print("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END
@@ -1285,49 +1365,6 @@ class Duration
     }
 }
 
-// [REMOVED] namespace App\Classes;
-
-class MyOpsConsoleArguments
-{
-    /** @var string|null */
-    public $command;
-
-    /** @var string|null */
-    public $arg1;
-
-    /** @var string|null */
-    public $arg2;
-
-    /** @var string|null */
-    public $arg3;
-
-    /** @var string|null */
-    public $arg4;
-
-    /** @var array */
-    public $argsAll;
-
-    /**
-     * @param string|null $command
-     * @param string|null $arg1
-     * @param string|null $arg2
-     * @param string|null $arg3
-     * @param string|null $arg4
-     * @param array $argsAll
-     */
-    public function __construct(string $command = null, string $arg1 = null, string $arg2 = null,
-                                string $arg3 = null, string $arg4 = null, array $argsAll = [])
-    {
-        $this->command = $command;
-        $this->arg1 = $arg1;
-        $this->arg2 = $arg2;
-        $this->arg3 = $arg3;
-        $this->arg4 = $arg4;
-        $this->argsAll = $argsAll;
-    }
-
-}
-
 // [REMOVED] namespace App\Enum;
 
 class AppInfoEnum
@@ -1335,7 +1372,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.3.3';
+    const APP_VERSION = '3.3.4';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1720,7 +1757,7 @@ class DirHelper
      */
     public static function tmp(): void
     {
-        switch (self::args()->arg1) {
+        switch (self::arg(1)) {
             case 'add':
                 if (is_dir(self::getWorkingDir('tmp'))) {
                     $commands[] = sprintf("rm -rf '%s'", self::getWorkingDir('tmp'));
@@ -1767,6 +1804,7 @@ class DirHelper
 
 // [REMOVED] namespace App\Helpers;
 
+// [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Classes\GitHubRepositoryInfo;
 // [REMOVED] use App\Classes\Release;
 // [REMOVED] use App\Enum\AppInfoEnum;
@@ -1949,7 +1987,7 @@ class OPSHelper
     public static function postWork(): void
     {
         // === param ===
-        $isSkipCheckDir = self::args()->arg1 === PostWorkEnum::SKIP_CHECK_DIR;
+        $isSkipCheckDir = self::arg(1) === PostWorkEnum::SKIP_CHECK_DIR;
         //
         self::LineNew()->printTitle("Post works");
         if ($isSkipCheckDir) {
@@ -2089,7 +2127,7 @@ class OPSHelper
 
     public static function validate()
     {
-        switch (self::args()->arg1) {
+        switch (self::arg(1)) {
             case ValidationTypeEnum::BRANCH:
                 self::validateBranch();
                 break;
@@ -2159,15 +2197,15 @@ class OPSHelper
     private static function validateFileContainsText(string $customFilePath = null, ...$customSearchTexts)
     {
         // validate
-        $filePath = $customFilePath ?? self::args()->arg2;
-        $searchTextArr = count($customSearchTexts) ? $customSearchTexts : [];
+        $filePath = $customFilePath ?? self::arg(2);
+        $searchTexts = new CustomCollection($customSearchTexts);
         for ($i = 3; $i < 20; $i++) {
-            if (count(self::args()->argsAll) > $i)
-                if (self::args()->argsAll[$i]) {
-                    $searchTextArr[] = self::args()->argsAll[$i];
+            if (self::args()->count() > $i)
+                if (self::args()->get($i)) {
+                    $searchTexts->add(self::args()->get($i));
                 }
         }
-        if (!$filePath || !count($searchTextArr)) {
+        if (!$filePath || $searchTexts->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
             exit(1); // END
         }
@@ -2178,7 +2216,7 @@ class OPSHelper
         // handle
         $fileContent = file_get_contents($filePath);
         $validationResult = [];
-        foreach ($searchTextArr as $searchText) {
+        foreach ($searchTexts as $searchText) {
             $validationResult[] = [
                 'searchText' => $searchText,
                 'isContains' => StrHelper::contains($fileContent, $searchText)
@@ -2187,8 +2225,8 @@ class OPSHelper
         $amountValidationPass = count(array_filter($validationResult, function ($item) {
             return $item['isContains'];
         }));
-        if ($amountValidationPass === count($searchTextArr)) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTextArr));
+        if ($amountValidationPass === $searchTexts->count()) {
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
         } else {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->print("file '%s' does not contains (some) text(s):", $filePath);
             foreach ($validationResult as $result) {
@@ -2878,8 +2916,8 @@ class DockerHelper
     public static function keepImageBy(): void
     {
         // === param ===
-        $imageRepository = self::args()->arg1;
-        $imageTag = self::args()->arg2;
+        $imageRepository = self::arg(1);
+        $imageTag = self::arg(2);
         // === validate ===
         if (!$imageRepository || !$imageTag) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
@@ -2937,8 +2975,8 @@ class DockerHelper
     public static function DockerfileAddEnvs(): void
     {
         // === param ===
-        $DockerfilePath = self::args()->arg1;
-        $secretName = self::args()->arg2;
+        $DockerfilePath = self::arg(1);
+        $secretName = self::arg(2);
         // === validate ===
         if (!$DockerfilePath || !$secretName) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
@@ -3103,9 +3141,9 @@ class StrHelper
     {
 // === validate ===
 //    validate a message
-        $searchText = self::args()->arg1;
-        $replaceText = self::args()->arg2;
-        $filePath = self::args()->arg3;
+        $searchText = self::arg(1);
+        $replaceText = self::arg(2);
+        $filePath = self::arg(3);
         if (!$searchText || is_null($replaceText) || !$filePath) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                 ->print("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
@@ -3247,7 +3285,7 @@ class SlackService
     {
         // === validate ===
         //    validate a message
-        $message = self::args()->arg1;
+        $message = self::arg(1);
         if (!$message) {
             self::LineTag(TagEnum::ERROR)->print("missing a MESSAGE");
             exit(); // END
@@ -3314,73 +3352,71 @@ class SlackService
 
 // [REMOVED] namespace App\Traits;
 
-// [REMOVED] use App\Classes\MyOpsConsoleArguments;
+// [REMOVED] use App\Classes\Base\CustomCollection;
 
 trait ConsoleBaseTrait
 {
     /**
-     * index:
+     * indexes:
      * - 0 : script file
      * - 1 : arg 1
      * - 2 : arg 2
      * ...
      * @return array
      */
-    private static function getArguments(): array
+    private static function getPHPArgs(): array
     {
         return $_SERVER['argv'];
     }
 
     /**
-     * get argument 1
+     * indexArg:
+     * - 0 : script file
+     * - 1 : arg 1
+     * - 2 : arg 2
+     * ...
+     * @param int $indexPHPArg
      * @return string|null
      */
-    private static function getArg1(): ?string
+    private static function getPHPArg(int $indexPHPArg = 0): ?string
     {
-        return self::getArguments()[1] ?? null;
+        return self::getPHPArgs()[$indexPHPArg] ?? null;
     }
 
     /**
-     * get argument 2
+     * === MyOps console trait ===
+     * - this is MyOps app args organization with format: <app name> (#1) command (#2) arg1 (#3) arg 2
+     * - usage:
+     *   - get MyOps command command()
+     *   - get MyOps arg 1  arg(1)
+     *   - get MyOps arg 2  arg(2)
+     *   - get MyOps arg all args()
+     */
+
+    /**
      * @return string|null
      */
-    private static function getArg2(): ?string
+    private static function command(): ?string
     {
-        return self::getArguments()[2] ?? null;
+        return self::getPHPArg(1);
     }
 
     /**
-     * get argument 3
+     * required: 1 <= $myOpsArgeIndex <= A
+     * @param int $myOpsArgIndex
      * @return string|null
      */
-    private static function getArg3(): ?string
+    private static function arg(int $myOpsArgIndex = 1): ?string
     {
-        return self::getArguments()[3] ?? null;
+        return self::getPHPArg($myOpsArgIndex + 1);
     }
 
     /**
-     * get argument 4
-     * @return string|null
+     * @return CustomCollection
      */
-    private static function getArg4(): ?string
+    private static function args(): CustomCollection
     {
-        return self::getArguments()[4] ?? null;
-    }
-
-    /**
-     * get argument 5
-     * @return string|null
-     */
-    private static function getArg5(): ?string
-    {
-        return self::getArguments()[5] ?? null;
-    }
-
-    // === MyOps console trait ===
-    private static function args(): MyOpsConsoleArguments
-    {
-        return new MyOpsConsoleArguments(self::getArg1(), self::getArg2(), self::getArg3(),
-            self::getArg4(), self::getArg5(), array_slice(self::getArguments(), 2));
+        return new CustomCollection(array_slice(self::getPHPArgs(), 2));
     }
 
 }
@@ -3524,19 +3560,19 @@ class MyOps
     public function run()
     {
         // === validation ===
-        if (!self::args()->command) {
+        if (!self::command()) {
             self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", AppInfoEnum::APP_MAIN_COMMAND);
             $this->help();
             exit(); // END
         }
-        if (!array_key_exists(self::args()->command, CommandEnum::SUPPORT_COMMANDS())) {
-            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", self::args()->command);
+        if (!array_key_exists(self::command(), CommandEnum::SUPPORT_COMMANDS())) {
+            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", self::command());
             $this->help();
             exit(); // END
         }
 
         // === handle ===
-        switch (self::args()->command) {
+        switch (self::command()) {
             // === this app ===
             case CommandEnum::HELP:
                 $this->help();
@@ -3547,7 +3583,7 @@ class MyOps
                 break;
             case CommandEnum::VERSION:
                 // filter color
-                if (self::args()->arg1 === 'no-format-color') {
+                if (self::arg(1) === 'no-format-color') {
                     self::lineNew()->print(MyOps::getAppVersionStr());
                     break;
                 }
@@ -3563,13 +3599,13 @@ class MyOps
                 break;
             case CommandEnum::GET_SECRET_ENV:
                 // validate
-                if (!self::args()->arg1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required secret name");
                     exit(); // END
                 }
                 // handle
-                AWSHelper::getSecretEnv(self::args()->arg1, self::args()->arg2);
+                AWSHelper::getSecretEnv(self::arg(1), self::arg(2));
                 break;
             case CommandEnum::ELB_UPDATE_VERSION:
                 AWSHelper::ELBUpdateVersion();
@@ -3640,23 +3676,23 @@ class MyOps
             // === UI/Text ===
             case CommandEnum::TITLE:
                 // validate
-                if (!self::args()->arg1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->printTitle(self::args()->arg1);
+                self::LineNew()->printTitle(self::arg(1));
                 break;
             case CommandEnum::SUB_TITLE:
                 // validate
-                if (!self::args()->arg1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required sub title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->printSubTitle(self::args()->arg1);
+                self::LineNew()->printSubTitle(self::arg(1));
                 break;
             // === other ===
             default:
