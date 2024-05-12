@@ -1,4 +1,4 @@
-# DEVELOP env
+# Development environment
 name: workflow--myops--develop
 
 # load shell configuration (Ubuntu | .bashrc)
@@ -8,9 +8,10 @@ defaults:
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events
+  # Triggers the workflow on push events
   push:
     branches: [ "develop" ]
+  # Triggers the workflow manually
   workflow_dispatch:
 
 jobs:

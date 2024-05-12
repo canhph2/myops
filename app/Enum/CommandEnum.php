@@ -123,7 +123,7 @@ class CommandEnum
             "VALIDATION" => [],
             self::VALIDATE => [
                 "required: 'set -e' in bash file",
-                sprintf('  should combine with exit 1, eg:   php %s validate TYPE | exit 1', AppInfoEnum::APP_MAIN_COMMAND),
+                sprintf('  should combine with exit 1, eg:   php %s validate TYPE || exit 1', AppInfoEnum::APP_MAIN_COMMAND),
                 '  support TYPEs:',
                 '    branch  : to only allow develop, staging, master',
                 '    docker  : docker should is running',
