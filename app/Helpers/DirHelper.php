@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Enum\TagEnum;
 use App\Classes\Process;
+use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
 /**
@@ -11,7 +12,7 @@ use App\Traits\ConsoleUITrait;
  */
 class DirHelper
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     /**
      * get home directory / get root directory of user
@@ -66,12 +67,11 @@ class DirHelper
      * - tmp add : create a tmp directory
      * - tmp remove : remove the tmp directory
      *
-     * @param array $argv
      * @return void
      */
-    public static function tmp(array $argv): void
+    public static function tmp(): void
     {
-        switch ($argv[2] ?? null) {
+        switch (self::arg(1)) {
             case 'add':
                 if (is_dir(self::getWorkingDir('tmp'))) {
                     $commands[] = sprintf("rm -rf '%s'", self::getWorkingDir('tmp'));

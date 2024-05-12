@@ -1,12 +1,108 @@
 <?php
-// === MyOps v3.2.52 ===
+// === MyOps v3.3.4 ===
 
 // === Generated libraries classes ===
 
 
 
+// === helpers functions ===
+
+if (!function_exists('dd')) {
+    /**
+     * @param mixed ...$vars
+     * @return void
+     */
+    function dd(...$vars): void
+    {
+        foreach ($vars as $var) {
+            var_dump($var);
+        }
+        die();
+    }
+}
+
+// === end helpers functions ===
+
+// [REMOVED] namespace App\Classes\Base;
+
+// [REMOVED] use ArrayIterator;
+// [REMOVED] use IteratorAggregate;
+
+class CustomCollection implements IteratorAggregate
+{
+    /** @var array */
+    private $items;
+
+    /**
+     * @param array $items
+     */
+    public function __construct(array $items = [])
+    {
+        $this->items = $items;
+    }
+
+    /**
+     * @return int
+     */
+    public function count(): int
+    {
+        return count($this->items);
+    }
+
+    public function isEmpty(): bool
+    {
+        return !$this->count();
+    }
+
+    /**
+     * get item at position index A
+     * @param int $index
+     * @return mixed|null
+     */
+    public function get(int $index)
+    {
+        return $this->items[$index] ?? null;
+    }
+
+    /**
+     * add an item to collection
+     * @param $item
+     * @return CustomCollection
+     */
+    public function add($item):CustomCollection
+    {
+        $this->items[] = $item;
+        return $this;
+    }
+
+    /**
+     * @param array|CustomCollection $arrOrCustomCollection
+     * @return CustomCollection
+     */
+    public function merge($arrOrCustomCollection):CustomCollection
+    {
+        $this->items = array_merge($this->items,
+            $arrOrCustomCollection instanceof self ? $arrOrCustomCollection->toArr() : $arrOrCustomCollection);
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function toArr(): array
+    {
+        return $this->items;
+    }
+
+    public function getIterator(): ArrayIterator
+    {
+        return new ArrayIterator($this->items);
+    }
+}
+
 // [REMOVED] namespace App\Classes;
 
+// [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Enum\AppInfoEnum;
 // [REMOVED] use App\Enum\CommandEnum;
 // [REMOVED] use App\Enum\DockerEnum;
@@ -27,12 +123,14 @@
 // [REMOVED] use App\Helpers\StrHelper;
 // [REMOVED] use App\MyOps;
 // [REMOVED] use App\Services\SlackService;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 // [REMOVED] use DateTime;
 
 class Release
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait;
+    use  ConsoleUITrait;
 
     /**
      * @return array
@@ -41,7 +139,12 @@ class Release
     public static function GET_FILES_LIST(): array
     {
         return [
+            // === raw ===
+            'app/Helpers/helpers.php',
             // === Classes ===
+            //    base
+            DirHelper::getClassPathAndFileName(CustomCollection::class),
+            //    normal
             DirHelper::getClassPathAndFileName(Release::class),
             DirHelper::getClassPathAndFileName(Process::class),
             DirHelper::getClassPathAndFileName(Version::class),
@@ -72,6 +175,7 @@ class Release
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
+            DirHelper::getClassPathAndFileName(ConsoleBaseTrait::class),
             DirHelper::getClassPathAndFileName(ConsoleUITrait::class),
             // App file always on bottom
             DirHelper::getClassPathAndFileName(MyOps::class),
@@ -103,7 +207,7 @@ class Release
         }
     }
 
-    public function handle(array $argv): void
+    public function handle(): void
     {
         self::LineNew()->printTitle("release");
         // validate
@@ -111,7 +215,7 @@ class Release
             return; // END
         }
         //    validate version part
-        $part = $argv[2] ?? Version::PATCH; // default, empty = patch
+        $part = self::arg(1) ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
             self::LineTag(TagEnum::ERROR)->print("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END
@@ -128,7 +232,7 @@ class Release
         self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
         //        ask what news
-        $whatNewsDefault = sprintf("Release %s on %s UTC",  MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
+        $whatNewsDefault = sprintf("Release %s on %s UTC", MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
         $whatNewsInput = ucfirst(readline("What are news in this release?  (default = '$whatNewsDefault')  :"));
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
@@ -1268,7 +1372,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.2.52';
+    const APP_VERSION = '3.3.4';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1433,27 +1537,57 @@ class GitHubEnum
     const DEVELOP = 'develop';
     const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP];
 
+    // === GitHub users ===
+    const INFOHKENGAGE = 'infohkengage';
+    const CONGNQNEXLESOFT = 'congnqnexlesoft';
+
+    // === projects / modules / services ===
+    //    backend
+    const ENGAGE_API = 'engage-api';
+    const ENGAGE_BOOKING_API = 'engage-booking-api';
+    const INVOICE_SERVICE = 'invoice-service';
+    const PAYMENT_SERVICE = 'payment-service';
+    const INTEGRATION_API = 'integration-api';
+    const EMAIL_SERVICE = 'email-service';
+    //    frontend
+    const ENGAGE_SPA = 'engage-spa';
+    const ENGAGE_BOOKING_SPA = 'engage-booking-spa';
+    //    mobile
+    const ENGAGE_MOBILE_APP = 'Engage-Mobile-App';
+    const ENGAGE_TEACHER_APP = 'engage-teacher-app';
+    //    support
+    const ENGAGE_API_DEPLOY = 'engage-api-deploy';
+    const ENGAGE_DATABASE_UTILS = 'engage-database-utils';
+    const MYOPS = 'myops';
+    const DOCKER_BASE_IMAGES = 'docker-base-images';
+    const ENGAGE_SELENIUM_TEST_1 = 'engage-selenium-test-1';
+
     /**
      * @return array
      */
     public static function GET_REPOSITORIES_INFO(): array
     {
         return [
-            new GitHubRepositoryInfo('engage-api', 'infohkengage', true),
-            new GitHubRepositoryInfo('engage-spa', 'infohkengage', true),
-            new GitHubRepositoryInfo('engage-booking-api', 'infohkengage', true),
-            new GitHubRepositoryInfo('engage-booking-spa', 'infohkengage', true),
-            new GitHubRepositoryInfo('invoice-service', 'infohkengage', true),
-            new GitHubRepositoryInfo('payment-service', 'infohkengage', true),
-            new GitHubRepositoryInfo('integration-api', 'infohkengage', true),
-            new GitHubRepositoryInfo('email-service', 'infohkengage', true),
-            //
-            new GitHubRepositoryInfo('engage-api-deploy', 'infohkengage'),
-            //
-            new GitHubRepositoryInfo('engage-database-utils', 'congnqnexlesoft'),
-            new GitHubRepositoryInfo('myops', 'congnqnexlesoft'),
-            new GitHubRepositoryInfo('docker-base-images', 'congnqnexlesoft'),
-            new GitHubRepositoryInfo('engage-selenium-test-1', 'congnqnexlesoft'),
+            // === projects / modules / services ===
+            //    backend
+            new GitHubRepositoryInfo(self::ENGAGE_API, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_API, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::INVOICE_SERVICE, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::PAYMENT_SERVICE, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::INTEGRATION_API, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::EMAIL_SERVICE, self::INFOHKENGAGE, true),
+            //    frontend
+            new GitHubRepositoryInfo(self::ENGAGE_SPA, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_SPA, self::INFOHKENGAGE, true),
+            //    mobile
+            new GitHubRepositoryInfo(self::ENGAGE_MOBILE_APP, self::INFOHKENGAGE),
+            new GitHubRepositoryInfo(self::ENGAGE_TEACHER_APP, self::INFOHKENGAGE),
+            //    support
+            new GitHubRepositoryInfo(self::ENGAGE_API_DEPLOY, self::INFOHKENGAGE),
+            new GitHubRepositoryInfo(self::ENGAGE_DATABASE_UTILS, self::CONGNQNEXLESOFT),
+            new GitHubRepositoryInfo(self::MYOPS, self::CONGNQNEXLESOFT, true),
+            new GitHubRepositoryInfo(self::DOCKER_BASE_IMAGES, self::CONGNQNEXLESOFT),
+            new GitHubRepositoryInfo(self::ENGAGE_SELENIUM_TEST_1, self::CONGNQNEXLESOFT),
         ];
     }
 }
@@ -1556,6 +1690,7 @@ class PostWorkEnum
 
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Classes\Process;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
 /**
@@ -1563,7 +1698,7 @@ class PostWorkEnum
  */
 class DirHelper
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     /**
      * get home directory / get root directory of user
@@ -1618,12 +1753,11 @@ class DirHelper
      * - tmp add : create a tmp directory
      * - tmp remove : remove the tmp directory
      *
-     * @param array $argv
      * @return void
      */
-    public static function tmp(array $argv): void
+    public static function tmp(): void
     {
-        switch ($argv[2] ?? null) {
+        switch (self::arg(1)) {
             case 'add':
                 if (is_dir(self::getWorkingDir('tmp'))) {
                     $commands[] = sprintf("rm -rf '%s'", self::getWorkingDir('tmp'));
@@ -1670,6 +1804,7 @@ class DirHelper
 
 // [REMOVED] namespace App\Helpers;
 
+// [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Classes\GitHubRepositoryInfo;
 // [REMOVED] use App\Classes\Release;
 // [REMOVED] use App\Enum\AppInfoEnum;
@@ -1681,7 +1816,7 @@ class DirHelper
 // [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
 // [REMOVED] use App\Classes\Process;
-// [REMOVED] use App\MyOps;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
 /**
@@ -1689,7 +1824,7 @@ class DirHelper
  */
 class OPSHelper
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     const COMPOSER_CONFIG_GITHUB_AUTH_FILE = 'auth.json';
 
@@ -1761,12 +1896,7 @@ class OPSHelper
         // load env into PHP
         self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
         // load caches of this source code
-        GitHubHelper::handleCachesAndGit([
-            'script path',
-            'command-name', // param 1
-            'myops', // param 2, in this case is repository
-            'main', // param 3, in this case is branch
-        ]);
+        GitHubHelper::handleCachesAndGit(GitHubEnum::MYOPS, GitHubHelper::getCurrentBranch());
         // create an alias 'myops'
         self::createAlias();
         //
@@ -1818,10 +1948,7 @@ class OPSHelper
                     }
                 }
                 // validate alias
-                self::validate([
-                    'script path', 'command-name', // param 0,1
-                    ValidationTypeEnum::FILE_CONTAINS_TEXT, "$shellConfigurationFile", $alias
-                ]);
+                self::validateFileContainsText($shellConfigurationFile, $alias);
             }
         }
     }
@@ -1855,13 +1982,12 @@ class OPSHelper
     /**
      * do some post works:
      * - cleanup
-     * @param array $argv
      * @return void
      */
-    public static function postWork(array $argv): void
+    public static function postWork(): void
     {
         // === param ===
-        $isSkipCheckDir = ($argv[2] ?? null) === PostWorkEnum::SKIP_CHECK_DIR;
+        $isSkipCheckDir = self::arg(1) === PostWorkEnum::SKIP_CHECK_DIR;
         //
         self::LineNew()->printTitle("Post works");
         if ($isSkipCheckDir) {
@@ -1999,9 +2125,9 @@ class OPSHelper
         return true; // END | case OK
     }
 
-    public static function validate(array $argv)
+    public static function validate()
     {
-        switch ($argv[2] ?? null) {
+        switch (self::arg(1)) {
             case ValidationTypeEnum::BRANCH:
                 self::validateBranch();
                 break;
@@ -2012,11 +2138,11 @@ class OPSHelper
                 self::validateDevice();
                 break;
             case ValidationTypeEnum::FILE_CONTAINS_TEXT:
-                self::validateFileContainsText($argv);
+                self::validateFileContainsText();
                 break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
-                    ->print("should be like eg:   '%s' validate branch", AppInfoEnum::APP_MAIN_COMMAND);
+                    ->print("should be like eg:   '%s validate branch'", AppInfoEnum::APP_MAIN_COMMAND);
                 break;
         }
     }
@@ -2068,29 +2194,29 @@ class OPSHelper
         }
     }
 
-    private static function validateFileContainsText(array $argv)
+    private static function validateFileContainsText(string $customFilePath = null, ...$customSearchTexts)
     {
         // validate
-        $filePath = $argv[3] ?? null;
-        $searchTextArr = [];
-        for ($i = 4; $i < 20; $i++) {
-            if (count($argv) > $i)
-                if ($argv[$i]) {
-                    $searchTextArr[] = $argv[$i];
+        $filePath = $customFilePath ?? self::arg(2);
+        $searchTexts = new CustomCollection($customSearchTexts);
+        for ($i = 3; $i < 20; $i++) {
+            if (self::args()->count() > $i)
+                if (self::args()->get($i)) {
+                    $searchTexts->add(self::args()->get($i));
                 }
         }
-        if (!$filePath || !count($searchTextArr)) {
+        if (!$filePath || $searchTexts->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
-            exit(1);
+            exit(1); // END
         }
         if (!is_file($filePath)) {
             self::LineTag(TagEnum::ERROR)->print("'%s' does not exist", $filePath);
-            exit(1);
+            exit(1); // END
         }
         // handle
         $fileContent = file_get_contents($filePath);
         $validationResult = [];
-        foreach ($searchTextArr as $searchText) {
+        foreach ($searchTexts as $searchText) {
             $validationResult[] = [
                 'searchText' => $searchText,
                 'isContains' => StrHelper::contains($fileContent, $searchText)
@@ -2099,8 +2225,8 @@ class OPSHelper
         $amountValidationPass = count(array_filter($validationResult, function ($item) {
             return $item['isContains'];
         }));
-        if ($amountValidationPass === count($searchTextArr)) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTextArr));
+        if ($amountValidationPass === $searchTexts->count()) {
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
         } else {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->print("file '%s' does not contains (some) text(s):", $filePath);
             foreach ($validationResult as $result) {
@@ -2109,7 +2235,7 @@ class OPSHelper
                     ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
                     ->print($result['searchText']);
             }
-            exit(1);
+            exit(1); // END
         }
     }
 }
@@ -2125,6 +2251,7 @@ class OPSHelper
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Services\SlackService;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 // [REMOVED] use DateTime;
 
@@ -2133,7 +2260,7 @@ class OPSHelper
  */
 class GitHubHelper
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     /**
      * @param string $name
@@ -2197,13 +2324,14 @@ class GitHubHelper
         ))->execMultiInWorkDir()->printOutput();
     }
 
-    public static function getBranchUsingCommand(string $workDir): ?string
+    /**
+     * @return string|null
+     */
+    public static function getCurrentBranch(): ?string
     {
-        $process = (new Process(__FUNCTION__, $workDir, [
+        return (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
-        ]))->execMultiInWorkDir()
-            ->printOutput();
-        return $process->getOutput() ? $process->getOutput()[count($process->getOutput()) - 1] : null;
+        ]))->execMultiInWorkDirAndGetOutputStr();
     }
 
     /**
@@ -2223,18 +2351,18 @@ class GitHubHelper
 
     /**
      * require envs: GITHUB_PERSONAL_ACCESS_TOKEN
+     * @param string|null $customRepository
+     * @param string|null $customBranch
+     * @return void
      */
-    public static function handleCachesAndGit(array $argv)
+    public static function handleCachesAndGit(string $customRepository = null, string $customBranch = null): void
     {
-        // === param ===
-        $param2 = $argv[2] ?? null;
-        $param3 = $argv[3] ?? null;
         // === validate ===
         //    validate env vars
-        $repository = $param2 ?? getenv('REPOSITORY');
-        $branch = $param3 ?? getenv('BRANCH');
-        if ($repository === 'engage-api-deploy') {
-            $branch = $param3 ?? getenv('API_DEPLOY_BRANCH');
+        $repository = $customRepository ?? getenv('REPOSITORY');
+        $branch = $customBranch ?? getenv('BRANCH');
+        if ($repository === GitHubEnum::ENGAGE_API_DEPLOY) {
+            $branch = $customBranch ?? getenv('API_DEPLOY_BRANCH');
         }
         $engagePlusCachesDir = getenv('ENGAGEPLUS_CACHES_DIR');
         $GitHubPersonalAccessToken = getenv('GITHUB_PERSONAL_ACCESS_TOKEN');
@@ -2247,8 +2375,8 @@ class GitHubHelper
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        self::LineTag($param2 ? 'CUSTOM' : 'ENV')->print("REPOSITORY = %s", $repository)
-            ->setTag($param3 ? 'CUSTOM' : 'ENV')->print("BRANCH = %s", $branch)
+        self::LineTag($customRepository ? 'CUSTOM' : 'ENV')->print("REPOSITORY = %s", $repository)
+            ->setTag($customBranch ? 'CUSTOM' : 'ENV')->print("BRANCH = %s", $branch)
             ->print("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
@@ -2381,7 +2509,7 @@ class GitHubHelper
                             ->print($message);
                         if ($duration->totalMinutes && $duration->totalMinutes > $lastSendingMinute && $duration->totalMinutes % 3 === 0) { // notify every A minutes
                             SlackService::sendMessageInternalUsing(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
-                            $lastSendingMinute =   $duration->totalMinutes;
+                            $lastSendingMinute = $duration->totalMinutes;
                         }
                         sleep(30); // loop with interval = A seconds
                     }
@@ -2764,6 +2892,7 @@ class AppHelper
 // [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Classes\DockerImage;
 // [REMOVED] use App\Classes\Process;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
 /**
@@ -2771,7 +2900,7 @@ class AppHelper
  */
 class DockerHelper
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     public static function isDockerInstalled(): bool
     {
@@ -2782,14 +2911,13 @@ class DockerHelper
     /**
      * keep image by repository name with specific tag, use for keep latest image
      *
-     * @param array $argv
      * @return void
      */
-    public static function keepImageBy(array $argv): void
+    public static function keepImageBy(): void
     {
         // === param ===
-        $imageRepository = $argv[2] ?? null;
-        $imageTag = $argv[3] ?? null;
+        $imageRepository = self::arg(1);
+        $imageTag = self::arg(2);
         // === validate ===
         if (!$imageRepository || !$imageTag) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
@@ -2842,14 +2970,13 @@ class DockerHelper
     /**
      * add ENVs into Dockerfile below FROM line. Required: DockerfilePath, secretName
      *
-     * @param array $argv
      * @return void
      */
-    public static function DockerfileAddEnvs(array $argv): void
+    public static function DockerfileAddEnvs(): void
     {
         // === param ===
-        $DockerfilePath = $argv[2] ?? null;
-        $secretName = $argv[3] ?? null;
+        $DockerfilePath = self::arg(1);
+        $secretName = self::arg(2);
         // === validate ===
         if (!$DockerfilePath || !$secretName) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
@@ -2957,6 +3084,7 @@ class DockerHelper
 // [REMOVED] namespace App\Helpers;
 
 // [REMOVED] use App\Enum\TagEnum;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
 /**
@@ -2964,7 +3092,7 @@ class DockerHelper
  */
 class StrHelper
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     /**
      * @param string $toCheck
@@ -3009,13 +3137,13 @@ class StrHelper
      * = "file path" ((param 4)
      * @return void
      */
-    public static function replaceTextInFile(array $argv)
+    public static function replaceTextInFile()
     {
 // === validate ===
 //    validate a message
-        $searchText = $argv[2] ?? null;
-        $replaceText = $argv[3] ?? null;
-        $filePath = $argv[4] ?? null;
+        $searchText = self::arg(1);
+        $replaceText = self::arg(2);
+        $filePath = self::arg(3);
         if (!$searchText || is_null($replaceText) || !$filePath) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                 ->print("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
@@ -3133,11 +3261,11 @@ class SlackService
     private static function selectSlackChannel(): ?string
     {
         // myops | testing
-        if (getenv('REPOSITORY') === 'myops') {
+        if (getenv('REPOSITORY') === GitHubEnum::MYOPS) {
             return getenv('SLACK_CHANNEL'); // END
         }
         // database-utils
-        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('REPOSITORY') === 'engage-database-utils') {
+        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('REPOSITORY') === GitHubEnum::ENGAGE_DATABASE_UTILS) {
             return getenv('SLACK_CHANNEL_PRODUCTION'); // END
         }
         // master branches
@@ -3150,14 +3278,14 @@ class SlackService
     }
 
     /**
-     * @param array $argv
+     *  //todo check use internal
      * @return void
      */
-    public static function sendMessage(array $argv)
+    public static function sendMessage()
     {
         // === validate ===
         //    validate a message
-        $message = $argv[2] ?? null;
+        $message = self::arg(1);
         if (!$message) {
             self::LineTag(TagEnum::ERROR)->print("missing a MESSAGE");
             exit(); // END
@@ -3220,6 +3348,77 @@ class SlackService
         putenv('SLACK_CHANNEL=' . AWSHelper::getValueEnvOpsSecretManager('SLACK_CHANNEL'));
         self::sendMessage(['script path', 'slack', $message]);
     }
+}
+
+// [REMOVED] namespace App\Traits;
+
+// [REMOVED] use App\Classes\Base\CustomCollection;
+
+trait ConsoleBaseTrait
+{
+    /**
+     * indexes:
+     * - 0 : script file
+     * - 1 : arg 1
+     * - 2 : arg 2
+     * ...
+     * @return array
+     */
+    private static function getPHPArgs(): array
+    {
+        return $_SERVER['argv'];
+    }
+
+    /**
+     * indexArg:
+     * - 0 : script file
+     * - 1 : arg 1
+     * - 2 : arg 2
+     * ...
+     * @param int $indexPHPArg
+     * @return string|null
+     */
+    private static function getPHPArg(int $indexPHPArg = 0): ?string
+    {
+        return self::getPHPArgs()[$indexPHPArg] ?? null;
+    }
+
+    /**
+     * === MyOps console trait ===
+     * - this is MyOps app args organization with format: <app name> (#1) command (#2) arg1 (#3) arg 2
+     * - usage:
+     *   - get MyOps command command()
+     *   - get MyOps arg 1  arg(1)
+     *   - get MyOps arg 2  arg(2)
+     *   - get MyOps arg all args()
+     */
+
+    /**
+     * @return string|null
+     */
+    private static function command(): ?string
+    {
+        return self::getPHPArg(1);
+    }
+
+    /**
+     * required: 1 <= $myOpsArgeIndex <= A
+     * @param int $myOpsArgIndex
+     * @return string|null
+     */
+    private static function arg(int $myOpsArgIndex = 1): ?string
+    {
+        return self::getPHPArg($myOpsArgIndex + 1);
+    }
+
+    /**
+     * @return CustomCollection
+     */
+    private static function args(): CustomCollection
+    {
+        return new CustomCollection(array_slice(self::getPHPArgs(), 2));
+    }
+
 }
 
 // [REMOVED] namespace App\Traits;
@@ -3330,7 +3529,7 @@ trait ConsoleUITrait
 
 class MyOps
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     const SHELL_DATA_BASE_64 = 'IyA9PT0gUkVRVUlSRUQ6IGdldCBlbnYtb3BzIGFuZCBhcHBlbmQgdG8gdGhpcyBmaWxlCgojID09PSBsb2FkIFJlcG9zaXRvcnkgSW5mbyA9PT0KZXhwb3J0IEJSQU5DSD0kKG15b3BzIGJyYW5jaCkKZXhwb3J0IFJFUE9TSVRPUlk9JChteW9wcyByZXBvc2l0b3J5KQpleHBvcnQgSEVBRF9DT01NSVRfSUQ9JChteW9wcyBoZWFkLWNvbW1pdC1pZCkKIyA9PT0gRU5EID09PQoKIyA9PT0gY29uc3RhbnRzID09PQpleHBvcnQgRE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT049InByb2R1Y3Rpb24iCmV4cG9ydCBET0NLRVJfQkFTRV9UQUdfREVWRUxPUD0iZGV2ZWxvcCIKIyAgICBXQVJOSU5HOiBkZWxldGUgJ2F1dGguanNvbicgYWZ0ZXIgdXNlIHRoaXMgY29tbWFuZCAnQ09NUE9TRVJfQ09ORklHX0dJVEhVQl9UT0tFTicKZXhwb3J0IENPTVBPU0VSX0NPTkZJR19HSVRIVUJfVE9LRU49ImNvbXBvc2VyIGNvbmZpZyBnaXRodWItb2F1dGguZ2l0aHViLmNvbSAke0dJVEhVQl9QRVJTT05BTF9BQ0NFU1NfVE9LRU59IgpleHBvcnQgQ09NUE9TRVJfQ09ORklHX0FMTE9XX1BMVUdJTlNfU1lNRk9OWV9GTEVYPSJjb21wb3NlciBjb25maWcgLS1uby1wbHVnaW5zIGFsbG93LXBsdWdpbnMuc3ltZm9ueS9mbGV4IHRydWUiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1A9ImNvbXBvc2VyIGluc3RhbGwiCmV4cG9ydCBDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1BfVE9fQlVJTERfQ0FDSEVTPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tYXV0b2xvYWRlciAtLW5vLXNjcmlwdHMgLS1uby1wbHVnaW5zIgpleHBvcnQgQ09NUE9TRVJfSU5TVEFMTF9QUk9EVUNUSU9OPSJjb21wb3NlciBpbnN0YWxsIC0tbm8tZGV2IC0tb3B0aW1pemUtYXV0b2xvYWRlciIKZXhwb3J0IENPTVBPU0VSX0lOU1RBTExfUFJPRFVDVElPTl9UT19CVUlMRF9DQUNIRVM9ImNvbXBvc2VyIGluc3RhbGwgLS1uby1kZXYgLS1uby1hdXRvbG9hZGVyIC0tbm8tc2NyaXB0cyAtLW5vLXBsdWdpbnMiCgojID09PSBoYW5kbGUgYnJhbmNoZXMgdmFycyA9PT0KaWYgWyAiJHtCUkFOQ0h9IiA9ICJkZXZlbG9wIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1kZXYKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9ZGV2ZWxvcC1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0iZGV2ZWxvcC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX0RFVkVMT1B9IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAwCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJzdGFnaW5nIiBdOyB0aGVuCiAgZXhwb3J0IEVOVj1zdGcKICBleHBvcnQgQVBJX0RFUExPWV9CUkFOQ0g9c3RhZ2luZy1tdWx0aS1jb250YWluZXIKICBleHBvcnQgRUJfRU5WSVJPTk1FTlRfTkFNRT0ic3RhZ2luZy1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjIwIgogIGV4cG9ydCBFQl9NQUlMX0NBVENIRVJfUE9SVD0iLHsgXCJob3N0UG9ydFwiOiAxMDI1LCBcImNvbnRhaW5lclBvcnRcIjogMTAyNSB9IiAjIG1heWJlIHJlbW92ZSBhZnRlciBlbWFpbC1zZXJ2aWNlCiAgZXhwb3J0IEVOVl9VUkxfUFJFRklYPSIke0JSQU5DSH0tIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19ERVZFTE9QfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAxCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKaWYgWyAiJHtCUkFOQ0h9IiA9ICJtYXN0ZXIiIF07IHRoZW4KICBleHBvcnQgRU5WPXByZAogIGV4cG9ydCBBUElfREVQTE9ZX0JSQU5DSD1tYXN0ZXItbXVsdGktY29udGFpbmVyCiAgZXhwb3J0IEVCX0VOVklST05NRU5UX05BTUU9ImVuZ2FnZXBsdXMtcHJvZC1tdWx0aS1jb250YWluZXIiCiAgZXhwb3J0IEVCXzJORF9ESVNLX1NJWkU9IjEwMCIKICBleHBvcnQgRUJfTUFJTF9DQVRDSEVSX1BPUlQ9IiAgICAiICMgbWF5YmUgcmVtb3ZlIGFmdGVyIGVtYWlsLXNlcnZpY2UgfCA0IHNwYWNlcyB0byBwYXNzIGVtcHR5IHN0cmluZwogIGV4cG9ydCBFTlZfVVJMX1BSRUZJWD0iIgogICMKICBleHBvcnQgQ09NUE9TRVJfSU5TVEFMTD0iJHtDT01QT1NFUl9JTlNUQUxMX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUc9IiR7RE9DS0VSX0JBU0VfVEFHX1BST0RVQ1RJT059IgogIGV4cG9ydCBET0NLRVJfQkFTRV9UQUdfQVBJPSIke0RPQ0tFUl9CQVNFX1RBR19QUk9EVUNUSU9OfSIgIyBtYXliZSByZW1vdmUgYWZ0ZXIgZW1haWwtc2VydmljZQogICMKICBleHBvcnQgRU1BSUxfU0VSVklDRV9FWFRFUk5BTF9QT1JUPTEwMDAyCiAgZXhwb3J0IEVNQUlMX1NFUlZJQ0VfQ09OVEFJTkVSX1BPUlQ9ODAKZmkKIyA9PT0gRU5EID09PQoKIyA9PT0gQVdTIEFjY291bnQgY29uZmlndXJhdGlvbiA9PT0KZXhwb3J0IEFXU19BQ0NPVU5UX0lEPSI5ODIwODA2NzI5ODMiCmV4cG9ydCBSRUdJT049ImFwLWVhc3QtMSIKIyAgICBFQ1IgY29uZmlndXJhdGlvbgojICAgICAgICBiYXNlIGFuZCBjYWNoZXMgcmVwb3NpdG9yaWVzCmV4cG9ydCBFQ1JfUkVQT19BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19QQVlNRU5UX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtcGF5bWVudC1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlZPSUNFX1NFUlZJQ0VfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW52b2ljZS1zZXJ2aWNlLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19JTlRFR1JBVElPTl9BUElfQkFTRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLWJhc2UtaW50ZWdyYXRpb24tYXBpLXJlcG9zaXRvcnkiCmV4cG9ydCBFQ1JfUkVQT19FTUFJTF9TRVJWSUNFX0JBU0U9IiR7QVdTX0FDQ09VTlRfSUR9LmRrci5lY3IuJHtSRUdJT059LmFtYXpvbmF3cy5jb20vZW5nYWdlcGx1cy1iYXNlLWVtYWlsLXNlcnZpY2UtcmVwb3NpdG9yeSIKIyAgICAgICAgbm9ybWFsIHJlcG9zaXRvcmllcwpleHBvcnQgRUNSX1JFUE9fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fUEFZTUVOVF9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LXBheW1lbnQtc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5WT0lDRV9TRVJWSUNFPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludm9pY2Utc2VydmljZS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fSU5URUdSQVRJT05fQVBJPSIke0FXU19BQ0NPVU5UX0lEfS5ka3IuZWNyLiR7UkVHSU9OfS5hbWF6b25hd3MuY29tL2VuZ2FnZXBsdXMtJHtFTlZ9LWludGVncmF0aW9uLWFwaS1yZXBvc2l0b3J5IgpleHBvcnQgRUNSX1JFUE9fRU1BSUxfU0VSVklDRT0iJHtBV1NfQUNDT1VOVF9JRH0uZGtyLmVjci4ke1JFR0lPTn0uYW1hem9uYXdzLmNvbS9lbmdhZ2VwbHVzLSR7RU5WfS1lbWFpbC1zZXJ2aWNlLXJlcG9zaXRvcnkiCiMgICAgRWxhc3RpYyBCZWFuc3RhbGsgY29uZmlndXJhdGlvbgpleHBvcnQgUzNfRUJfQVBQX1ZFUlNJT05fQlVDS0VUX05BTUU9ImVsYXN0aWNiZWFuc3RhbGstJHtSRUdJT059LSR7QVdTX0FDQ09VTlRfSUR9IgpleHBvcnQgRUJfQVBQX1ZFUlNJT05fRk9MREVSX05BTUU9ImVuZ2FnZXBsdXMiCmV4cG9ydCBFQl9BUFBfTkFNRT0iZW5nYWdlcGx1cyIKIyA9PT0gRU5EID09PQoKIyA9PT0gRW5nYWdlUGx1cyBjb25maWd1cmF0aW9uID09PQpleHBvcnQgRU5HQUdFUExVU19DQUNIRVNfRk9MREVSPSIuY2FjaGVzX2VuZ2FnZXBsdXMiCmV4cG9ydCBFTkdBR0VQTFVTX0NBQ0hFU19ESVI9IiQobXlvcHMgaG9tZS1kaXIpLyR7RU5HQUdFUExVU19DQUNIRVNfRk9MREVSfSIKZXhwb3J0IEVOR0FHRVBMVVNfQ0FDSEVTX1JFUE9TSVRPUllfRElSPSIke0VOR0FHRVBMVVNfQ0FDSEVTX0RJUn0vJHtSRVBPU0lUT1JZfSIKIyA9PT0gRU5EID09PQoKIyA9PT0gZ2V0IERFVklDRSBmcm9tIHBhcmFtIDEgPT09CmV4cG9ydCBERVZJQ0U9IiQxIgojID09PSBFTkQgPT09Cg==';
 
@@ -3358,38 +3557,33 @@ class MyOps
 
     }
 
-    public function run(array $argv)
+    public function run()
     {
-        // === params ===
-        $command = $argv[1] ?? null;
-        $param1 = $argv[2] ?? null; // to use if needed
-        $param2 = $argv[3] ?? null; // to use if needed
-
         // === validation ===
-        if (!$command) {
+        if (!self::command()) {
             self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", AppInfoEnum::APP_MAIN_COMMAND);
             $this->help();
             exit(); // END
         }
-        if (!array_key_exists($command, CommandEnum::SUPPORT_COMMANDS())) {
-            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", $command);
+        if (!array_key_exists(self::command(), CommandEnum::SUPPORT_COMMANDS())) {
+            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", self::command());
             $this->help();
             exit(); // END
         }
 
         // === handle ===
-        switch ($command) {
+        switch (self::command()) {
             // === this app ===
             case CommandEnum::HELP:
                 $this->help();
                 break;
             case CommandEnum::RELEASE:
                 // release
-                (new Release())->handle($argv);
+                (new Release())->handle();
                 break;
             case CommandEnum::VERSION:
                 // filter color
-                if($param1 === 'no-format-color'){
+                if (self::arg(1) === 'no-format-color') {
                     self::lineNew()->print(MyOps::getAppVersionStr());
                     break;
                 }
@@ -3405,13 +3599,13 @@ class MyOps
                 break;
             case CommandEnum::GET_SECRET_ENV:
                 // validate
-                if (!$param1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required secret name");
                     exit(); // END
                 }
                 // handle
-                AWSHelper::getSecretEnv($param1, $param2);
+                AWSHelper::getSecretEnv(self::arg(1), self::arg(2));
                 break;
             case CommandEnum::ELB_UPDATE_VERSION:
                 AWSHelper::ELBUpdateVersion();
@@ -3427,7 +3621,7 @@ class MyOps
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
                 break;
             case CommandEnum::HANDLE_CACHES_AND_GIT:
-                GitHubHelper::handleCachesAndGit($argv);
+                GitHubHelper::handleCachesAndGit();
                 break;
             case CommandEnum::FORCE_CHECKOUT:
                 GitHubHelper::forceCheckout();
@@ -3438,10 +3632,10 @@ class MyOps
                 break;
             // === Docker ===
             case CommandEnum::DOCKER_KEEP_IMAGE_BY:
-                DockerHelper::keepImageBy($argv);
+                DockerHelper::keepImageBy();
                 break;
             case CommandEnum::DOCKER_FILE_ADD_ENVS:
-                DockerHelper::DockerfileAddEnvs($argv);
+                DockerHelper::DockerfileAddEnvs();
                 break;
             // === utils ===
             case CommandEnum::HOME_DIR:
@@ -3454,16 +3648,16 @@ class MyOps
                 echo DirHelper::getWorkingDir();
                 break;
             case CommandEnum::REPLACE_TEXT_IN_FILE:
-                StrHelper::replaceTextInFile($argv);
+                StrHelper::replaceTextInFile();
                 break;
             case CommandEnum::SLACK:
-                SlackService::sendMessage($argv);
+                SlackService::sendMessage();
                 break;
             case CommandEnum::TMP:
-                DirHelper::tmp($argv);
+                DirHelper::tmp();
                 break;
             case CommandEnum::POST_WORK:
-                OPSHelper::postWork($argv);
+                OPSHelper::postWork();
                 break;
             case CommandEnum::CLEAR_OPS_DIR:
                 OPSHelper::clearOpsDir();
@@ -3477,28 +3671,28 @@ class MyOps
                 break;
             // === validation ===
             case CommandEnum::VALIDATE:
-                OPSHelper::validate($argv);
+                OPSHelper::validate();
                 break;
             // === UI/Text ===
             case CommandEnum::TITLE:
                 // validate
-                if (!$param1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->printTitle($param1);
+                self::LineNew()->printTitle(self::arg(1));
                 break;
             case CommandEnum::SUB_TITLE:
                 // validate
-                if (!$param1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required sub title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->printSubTitle($param1);
+                self::LineNew()->printSubTitle(self::arg(1));
                 break;
             // === other ===
             default:
@@ -3549,7 +3743,7 @@ class MyOps
 // === end class zone ====
 
 // === execute zone ===
-(new MyOps())->run($argv);
+(new MyOps())->run();
 // === end execute zone ===
 
 // === end Generated app class ===

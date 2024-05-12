@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Classes\Base\CustomCollection;
 use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Release;
 use App\Enum\AppInfoEnum;
@@ -13,7 +14,7 @@ use App\Enum\TagEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\Classes\Process;
-use App\MyOps;
+use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
 /**
@@ -21,7 +22,7 @@ use App\Traits\ConsoleUITrait;
  */
 class OPSHelper
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     const COMPOSER_CONFIG_GITHUB_AUTH_FILE = 'auth.json';
 
@@ -93,12 +94,7 @@ class OPSHelper
         // load env into PHP
         self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
         // load caches of this source code
-        GitHubHelper::handleCachesAndGit([
-            'script path',
-            'command-name', // param 1
-            'myops', // param 2, in this case is repository
-            'main', // param 3, in this case is branch
-        ]);
+        GitHubHelper::handleCachesAndGit(GitHubEnum::MYOPS, GitHubHelper::getCurrentBranch());
         // create an alias 'myops'
         self::createAlias();
         //
@@ -150,10 +146,7 @@ class OPSHelper
                     }
                 }
                 // validate alias
-                self::validate([
-                    'script path', 'command-name', // param 0,1
-                    ValidationTypeEnum::FILE_CONTAINS_TEXT, "$shellConfigurationFile", $alias
-                ]);
+                self::validateFileContainsText($shellConfigurationFile, $alias);
             }
         }
     }
@@ -187,13 +180,12 @@ class OPSHelper
     /**
      * do some post works:
      * - cleanup
-     * @param array $argv
      * @return void
      */
-    public static function postWork(array $argv): void
+    public static function postWork(): void
     {
         // === param ===
-        $isSkipCheckDir = ($argv[2] ?? null) === PostWorkEnum::SKIP_CHECK_DIR;
+        $isSkipCheckDir = self::arg(1) === PostWorkEnum::SKIP_CHECK_DIR;
         //
         self::LineNew()->printTitle("Post works");
         if ($isSkipCheckDir) {
@@ -331,9 +323,9 @@ class OPSHelper
         return true; // END | case OK
     }
 
-    public static function validate(array $argv)
+    public static function validate()
     {
-        switch ($argv[2] ?? null) {
+        switch (self::arg(1)) {
             case ValidationTypeEnum::BRANCH:
                 self::validateBranch();
                 break;
@@ -344,11 +336,11 @@ class OPSHelper
                 self::validateDevice();
                 break;
             case ValidationTypeEnum::FILE_CONTAINS_TEXT:
-                self::validateFileContainsText($argv);
+                self::validateFileContainsText();
                 break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
-                    ->print("should be like eg:   '%s' validate branch", AppInfoEnum::APP_MAIN_COMMAND);
+                    ->print("should be like eg:   '%s validate branch'", AppInfoEnum::APP_MAIN_COMMAND);
                 break;
         }
     }
@@ -400,29 +392,29 @@ class OPSHelper
         }
     }
 
-    private static function validateFileContainsText(array $argv)
+    private static function validateFileContainsText(string $customFilePath = null, ...$customSearchTexts)
     {
         // validate
-        $filePath = $argv[3] ?? null;
-        $searchTextArr = [];
-        for ($i = 4; $i < 20; $i++) {
-            if (count($argv) > $i)
-                if ($argv[$i]) {
-                    $searchTextArr[] = $argv[$i];
+        $filePath = $customFilePath ?? self::arg(2);
+        $searchTexts = new CustomCollection($customSearchTexts);
+        for ($i = 3; $i < 20; $i++) {
+            if (self::args()->count() > $i)
+                if (self::args()->get($i)) {
+                    $searchTexts->add(self::args()->get($i));
                 }
         }
-        if (!$filePath || !count($searchTextArr)) {
+        if (!$filePath || $searchTexts->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
-            exit(1);
+            exit(1); // END
         }
         if (!is_file($filePath)) {
             self::LineTag(TagEnum::ERROR)->print("'%s' does not exist", $filePath);
-            exit(1);
+            exit(1); // END
         }
         // handle
         $fileContent = file_get_contents($filePath);
         $validationResult = [];
-        foreach ($searchTextArr as $searchText) {
+        foreach ($searchTexts as $searchText) {
             $validationResult[] = [
                 'searchText' => $searchText,
                 'isContains' => StrHelper::contains($fileContent, $searchText)
@@ -431,8 +423,8 @@ class OPSHelper
         $amountValidationPass = count(array_filter($validationResult, function ($item) {
             return $item['isContains'];
         }));
-        if ($amountValidationPass === count($searchTextArr)) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTextArr));
+        if ($amountValidationPass === $searchTexts->count()) {
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
         } else {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->print("file '%s' does not contains (some) text(s):", $filePath);
             foreach ($validationResult as $result) {
@@ -441,7 +433,7 @@ class OPSHelper
                     ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
                     ->print($result['searchText']);
             }
-            exit(1);
+            exit(1); // END
         }
     }
 }

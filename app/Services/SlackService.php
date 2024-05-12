@@ -22,11 +22,11 @@ class SlackService
     private static function selectSlackChannel(): ?string
     {
         // myops | testing
-        if (getenv('REPOSITORY') === 'myops') {
+        if (getenv('REPOSITORY') === GitHubEnum::MYOPS) {
             return getenv('SLACK_CHANNEL'); // END
         }
         // database-utils
-        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('REPOSITORY') === 'engage-database-utils') {
+        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('REPOSITORY') === GitHubEnum::ENGAGE_DATABASE_UTILS) {
             return getenv('SLACK_CHANNEL_PRODUCTION'); // END
         }
         // master branches
@@ -39,14 +39,14 @@ class SlackService
     }
 
     /**
-     * @param array $argv
+     *  //todo check use internal
      * @return void
      */
-    public static function sendMessage(array $argv)
+    public static function sendMessage()
     {
         // === validate ===
         //    validate a message
-        $message = $argv[2] ?? null;
+        $message = self::arg(1);
         if (!$message) {
             self::LineTag(TagEnum::ERROR)->print("missing a MESSAGE");
             exit(); // END

@@ -1,4 +1,4 @@
-# PRODUCTION env
+# Production environment
 name: workflow--myops--main
 
 # load shell configuration (Ubuntu | .bashrc)
@@ -8,10 +8,11 @@ defaults:
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events
+  # Triggers the workflow on push events
   # Disable automatically trigger on push a new code to the master branch
   #  push:
   #    branches: [ "main" ]
+  # Triggers the workflow manually
   workflow_dispatch:
 
 jobs:

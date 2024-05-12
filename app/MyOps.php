@@ -2,11 +2,18 @@
 
 namespace App;
 
+require_once 'app/Helpers/helpers.php';
 require_once 'app/Helpers/AppHelper.php';
+// Notes: should require all traits here to use in classes
+require_once 'app/Traits/ConsoleBaseTrait.php';
 require_once 'app/Traits/ConsoleUITrait.php';
+// Notes: should put DirHelper at bottom of require zone
 require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
+use App\Classes\Base\CustomCollection;
+use App\Classes\Duration;
+use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Release;
 use App\Classes\Version;
 use App\Enum\AppInfoEnum;
@@ -18,21 +25,20 @@ use App\Enum\TagEnum;
 use App\Enum\UIEnum;
 use App\Helpers\AppHelper;
 use App\Helpers\AWSHelper;
-use App\Helpers\Data;
 use App\Helpers\DirHelper;
 use App\Helpers\DockerHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
 use App\Services\SlackService;
+use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
-use DateTime;
 
 AppHelper::requireOneAllPHPFilesInDir(DirHelper::getWorkingDir('app'));
 
 class MyOps
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     const SHELL_DATA_BASE_64 = '';
 
@@ -60,38 +66,33 @@ class MyOps
 
     }
 
-    public function run(array $argv)
+    public function run()
     {
-        // === params ===
-        $command = $argv[1] ?? null;
-        $param1 = $argv[2] ?? null; // to use if needed
-        $param2 = $argv[3] ?? null; // to use if needed
-
         // === validation ===
-        if (!$command) {
+        if (!self::command()) {
             self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", AppInfoEnum::APP_MAIN_COMMAND);
             $this->help();
             exit(); // END
         }
-        if (!array_key_exists($command, CommandEnum::SUPPORT_COMMANDS())) {
-            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", $command);
+        if (!array_key_exists(self::command(), CommandEnum::SUPPORT_COMMANDS())) {
+            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", self::command());
             $this->help();
             exit(); // END
         }
 
         // === handle ===
-        switch ($command) {
+        switch (self::command()) {
             // === this app ===
             case CommandEnum::HELP:
                 $this->help();
                 break;
             case CommandEnum::RELEASE:
                 // release
-                (new Release())->handle($argv);
+                (new Release())->handle();
                 break;
             case CommandEnum::VERSION:
                 // filter color
-                if($param1 === 'no-format-color'){
+                if (self::arg(1) === 'no-format-color') {
                     self::lineNew()->print(MyOps::getAppVersionStr());
                     break;
                 }
@@ -107,13 +108,13 @@ class MyOps
                 break;
             case CommandEnum::GET_SECRET_ENV:
                 // validate
-                if (!$param1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required secret name");
                     exit(); // END
                 }
                 // handle
-                AWSHelper::getSecretEnv($param1, $param2);
+                AWSHelper::getSecretEnv(self::arg(1), self::arg(2));
                 break;
             case CommandEnum::ELB_UPDATE_VERSION:
                 AWSHelper::ELBUpdateVersion();
@@ -129,7 +130,7 @@ class MyOps
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
                 break;
             case CommandEnum::HANDLE_CACHES_AND_GIT:
-                GitHubHelper::handleCachesAndGit($argv);
+                GitHubHelper::handleCachesAndGit();
                 break;
             case CommandEnum::FORCE_CHECKOUT:
                 GitHubHelper::forceCheckout();
@@ -140,10 +141,10 @@ class MyOps
                 break;
             // === Docker ===
             case CommandEnum::DOCKER_KEEP_IMAGE_BY:
-                DockerHelper::keepImageBy($argv);
+                DockerHelper::keepImageBy();
                 break;
             case CommandEnum::DOCKER_FILE_ADD_ENVS:
-                DockerHelper::DockerfileAddEnvs($argv);
+                DockerHelper::DockerfileAddEnvs();
                 break;
             // === utils ===
             case CommandEnum::HOME_DIR:
@@ -156,16 +157,16 @@ class MyOps
                 echo DirHelper::getWorkingDir();
                 break;
             case CommandEnum::REPLACE_TEXT_IN_FILE:
-                StrHelper::replaceTextInFile($argv);
+                StrHelper::replaceTextInFile();
                 break;
             case CommandEnum::SLACK:
-                SlackService::sendMessage($argv);
+                SlackService::sendMessage();
                 break;
             case CommandEnum::TMP:
-                DirHelper::tmp($argv);
+                DirHelper::tmp();
                 break;
             case CommandEnum::POST_WORK:
-                OPSHelper::postWork($argv);
+                OPSHelper::postWork();
                 break;
             case CommandEnum::CLEAR_OPS_DIR:
                 OPSHelper::clearOpsDir();
@@ -179,28 +180,28 @@ class MyOps
                 break;
             // === validation ===
             case CommandEnum::VALIDATE:
-                OPSHelper::validate($argv);
+                OPSHelper::validate();
                 break;
             // === UI/Text ===
             case CommandEnum::TITLE:
                 // validate
-                if (!$param1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->printTitle($param1);
+                self::LineNew()->printTitle(self::arg(1));
                 break;
             case CommandEnum::SUB_TITLE:
                 // validate
-                if (!$param1) {
+                if (!self::arg(1)) {
                     self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                         ->print("required sub title text");
                     exit(); // END
                 }
                 // handle
-                self::LineNew()->printSubTitle($param1);
+                self::LineNew()->printSubTitle(self::arg(1));
                 break;
             // === other ===
             default:
@@ -251,5 +252,5 @@ class MyOps
 // === end class zone ====
 
 // === execute zone ===
-(new MyOps())->run($argv);
+(new MyOps())->run();
 // === end execute zone ===

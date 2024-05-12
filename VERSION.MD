@@ -1,7 +1,8 @@
-# ops-lib versions
+# Versions
 
 ---
 ## === v3 ===
+- 3.3.0 | Optimize console arguments
 - 3.2.0 | Optimize text and console UI
 - 3.1.0 | change project name `myops`, update position of *myops* strategy
 ## === v2 ===

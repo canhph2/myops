@@ -2,6 +2,7 @@
 
 namespace TestApp;
 
+require_once 'app/Traits/ConsoleBaseTrait.php';
 require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Classes/Version.php';
 require_once 'app/Classes/Process.php';
@@ -65,6 +66,20 @@ class OpsLibTest extends BaseTestCase
         $this->customAssertIsStringAndContainsString("ENGAGEPLUS_CACHES_DIR", $envContent);
     }
 
+    public function testAddTmpDir()
+    {
+        (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
+            "myops tmp add"
+        ]))->execMultiInWorkDir();
+        // todo validate tmp dir already added to project
+    }
+
+    // todo function validate file or dir exist inside dir (to do update code validate)
+    // todo test case validate file constain text , text 1, text 2 , text 3...
+
+    /*
+     * require add tmp dir (above)
+     */
     public function testReplaceTextInFile()
     {
         (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [

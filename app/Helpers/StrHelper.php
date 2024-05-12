@@ -4,6 +4,7 @@
 namespace App\Helpers;
 
 use App\Enum\TagEnum;
+use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
 /**
@@ -11,7 +12,7 @@ use App\Traits\ConsoleUITrait;
  */
 class StrHelper
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     /**
      * @param string $toCheck
@@ -56,13 +57,13 @@ class StrHelper
      * = "file path" ((param 4)
      * @return void
      */
-    public static function replaceTextInFile(array $argv)
+    public static function replaceTextInFile()
     {
 // === validate ===
 //    validate a message
-        $searchText = $argv[2] ?? null;
-        $replaceText = $argv[3] ?? null;
-        $filePath = $argv[4] ?? null;
+        $searchText = self::arg(1);
+        $replaceText = self::arg(2);
+        $filePath = self::arg(3);
         if (!$searchText || is_null($replaceText) || !$filePath) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                 ->print("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
