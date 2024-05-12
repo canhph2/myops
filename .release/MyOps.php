@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.3.4 ===
+// === MyOps v3.3.5 ===
 
 // === Generated libraries classes ===
 
@@ -1372,7 +1372,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.3.4';
+    const APP_VERSION = '3.3.5';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1498,7 +1498,7 @@ class CommandEnum
             "VALIDATION" => [],
             self::VALIDATE => [
                 "required: 'set -e' in bash file",
-                sprintf('  should combine with exit 1, eg:   php %s validate TYPE | exit 1', AppInfoEnum::APP_MAIN_COMMAND),
+                sprintf('  should combine with exit 1, eg:   php %s validate TYPE || exit 1', AppInfoEnum::APP_MAIN_COMMAND),
                 '  support TYPEs:',
                 '    branch  : to only allow develop, staging, master',
                 '    docker  : docker should is running',
