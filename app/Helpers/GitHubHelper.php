@@ -91,7 +91,7 @@ class GitHubHelper
     {
         return (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
-        ]))->execMultiInWorkDirAndGetOutputStr();
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
     }
 
     /**
@@ -233,7 +233,7 @@ class GitHubHelper
         }
         // handle
         //    notify
-        SlackService::sendMessageInternalUsing(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternal(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
         //    get GitHub token and login gh
         self::LineNew()->printSubTitle("login gh (GitHub CLI)");
         (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
@@ -268,7 +268,7 @@ class GitHubHelper
                         self::LineIcon(IconEnum::DOT)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
                             ->print($message);
                         if ($duration->totalMinutes && $duration->totalMinutes > $lastSendingMinute && $duration->totalMinutes % 3 === 0) { // notify every A minutes
-                            SlackService::sendMessageInternalUsing(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
+                            SlackService::sendMessageInternal(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
                             $lastSendingMinute = $duration->totalMinutes;
                         }
                         sleep(30); // loop with interval = A seconds
@@ -279,7 +279,7 @@ class GitHubHelper
             }
         } // end loop
         //    notify
-        SlackService::sendMessageInternalUsing(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternal(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
     }
 
 
@@ -289,12 +289,12 @@ class GitHubHelper
         $resultInProgress = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
             sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
             sprintf('gh run list --workflow workflow--%s--%s.yml --status in_progress --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
-        ]))->execMultiInWorkDirAndGetOutputStr();
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
         // queue
         $resultQueued = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
             sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
             sprintf('gh run list --workflow workflow--%s--%s.yml --status queued --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
-        ]))->execMultiInWorkDirAndGetOutputStr();
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
         //
         return count(json_decode($resultInProgress, true)) || count(json_decode($resultQueued, true));
     }

@@ -12,6 +12,7 @@ require_once 'app/Enum/IndentLevelEnum.php';
 require_once 'app/Enum/TagEnum.php';
 require_once 'app/Enum/UIEnum.php';
 require_once 'app/Enum/IconEnum.php';
+require_once 'app/Enum/GitHubEnum.php';
 require_once 'app/Helpers/DirHelper.php';
 require_once 'app/Helpers/StrHelper.php';
 //
@@ -23,7 +24,7 @@ use App\Enum\TagEnum;
 use App\Helpers\DirHelper;
 
 
-class OpsLibTest extends BaseTestCase
+class MyOpsTest extends BaseTestCase
 {
     public function testAllFunctions()
     {
@@ -68,33 +69,36 @@ class OpsLibTest extends BaseTestCase
 
     public function testAddTmpDir()
     {
+        // add a 'tmp' dir
         (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "myops tmp add"
         ]))->execMultiInWorkDir();
-        // todo validate tmp dir already added to project
+        // test the result
+        $this->customAssertIsStringAndContainsString(join(' | ', TagEnum::VALIDATION_SUCCESS),
+            (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
+                sprintf("myops validate exists '%s' tmp", DirHelper::getWorkingDir())
+            ]))->execMultiInWorkDirAndGetOutputStrAll()
+        );
     }
-
-    // todo function validate file or dir exist inside dir (to do update code validate)
-    // todo test case validate file constain text , text 1, text 2 , text 3...
 
     /*
      * require add tmp dir (above)
      */
     public function testReplaceTextInFile()
     {
-        (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "myops tmp add"
-        ]))->execMulti();
         // create a test file
         $contentOrigin = "line 1 with AA BB CC";
         file_put_contents("tmp/test.txt", $contentOrigin);
+        // handle replace
         (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "myops replace-text-in-file 'BB' 'NEW TEST OK' 'tmp/test.txt'"
         ]))->execMulti();
-        $contentNew = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "cat tmp/test.txt"
-        ]))->execMulti()->getOutputStrAll();
-        self::assertTrue($contentOrigin !== $contentNew);
+        // test the result
+        $this->customAssertIsStringAndContainsString(join(' | ', TagEnum::VALIDATION_SUCCESS),
+            (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
+                "myops validate file-contains-text tmp/test.txt NEW TEST OK"
+            ]))->execMultiInWorkDirAndGetOutputStrAll()
+        );
     }
 
     public function testELBUpdateVersion()

@@ -4,9 +4,9 @@ namespace App\Enum;
 
 class TagEnum
 {
-    const NONE ='';
+    const NONE = '';
     const VALIDATION = 'VALIDATION';
-    const INFO ='INFO';
+    const INFO = 'INFO';
     const SUCCESS = 'SUCCESS';
     const ERROR = 'ERROR';
     const PARAMS = 'PARAMS';
@@ -16,4 +16,7 @@ class TagEnum
     const GIT = 'GIT/GITHUB';
     const DOCKER = 'DOCKER';
     const SLACK = 'SLACK';
+
+    const VALIDATION_ERROR = [self::VALIDATION, self::ERROR];
+    const VALIDATION_SUCCESS = [self::VALIDATION, self::SUCCESS];
 }

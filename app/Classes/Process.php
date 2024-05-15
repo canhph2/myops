@@ -244,7 +244,7 @@ class Process
      * will execMultiInWorkDir | skip check dir | return output string
      * @return string|null
      */
-    public function execMultiInWorkDirAndGetOutputStr(): ?string
+    public function execMultiInWorkDirAndGetOutputStrAll(): ?string
     {
         return $this->execMultiInWorkDir(true)->getOutputStrAll();
     }

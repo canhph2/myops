@@ -11,9 +11,6 @@ require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
-use App\Classes\Base\CustomCollection;
-use App\Classes\Duration;
-use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Release;
 use App\Classes\Version;
 use App\Enum\AppInfoEnum;
@@ -68,19 +65,23 @@ class MyOps
 
     public function run()
     {
-        // === validation ===
+        // validate
         if (!self::command()) {
-            self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", AppInfoEnum::APP_MAIN_COMMAND);
-            $this->help();
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
+                "Missing a command, should be '%s COMMAND', use the command '%s help' to see more details.",
+                AppInfoEnum::APP_MAIN_COMMAND, AppInfoEnum::APP_MAIN_COMMAND
+            );
             exit(); // END
         }
         if (!array_key_exists(self::command(), CommandEnum::SUPPORT_COMMANDS())) {
-            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", self::command());
-            $this->help();
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
+                "Do not support the command '%s', use the command '%s help' to see more details.",
+                self::command(), AppInfoEnum::APP_MAIN_COMMAND
+            );
             exit(); // END
         }
 
-        // === handle ===
+        // handle
         switch (self::command()) {
             // === this app ===
             case CommandEnum::HELP:
@@ -160,7 +161,7 @@ class MyOps
                 StrHelper::replaceTextInFile();
                 break;
             case CommandEnum::SLACK:
-                SlackService::sendMessage();
+                SlackService::sendMessageConsole();
                 break;
             case CommandEnum::TMP:
                 DirHelper::tmp();

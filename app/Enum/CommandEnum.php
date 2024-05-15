@@ -128,7 +128,8 @@ class CommandEnum
                 '    branch  : to only allow develop, staging, master',
                 '    docker  : docker should is running',
                 '    device  : should pass env var: DEVICE in your first command',
-                '    file-contains-text  : check if file should contain a text or some texts',
+                '    file-contains-text  : check if a file should contain a text or some texts',
+                '    exists DIR FILE_OR_DIR_1 FILE_OR_DIR_1 ... : check if a file or a directory should exists in a directory',
             ],
             // group title
             "UI/Text" => [],

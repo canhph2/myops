@@ -8,7 +8,8 @@ class ValidationTypeEnum
     const DOCKER = 'docker';
     const DEVICE = 'device';
     const FILE_CONTAINS_TEXT = 'file-contains-text';
+    const EXISTS = 'exists';
 
     // ===
-    const SUPPORT_LIST = [self::BRANCH, self::DOCKER, self::DEVICE, self::FILE_CONTAINS_TEXT];
+    const SUPPORT_LIST = [self::BRANCH, self::DOCKER, self::DEVICE, self::FILE_CONTAINS_TEXT, self::EXISTS];
 }

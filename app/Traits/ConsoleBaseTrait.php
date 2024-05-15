@@ -62,11 +62,12 @@ trait ConsoleBaseTrait
     }
 
     /**
+     * @param int $slicePosition will get myOpsArg from a slice position, .e.g $slicePosition = 1, get from 2nd myOpsArg
      * @return CustomCollection
      */
-    private static function args(): CustomCollection
+    private static function args(int $slicePosition = 0): CustomCollection
     {
-        return new CustomCollection(array_slice(self::getPHPArgs(), 2));
+        return new CustomCollection(array_slice(self::getPHPArgs(), 2 + $slicePosition));
     }
 
 }
