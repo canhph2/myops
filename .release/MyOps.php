@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.3.11 ===
+// === MyOps v3.3.12 ===
 
 // === Generated libraries classes ===
 
@@ -1386,7 +1386,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.3.11';
+    const APP_VERSION = '3.3.12';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2516,6 +2516,7 @@ class GitHubHelper
         }
         if(!is_dir($workspaceDir)){
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist");
+            return; //END
         }
         //    token
         $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
