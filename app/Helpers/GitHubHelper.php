@@ -233,7 +233,7 @@ class GitHubHelper
         }
         // handle
         //    notify
-        SlackService::sendMessageInternalUsing(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternal(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
         //    get GitHub token and login gh
         self::LineNew()->printSubTitle("login gh (GitHub CLI)");
         (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
@@ -268,7 +268,7 @@ class GitHubHelper
                         self::LineIcon(IconEnum::DOT)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
                             ->print($message);
                         if ($duration->totalMinutes && $duration->totalMinutes > $lastSendingMinute && $duration->totalMinutes % 3 === 0) { // notify every A minutes
-                            SlackService::sendMessageInternalUsing(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
+                            SlackService::sendMessageInternal(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
                             $lastSendingMinute = $duration->totalMinutes;
                         }
                         sleep(30); // loop with interval = A seconds
@@ -279,7 +279,7 @@ class GitHubHelper
             }
         } // end loop
         //    notify
-        SlackService::sendMessageInternalUsing(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternal(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
     }
 
 

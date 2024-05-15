@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.3.5 ===
+// === MyOps v3.3.6 ===
 
 // === Generated libraries classes ===
 
@@ -1386,7 +1386,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.3.5';
+    const APP_VERSION = '3.3.6';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2219,13 +2219,7 @@ class OPSHelper
     {
         // validate
         $filePath = $customFilePath ?? self::arg(2);
-        $searchTexts = new CustomCollection($customSearchTexts);
-        for ($i = 3; $i < 20; $i++) {
-            if (self::args()->count() > $i)
-                if (self::args()->get($i)) {
-                    $searchTexts->add(self::args()->get($i));
-                }
-        }
+        $searchTexts = count($customSearchTexts) ? new CustomCollection($customSearchTexts) : self::args(2);
         if (!$filePath || $searchTexts->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
             exit(1); // END
@@ -2247,9 +2241,9 @@ class OPSHelper
             return $item['isContains'];
         }));
         if ($amountValidationPass === $searchTexts->count()) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
         } else {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->print("file '%s' does not contains (some) text(s):", $filePath);
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("file '%s' does not contains (some) text(s):", $filePath);
             foreach ($validationResult as $result) {
                 self::LineIndent(IndentLevelEnum::ITEM_LINE)
                     ->setIcon($result['isContains'] ? IconEnum::CHECK : IconEnum::X)
@@ -2525,7 +2519,7 @@ class GitHubHelper
         }
         // handle
         //    notify
-        SlackService::sendMessageInternalUsing(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternal(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
         //    get GitHub token and login gh
         self::LineNew()->printSubTitle("login gh (GitHub CLI)");
         (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
@@ -2560,7 +2554,7 @@ class GitHubHelper
                         self::LineIcon(IconEnum::DOT)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
                             ->print($message);
                         if ($duration->totalMinutes && $duration->totalMinutes > $lastSendingMinute && $duration->totalMinutes % 3 === 0) { // notify every A minutes
-                            SlackService::sendMessageInternalUsing(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
+                            SlackService::sendMessageInternal(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
                             $lastSendingMinute = $duration->totalMinutes;
                         }
                         sleep(30); // loop with interval = A seconds
@@ -2571,7 +2565,7 @@ class GitHubHelper
             }
         } // end loop
         //    notify
-        SlackService::sendMessageInternalUsing(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternal(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
     }
 
 
@@ -3296,17 +3290,18 @@ class Data
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Helpers\AWSHelper;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
 class SlackService
 {
-    use ConsoleUITrait;
+    use ConsoleBaseTrait, ConsoleUITrait;
 
     /**
-     * select appropriate Slack channel to notify
-     * - production channel: notify to the team, the manager  (required: env > SLACK_CHANNEL_PRODUCTION)
-     * - develop and test channel: notify to the developer (required: env > SLACK_CHANNEL)
-     * - default will return: SLACK_CHANNEL
+     * Will select appropriate Slack channel to notify
+     * - production channel: notify to the team, the manager  (required: env > SLACK_CHANNEL)
+     * - develop and test channel: notify to the developer (required: env > SLACK_CHANNEL_DEV)
+     * - default will return: SLACK_CHANNEL_DEV
      *
      * @return string|null
      */
@@ -3314,46 +3309,69 @@ class SlackService
     {
         // myops | testing
         if (getenv('REPOSITORY') === GitHubEnum::MYOPS) {
-            return getenv('SLACK_CHANNEL'); // END
+            return getenv('SLACK_CHANNEL_DEV'); // END
         }
         // database-utils
-        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('REPOSITORY') === GitHubEnum::ENGAGE_DATABASE_UTILS) {
-            return getenv('SLACK_CHANNEL_PRODUCTION'); // END
+        if (getenv('SLACK_CHANNEL') && getenv('REPOSITORY') === GitHubEnum::ENGAGE_DATABASE_UTILS) {
+            return getenv('SLACK_CHANNEL'); // END
         }
         // master branches
-        if (getenv('SLACK_CHANNEL_PRODUCTION') && getenv('BRANCH') === GitHubEnum::MASTER) {
-            return getenv('SLACK_CHANNEL_PRODUCTION'); // END
+        if (getenv('SLACK_CHANNEL') && getenv('BRANCH') === GitHubEnum::MASTER) {
+            return getenv('SLACK_CHANNEL'); // END
         }
-        //    in case don't config SLACK_CHANNEL_PRODUCTION, will fall to default below here for master branch
-        // branches: staging, develop, ticket's branches
-        return getenv('SLACK_CHANNEL'); // END
+        // in case don't config SLACK_CHANNEL, will fall to default below here for master branch
+        //    branches: staging, develop, ticket's branches
+        return getenv('SLACK_CHANNEL_DEV'); // END
     }
 
     /**
-     *  //todo check use internal
+     * Mode 1: command line
      * @return void
      */
-    public static function sendMessage()
+    public static function sendMessageConsole(): void
     {
-        // === validate ===
-        //    validate a message
-        $message = self::arg(1);
-        if (!$message) {
-            self::LineTag(TagEnum::ERROR)->print("missing a MESSAGE");
-            exit(); // END
-        }
-        //    validate env vars
-        $repository = getenv('REPOSITORY');
-        $branch = getenv('BRANCH');
-        $slackBotToken = getenv('SLACK_BOT_TOKEN');
-        $slackChannel = self::selectSlackChannel();
-        if (!$repository || !$branch || !$slackBotToken || !$slackChannel) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
-                ->print("missing a BRANCH or REPOSITORY or SLACK_BOT_TOKEN or SLACK_CHANNEL");
-            exit(); // END
-        }
+        self::sendMessage(self::arg(1), getenv('REPOSITORY'), getenv('BRANCH'),
+            getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
+    }
 
-        // === handle ===
+    /**
+     * - Mode 2: To use internal MyOps application:
+     *    - call with custom parameters
+     *    - require AWS credential have access to env-ops (Secret Manager)
+     * @param string|null $customMessage
+     * @param string $customRepository
+     * @param string $customBranch
+     * @return void
+     */
+    public static function sendMessageInternal(string $customMessage = null, string $customRepository = 'custom_repository',
+                                               string $customBranch = 'custom_branch'): void
+    {
+
+        self::sendMessage($customMessage, $customRepository, $customBranch,
+            AWSHelper::getValueEnvOpsSecretManager('SLACK_BOT_TOKEN'),
+            AWSHelper::getValueEnvOpsSecretManager('SLACK_CHANNEL_DEV')
+        );
+    }
+
+
+    /**
+     * @param string|null $message
+     * @param string|null $repository
+     * @param string|null $branch
+     * @param string|null $slackBotToken
+     * @param string|null $slackChannel
+     * @return void
+     */
+    private static function sendMessage(string $message = null, string $repository = null, string $branch = null,
+                                        string $slackBotToken = null, string $slackChannel = null): void
+    {
+        // validate
+        if (!$message || !$repository || !$branch || !$slackBotToken || !$slackChannel) {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
+                ->print("missing a MESSAGE or a BRANCH or REPOSITORY or SLACK_BOT_TOKEN or SLACK_CHANNEL");
+            exit(); // END
+        }
+        // handle
         $slackUrl = "https://slack.com/api/chat.postMessage";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $slackUrl);
@@ -3371,34 +3389,14 @@ class SlackService
             $responseCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             if ($responseCode === 200) {
                 if (json_decode($response, true)['ok']) {
-                    self::LineTagMultiple([TagEnum::SLACK, TagEnum::SUCCESS])->print("Message sent successfully | Slack status OK | HTTP code $responseCode");
+                    self::LineTagMultiple([TagEnum::SLACK, TagEnum::SUCCESS])->print("Your message have sent successfully | Slack status is OK | HTTP code is $responseCode");
                 } else {
-                    self::LineTagMultiple([TagEnum::SLACK, TagEnum::ERROR])->print(json_decode($response, true)['error'] . " | Slack status NO | HTTP code $responseCode");
+                    self::LineTagMultiple([TagEnum::SLACK, TagEnum::ERROR])->print(json_decode($response, true)['error'] . " | Slack status is NO | HTTP code is $responseCode");
                 }
             } else {
-                self::LineTagMultiple([TagEnum::SLACK, TagEnum::ERROR])->print("Error sending message | HTTP code $responseCode");
+                self::LineTagMultiple([TagEnum::SLACK, TagEnum::ERROR])->print("Sending message has got an error | HTTP code is $responseCode");
             }
         }
-    }
-
-    /**
-     * required AWS credential have access to env-ops (Secret Manager)
-     * use internal lib
-     * @return void
-     */
-    public static function sendMessageInternalUsing(
-        string $message,
-        string $repository = 'unknown_repository',
-        string $branch = 'unknown_branch'
-    )
-    {
-        // handle
-        //    prepare envs
-        putenv('REPOSITORY=' . $repository);
-        putenv('BRANCH=' . $branch);
-        putenv('SLACK_BOT_TOKEN=' . AWSHelper::getValueEnvOpsSecretManager('SLACK_BOT_TOKEN'));
-        putenv('SLACK_CHANNEL=' . AWSHelper::getValueEnvOpsSecretManager('SLACK_CHANNEL'));
-        self::sendMessage(['script path', 'slack', $message]);
     }
 }
 
@@ -3612,19 +3610,23 @@ class MyOps
 
     public function run()
     {
-        // === validation ===
+        // validate
         if (!self::command()) {
-            self::LineTag(TagEnum::ERROR)->print("missing command, should be '%s COMMAND'", AppInfoEnum::APP_MAIN_COMMAND);
-            $this->help();
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
+                "Missing a command, should be '%s COMMAND', use the command '%s help' to see more details.",
+                AppInfoEnum::APP_MAIN_COMMAND, AppInfoEnum::APP_MAIN_COMMAND
+            );
             exit(); // END
         }
         if (!array_key_exists(self::command(), CommandEnum::SUPPORT_COMMANDS())) {
-            self::LineTag(TagEnum::ERROR)->print("do not support this command '%s'", self::command());
-            $this->help();
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
+                "Do not support the command '%s', use the command '%s help' to see more details.",
+                self::command(), AppInfoEnum::APP_MAIN_COMMAND
+            );
             exit(); // END
         }
 
-        // === handle ===
+        // handle
         switch (self::command()) {
             // === this app ===
             case CommandEnum::HELP:
@@ -3704,7 +3706,7 @@ class MyOps
                 StrHelper::replaceTextInFile();
                 break;
             case CommandEnum::SLACK:
-                SlackService::sendMessage();
+                SlackService::sendMessageConsole();
                 break;
             case CommandEnum::TMP:
                 DirHelper::tmp();
