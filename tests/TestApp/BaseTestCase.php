@@ -6,10 +6,10 @@ use PHPUnit\Framework\TestCase;
 
 class BaseTestCase extends TestCase
 {
-    protected function customAssertIsStringAndContainsString(string $searchStr = null, string $checkingStr = null)
+    protected function customAssertIsStringAndContainsString(string $searchStr = null, string $toCheckStr = null)
     {
-        $this->assertIsString($checkingStr);
-        $this->assertStringContainsString($searchStr, $checkingStr);
+        $this->assertIsString($toCheckStr);
+        $this->assertStringContainsString($searchStr, $toCheckStr);
     }
     public function testAllFunctions()
     {

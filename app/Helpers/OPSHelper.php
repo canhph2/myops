@@ -398,13 +398,7 @@ class OPSHelper
     {
         // validate
         $filePath = $customFilePath ?? self::arg(2);
-        $searchTexts = new CustomCollection($customSearchTexts);
-        for ($i = 3; $i < 20; $i++) {
-            if (self::args()->count() > $i)
-                if (self::args()->get($i)) {
-                    $searchTexts->add(self::args()->get($i));
-                }
-        }
+        $searchTexts = count($customSearchTexts) ? new CustomCollection($customSearchTexts) : self::args(2);
         if (!$filePath || $searchTexts->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
             exit(1); // END
@@ -426,9 +420,9 @@ class OPSHelper
             return $item['isContains'];
         }));
         if ($amountValidationPass === $searchTexts->count()) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::SUCCESS])->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
         } else {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->print("file '%s' does not contains (some) text(s):", $filePath);
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("file '%s' does not contains (some) text(s):", $filePath);
             foreach ($validationResult as $result) {
                 self::LineIndent(IndentLevelEnum::ITEM_LINE)
                     ->setIcon($result['isContains'] ? IconEnum::CHECK : IconEnum::X)
