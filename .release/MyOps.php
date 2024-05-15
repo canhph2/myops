@@ -259,7 +259,7 @@ class Release
     }
 
     /**
-     * remove tab 
+     * remove tab
      * remove namespace
      * remove some unused elements
      * @param string $classPath
@@ -2516,7 +2516,7 @@ class GitHubHelper
         }
         // handle
         //    notify
-        SlackService::sendMessageInternal(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternal(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), basename($workspaceDir), $branchToBuild);
         //    get GitHub token and login gh
         self::LineNew()->printSubTitle("login gh (GitHub CLI)");
         (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
@@ -2563,7 +2563,7 @@ class GitHubHelper
             }
         } // end loop
         //    notify
-        SlackService::sendMessageInternal(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternal(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), basename($workspaceDir), $branchToBuild);
     }
 
 
