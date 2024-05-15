@@ -230,7 +230,7 @@ class GitHubHelper
             return; //END
         }
         if(!is_dir($workspaceDir)){
-            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist");
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist", $workspaceDir);
             return; //END
         }
         //    token
