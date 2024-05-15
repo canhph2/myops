@@ -91,7 +91,7 @@ class GitHubHelper
     {
         return (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
-        ]))->execMultiInWorkDirAndGetOutputStr();
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
     }
 
     /**
@@ -289,12 +289,12 @@ class GitHubHelper
         $resultInProgress = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
             sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
             sprintf('gh run list --workflow workflow--%s--%s.yml --status in_progress --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
-        ]))->execMultiInWorkDirAndGetOutputStr();
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
         // queue
         $resultQueued = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
             sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
             sprintf('gh run list --workflow workflow--%s--%s.yml --status queued --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
-        ]))->execMultiInWorkDirAndGetOutputStr();
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
         //
         return count(json_decode($resultInProgress, true)) || count(json_decode($resultQueued, true));
     }

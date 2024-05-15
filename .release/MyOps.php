@@ -1,11 +1,25 @@
 <?php
-// === MyOps v3.3.4 ===
+// === MyOps v3.3.5 ===
 
 // === Generated libraries classes ===
 
 
 
 // === helpers functions ===
+
+
+if (!function_exists('d')) {
+    /**
+     * @param mixed ...$vars
+     * @return void
+     */
+    function d(...$vars): void
+    {
+        foreach ($vars as $var) {
+            var_dump($var);
+        }
+    }
+}
 
 if (!function_exists('dd')) {
     /**
@@ -561,7 +575,7 @@ class Process
      * will execMultiInWorkDir | skip check dir | return output string
      * @return string|null
      */
-    public function execMultiInWorkDirAndGetOutputStr(): ?string
+    public function execMultiInWorkDirAndGetOutputStrAll(): ?string
     {
         return $this->execMultiInWorkDir(true)->getOutputStrAll();
     }
@@ -1372,7 +1386,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.3.4';
+    const APP_VERSION = '3.3.5';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1498,12 +1512,13 @@ class CommandEnum
             "VALIDATION" => [],
             self::VALIDATE => [
                 "required: 'set -e' in bash file",
-                sprintf('  should combine with exit 1, eg:   php %s validate TYPE | exit 1', AppInfoEnum::APP_MAIN_COMMAND),
+                sprintf('  should combine with exit 1, eg:   php %s validate TYPE || exit 1', AppInfoEnum::APP_MAIN_COMMAND),
                 '  support TYPEs:',
                 '    branch  : to only allow develop, staging, master',
                 '    docker  : docker should is running',
                 '    device  : should pass env var: DEVICE in your first command',
-                '    file-contains-text  : check if file should contain a text or some texts',
+                '    file-contains-text  : check if a file should contain a text or some texts',
+                '    exists DIR FILE_OR_DIR_1 FILE_OR_DIR_1 ... : check if a file or a directory should exists in a directory',
             ],
             // group title
             "UI/Text" => [],
@@ -1623,9 +1638,9 @@ class IconEnum
 
 class TagEnum
 {
-    const NONE ='';
+    const NONE = '';
     const VALIDATION = 'VALIDATION';
-    const INFO ='INFO';
+    const INFO = 'INFO';
     const SUCCESS = 'SUCCESS';
     const ERROR = 'ERROR';
     const PARAMS = 'PARAMS';
@@ -1635,6 +1650,9 @@ class TagEnum
     const GIT = 'GIT/GITHUB';
     const DOCKER = 'DOCKER';
     const SLACK = 'SLACK';
+
+    const VALIDATION_ERROR = [self::VALIDATION, self::ERROR];
+    const VALIDATION_SUCCESS = [self::VALIDATION, self::SUCCESS];
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1674,9 +1692,10 @@ class ValidationTypeEnum
     const DOCKER = 'docker';
     const DEVICE = 'device';
     const FILE_CONTAINS_TEXT = 'file-contains-text';
+    const EXISTS = 'exists';
 
     // ===
-    const SUPPORT_LIST = [self::BRANCH, self::DOCKER, self::DEVICE, self::FILE_CONTAINS_TEXT];
+    const SUPPORT_LIST = [self::BRANCH, self::DOCKER, self::DEVICE, self::FILE_CONTAINS_TEXT, self::EXISTS];
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1806,7 +1825,7 @@ class DirHelper
 
 // [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Classes\GitHubRepositoryInfo;
-// [REMOVED] use App\Classes\Release;
+// [REMOVED] use App\Classes\Process;
 // [REMOVED] use App\Enum\AppInfoEnum;
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\IconEnum;
@@ -1815,7 +1834,6 @@ class DirHelper
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
-// [REMOVED] use App\Classes\Process;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
@@ -2140,6 +2158,9 @@ class OPSHelper
             case ValidationTypeEnum::FILE_CONTAINS_TEXT:
                 self::validateFileContainsText();
                 break;
+            case ValidationTypeEnum::EXISTS:
+                self::validateExists();
+                break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
                     ->print("should be like eg:   '%s validate branch'", AppInfoEnum::APP_MAIN_COMMAND);
@@ -2238,6 +2259,37 @@ class OPSHelper
             exit(1); // END
         }
     }
+
+    private static function validateExists()
+    {
+        // validate
+        $dirToCheck1 = self::arg(2);
+        $fileOrDirToValidate1 = self::args(2);
+        if (!$dirToCheck1 || $fileOrDirToValidate1->isEmpty()) {
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing 'dirToCheck' or 'fileOrDirToValidate' (can path multiple fileOrDir1 fileOrDir2)");
+            exit(1); // END
+        }
+        if (!is_dir($dirToCheck1)) {
+            self::LineTag(TagEnum::ERROR)->print(" dir '%s' does not exist", $dirToCheck1);
+            exit(1); // END
+        }
+        // handle
+        $dirToCheck1FilesAndDirs = scandir($dirToCheck1);
+        $invalid = false;
+        foreach ($fileOrDirToValidate1 as $fileOrDir) {
+            if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
+                self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
+                    ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
+            } else {
+                $invalid = true;
+                self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
+                    ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
+            }
+        }
+        if ($invalid) {
+            exit(1); // END
+        }
+    }
 }
 
 // [REMOVED] namespace App\Helpers;
@@ -2331,7 +2383,7 @@ class GitHubHelper
     {
         return (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
-        ]))->execMultiInWorkDirAndGetOutputStr();
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
     }
 
     /**
@@ -2529,12 +2581,12 @@ class GitHubHelper
         $resultInProgress = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
             sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
             sprintf('gh run list --workflow workflow--%s--%s.yml --status in_progress --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
-        ]))->execMultiInWorkDirAndGetOutputStr();
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
         // queue
         $resultQueued = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
             sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
             sprintf('gh run list --workflow workflow--%s--%s.yml --status queued --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
-        ]))->execMultiInWorkDirAndGetOutputStr();
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
         //
         return count(json_decode($resultInProgress, true)) || count(json_decode($resultQueued, true));
     }
@@ -3412,11 +3464,12 @@ trait ConsoleBaseTrait
     }
 
     /**
+     * @param int $slicePosition will get myOpsArg from a slice position, .e.g $slicePosition = 1, get from 2nd myOpsArg
      * @return CustomCollection
      */
-    private static function args(): CustomCollection
+    private static function args(int $slicePosition = 0): CustomCollection
     {
-        return new CustomCollection(array_slice(self::getPHPArgs(), 2));
+        return new CustomCollection(array_slice(self::getPHPArgs(), 2 + $slicePosition));
     }
 
 }

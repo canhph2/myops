@@ -68,9 +68,16 @@ class OpsLibTest extends BaseTestCase
 
     public function testAddTmpDir()
     {
+        // handle test
         (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
             "myops tmp add"
         ]))->execMultiInWorkDir();
+        // validate result
+        $result = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
+            sprintf("myops validate exists '%s' tmp", DirHelper::getWorkingDir())
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
+        print "cong test$result";
+
         // todo validate tmp dir already added to project
     }
 
