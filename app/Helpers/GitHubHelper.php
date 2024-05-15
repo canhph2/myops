@@ -212,10 +212,7 @@ class GitHubHelper
 
     /**
      * [GitHub Actions]
-     * build strategy:
-     *  #1 20 minutes per project, 8 projects x 20 ~ 3 hours per command : not good | run weekly
-     *  #2 run every 3 minutes, 1 project, rebuild after 7 days | run every 30 minutes | need saved data
-     * steps:
+     * - Steps:
      *    1. get token from Secret (require aws credential)
      *    2. login gh with token
      *    3. run workflow
@@ -226,10 +223,20 @@ class GitHubHelper
         $branchToBuild = GitHubEnum::DEVELOP;
         self::LineNew()->printTitle("Build all projects to keep the GitHub runner token connecting (develop env)");
         // validate
+        //    token
         $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
         if (!$GitHubToken) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->print("GitHub token not found (in Secret Manager)");
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("GitHub token not found (in Secret Manager)");
             return; //END
+        }
+        //    workspace dir
+        $workspaceDir = self::arg(1);
+        if(!$workspaceDir){
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("require input the 'workspace directory' .e.g 'caches directory' or 'develop workspace directory'");
+            return; //END
+        }
+        if(!is_dir($workspaceDir)){
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist");
         }
         // handle
         //    notify
@@ -241,7 +248,6 @@ class GitHubHelper
         ]))->execMultiInWorkDir();
         //    send command to build all projects
         self::LineNew()->printSubTitle("send command to build all projects");
-        $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
         self::LineNew()->print("WORKSPACE DIR = $workspaceDir");
         /** @var GitHubRepositoryInfo $repoInfo */
         foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {

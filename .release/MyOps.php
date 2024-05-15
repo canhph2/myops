@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.3.7 ===
+// === MyOps v3.3.10 ===
 
 // === Generated libraries classes ===
 
@@ -1386,12 +1386,10 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.3.7';
+    const APP_VERSION = '3.3.10';
 }
 
 // [REMOVED] namespace App\Enum;
-
-// [REMOVED] use App\MyOps;
 
 class CommandEnum
 {
@@ -1485,7 +1483,10 @@ class CommandEnum
                 '.e.g to test source code in the server'
             ],
             //        GitHub Actions
-            self::BUILD_ALL_PROJECTS => ['[GitHub Actions] build all projects to keep the GitHub runner token connecting'], // ES-2381
+            self::BUILD_ALL_PROJECTS => [
+                '[GitHub Actions] build all projects to keep the GitHub runner token connecting',
+                "require input the 'workspace directory' .e.g 'caches directory' or 'develop workspace directory' "
+            ], // ES-2381
             // group title
             "DOCKER" => [],
             self::DOCKER_KEEP_IMAGE_BY => ['Keep image by repository and tag, use for keep latest image. Required:  imageRepository imageTag'],
@@ -1707,8 +1708,8 @@ class PostWorkEnum
 
 // [REMOVED] namespace App\Helpers;
 
-// [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Classes\Process;
+// [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
@@ -1733,14 +1734,12 @@ class DirHelper
     }
 
     /**
-     * @param string|null $withSubDirOrFile
+     * @param string|null $subDirOrFile
      * @return string
      */
-    public static function getWorkingDir(string $withSubDirOrFile = null): string
+    public static function getWorkingDir(string $subDirOrFile = null): string
     {
-        return $withSubDirOrFile
-            ? sprintf("%s/%s", $_SERVER['PWD'], $withSubDirOrFile)
-            : $_SERVER['PWD'];
+        return $subDirOrFile ? sprintf("%s/%s", $_SERVER['PWD'], $subDirOrFile) : $_SERVER['PWD'];
     }
 
     /**
@@ -2498,10 +2497,7 @@ class GitHubHelper
 
     /**
      * [GitHub Actions]
-     * build strategy:
-     *  #1 20 minutes per project, 8 projects x 20 ~ 3 hours per command : not good | run weekly
-     *  #2 run every 3 minutes, 1 project, rebuild after 7 days | run every 30 minutes | need saved data
-     * steps:
+     * - Steps:
      *    1. get token from Secret (require aws credential)
      *    2. login gh with token
      *    3. run workflow
@@ -2512,10 +2508,20 @@ class GitHubHelper
         $branchToBuild = GitHubEnum::DEVELOP;
         self::LineNew()->printTitle("Build all projects to keep the GitHub runner token connecting (develop env)");
         // validate
+        //    token
         $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
         if (!$GitHubToken) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->print("GitHub token not found (in Secret Manager)");
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("GitHub token not found (in Secret Manager)");
             return; //END
+        }
+        //    workspace dir
+        $workspaceDir = self::arg(1);
+        if(!$workspaceDir){
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("require input the 'workspace directory' .e.g 'caches directory' or 'develop workspace directory'");
+            return; //END
+        }
+        if(!is_dir($workspaceDir)){
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist");
         }
         // handle
         //    notify
@@ -2527,7 +2533,6 @@ class GitHubHelper
         ]))->execMultiInWorkDir();
         //    send command to build all projects
         self::LineNew()->printSubTitle("send command to build all projects");
-        $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
         self::LineNew()->print("WORKSPACE DIR = $workspaceDir");
         /** @var GitHubRepositoryInfo $repoInfo */
         foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {
@@ -3030,7 +3035,7 @@ class DockerHelper
             exit(); // END
         }
         if (!is_file($DockerfilePath)) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
                 ->print("'DockerfilePath' isn't a file");
             exit(); // END
         }
