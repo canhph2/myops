@@ -2,8 +2,8 @@
 
 namespace App\Helpers;
 
-use App\Enum\TagEnum;
 use App\Classes\Process;
+use App\Enum\TagEnum;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
@@ -28,14 +28,12 @@ class DirHelper
     }
 
     /**
-     * @param string|null $withSubDirOrFile
+     * @param string|null $subDirOrFile
      * @return string
      */
-    public static function getWorkingDir(string $withSubDirOrFile = null): string
+    public static function getWorkingDir(string $subDirOrFile = null): string
     {
-        return $withSubDirOrFile
-            ? sprintf("%s/%s", $_SERVER['PWD'], $withSubDirOrFile)
-            : $_SERVER['PWD'];
+        return $subDirOrFile ? sprintf("%s/%s", $_SERVER['PWD'], $subDirOrFile) : $_SERVER['PWD'];
     }
 
     /**

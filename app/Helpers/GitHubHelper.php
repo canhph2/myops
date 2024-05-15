@@ -223,10 +223,20 @@ class GitHubHelper
         $branchToBuild = GitHubEnum::DEVELOP;
         self::LineNew()->printTitle("Build all projects to keep the GitHub runner token connecting (develop env)");
         // validate
+        //    token
         $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
         if (!$GitHubToken) {
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("GitHub token not found (in Secret Manager)");
             return; //END
+        }
+        //    workspace dir
+        $workspaceDir = self::arg(1);
+        if(!$workspaceDir){
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("require input the 'workspace directory' .e.g 'caches directory' or 'develop workspace directory'");
+            return; //END
+        }
+        if(!is_dir($workspaceDir)){
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist");
         }
         // handle
         //    notify
@@ -238,8 +248,6 @@ class GitHubHelper
         ]))->execMultiInWorkDir();
         //    send command to build all projects
         self::LineNew()->printSubTitle("send command to build all projects");
-        $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
-        dd($_SERVER['PWD'], $workspaceDir); // todo
         self::LineNew()->print("WORKSPACE DIR = $workspaceDir");
         /** @var GitHubRepositoryInfo $repoInfo */
         foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {
