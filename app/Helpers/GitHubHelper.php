@@ -231,6 +231,7 @@ class GitHubHelper
         }
         if(!is_dir($workspaceDir)){
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist");
+            return; //END
         }
         //    token
         $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
