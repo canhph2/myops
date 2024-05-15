@@ -99,9 +99,6 @@ class MyOpsTest extends BaseTestCase
                 "myops validate file-contains-text tmp/test.txt NEW TEST OK"
             ]))->execMultiInWorkDirAndGetOutputStrAll()
         );
-        print (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "myops validate file-contains-text tmp/test.txt NEW TEST OK"
-        ]))->execMultiInWorkDirAndGetOutputStrAll();
     }
 
     public function testELBUpdateVersion()
