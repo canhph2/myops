@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.3.12 ===
+// === MyOps v3.3.13 ===
 
 // === Generated libraries classes ===
 
@@ -1386,7 +1386,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.3.12';
+    const APP_VERSION = '3.3.13';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2515,7 +2515,7 @@ class GitHubHelper
             return; //END
         }
         if(!is_dir($workspaceDir)){
-            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist");
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist", $workspaceDir);
             return; //END
         }
         //    token
