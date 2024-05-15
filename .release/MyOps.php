@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.3.7 ===
+// === MyOps v3.3.8 ===
 
 // === Generated libraries classes ===
 
@@ -1386,7 +1386,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.3.7';
+    const APP_VERSION = '3.3.8';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2498,10 +2498,7 @@ class GitHubHelper
 
     /**
      * [GitHub Actions]
-     * build strategy:
-     *  #1 20 minutes per project, 8 projects x 20 ~ 3 hours per command : not good | run weekly
-     *  #2 run every 3 minutes, 1 project, rebuild after 7 days | run every 30 minutes | need saved data
-     * steps:
+     * - Steps:
      *    1. get token from Secret (require aws credential)
      *    2. login gh with token
      *    3. run workflow
@@ -2514,7 +2511,7 @@ class GitHubHelper
         // validate
         $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
         if (!$GitHubToken) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])->print("GitHub token not found (in Secret Manager)");
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("GitHub token not found (in Secret Manager)");
             return; //END
         }
         // handle
@@ -2528,6 +2525,7 @@ class GitHubHelper
         //    send command to build all projects
         self::LineNew()->printSubTitle("send command to build all projects");
         $workspaceDir = str_replace("/" . basename($_SERVER['PWD']), '', $_SERVER['PWD']);
+        dd($_SERVER['PWD'], $workspaceDir); // todo
         self::LineNew()->print("WORKSPACE DIR = $workspaceDir");
         /** @var GitHubRepositoryInfo $repoInfo */
         foreach (GitHubEnum::GET_REPOSITORIES_INFO() as $repoInfo) {
@@ -3030,7 +3028,7 @@ class DockerHelper
             exit(); // END
         }
         if (!is_file($DockerfilePath)) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
                 ->print("'DockerfilePath' isn't a file");
             exit(); // END
         }

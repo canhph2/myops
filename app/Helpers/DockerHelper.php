@@ -102,7 +102,7 @@ class DockerHelper
             exit(); // END
         }
         if (!is_file($DockerfilePath)) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR])
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
                 ->print("'DockerfilePath' isn't a file");
             exit(); // END
         }
