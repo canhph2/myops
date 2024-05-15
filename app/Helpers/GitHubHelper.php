@@ -245,7 +245,7 @@ class GitHubHelper
         self::LineNew()->printSubTitle("login gh (GitHub CLI)");
         (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
             sprintf("echo %s | gh auth login --with-token", $GitHubToken),
-        ]))->execMultiInWorkDir();
+        ]))->execMultiInWorkDir(true);
         //    send command to build all projects
         self::LineNew()->printSubTitle("send command to build all projects");
         self::LineNew()->print("WORKSPACE DIR = $workspaceDir");
