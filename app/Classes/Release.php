@@ -11,16 +11,21 @@ use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\PostWorkEnum;
 use App\Enum\TagEnum;
+use App\Enum\TimeEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\Helpers\AppHelper;
 use App\Helpers\AWSHelper;
 use App\Helpers\Data;
+use App\Helpers\DateHelper;
 use App\Helpers\DirHelper;
 use App\Helpers\DockerHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
+use App\Helpers\TimeHelper;
+use App\Helpers\UuidHelper;
+use App\Helpers\ValidationHelper;
 use App\MyOps;
 use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
@@ -52,6 +57,7 @@ class Release
             DirHelper::getClassPathAndFileName(TextLine::class),
             DirHelper::getClassPathAndFileName(GitHubRepositoryInfo::class),
             DirHelper::getClassPathAndFileName(Duration::class),
+            DirHelper::getClassPathAndFileName(ValidationObj::class),
             // === Enum ===
             DirHelper::getClassPathAndFileName(AppInfoEnum::class),
             DirHelper::getClassPathAndFileName(CommandEnum::class),
@@ -63,6 +69,7 @@ class Release
             DirHelper::getClassPathAndFileName(DockerEnum::class),
             DirHelper::getClassPathAndFileName(ValidationTypeEnum::class),
             DirHelper::getClassPathAndFileName(PostWorkEnum::class),
+            DirHelper::getClassPathAndFileName(TimeEnum::class),
             // === Helper ===
             DirHelper::getClassPathAndFileName(DirHelper::class),
             DirHelper::getClassPathAndFileName(OPSHelper::class),
@@ -72,6 +79,10 @@ class Release
             DirHelper::getClassPathAndFileName(DockerHelper::class),
             DirHelper::getClassPathAndFileName(StrHelper::class),
             DirHelper::getClassPathAndFileName(Data::class),
+            DirHelper::getClassPathAndFileName(DateHelper::class),
+            DirHelper::getClassPathAndFileName(TimeHelper::class),
+            DirHelper::getClassPathAndFileName(UuidHelper::class),
+            DirHelper::getClassPathAndFileName(ValidationHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===

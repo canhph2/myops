@@ -61,6 +61,18 @@ class DirHelper
 //    }
 
     /**
+     * usage: <name>::join($part1, $part2, $morePart) -> "$part1/$part2/$morePart"
+     * @param ...$dirOrFileParts
+     * @return string|null
+     */
+    public static function join(...$dirOrFileParts): ?string
+    {
+        return join('/', array_filter($dirOrFileParts, function ($item) {
+            return $item; // filter null or empty parts
+        }));
+    }
+
+    /**
      * handle tmp directory
      * - tmp add : create a tmp directory
      * - tmp remove : remove the tmp directory

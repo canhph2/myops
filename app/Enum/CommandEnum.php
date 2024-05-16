@@ -37,6 +37,7 @@ class CommandEnum
     const TMP = 'tmp';
     const POST_WORK = 'post-work';
     const CLEAR_OPS_DIR = 'clear-ops-dir';
+    const TIME = 'time';
 
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
@@ -116,6 +117,11 @@ class CommandEnum
             ],
             self::POST_WORK => ["do post works. Optional: add param 'skip-check-dir' to skip check dir"],
             self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
+            self::TIME =>[
+                'is used to measure project build time',
+                "use 'time begin' to mark a beginning time, will return an id of time object",
+                "use 'time end' to mark an ending time, will return a text of period time",
+            ],
             // group title
             "PRIVATE" => [],
             self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => ['[PRIVATE] get S3 whitelist IPs to add to AWS Policy'],
