@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.3.11 ===
+// === MyOps v3.4.1 ===
 
 // === Generated libraries classes ===
 
@@ -125,16 +125,21 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\PostWorkEnum;
 // [REMOVED] use App\Enum\TagEnum;
+// [REMOVED] use App\Enum\TimeEnum;
 // [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
 // [REMOVED] use App\Helpers\AppHelper;
 // [REMOVED] use App\Helpers\AWSHelper;
 // [REMOVED] use App\Helpers\Data;
+// [REMOVED] use App\Helpers\DateHelper;
 // [REMOVED] use App\Helpers\DirHelper;
 // [REMOVED] use App\Helpers\DockerHelper;
 // [REMOVED] use App\Helpers\GitHubHelper;
 // [REMOVED] use App\Helpers\OPSHelper;
 // [REMOVED] use App\Helpers\StrHelper;
+// [REMOVED] use App\Helpers\TimeHelper;
+// [REMOVED] use App\Helpers\UuidHelper;
+// [REMOVED] use App\Helpers\ValidationHelper;
 // [REMOVED] use App\MyOps;
 // [REMOVED] use App\Services\SlackService;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
@@ -166,6 +171,7 @@ class Release
             DirHelper::getClassPathAndFileName(TextLine::class),
             DirHelper::getClassPathAndFileName(GitHubRepositoryInfo::class),
             DirHelper::getClassPathAndFileName(Duration::class),
+            DirHelper::getClassPathAndFileName(ValidationObj::class),
             // === Enum ===
             DirHelper::getClassPathAndFileName(AppInfoEnum::class),
             DirHelper::getClassPathAndFileName(CommandEnum::class),
@@ -177,6 +183,7 @@ class Release
             DirHelper::getClassPathAndFileName(DockerEnum::class),
             DirHelper::getClassPathAndFileName(ValidationTypeEnum::class),
             DirHelper::getClassPathAndFileName(PostWorkEnum::class),
+            DirHelper::getClassPathAndFileName(TimeEnum::class),
             // === Helper ===
             DirHelper::getClassPathAndFileName(DirHelper::class),
             DirHelper::getClassPathAndFileName(OPSHelper::class),
@@ -186,6 +193,10 @@ class Release
             DirHelper::getClassPathAndFileName(DockerHelper::class),
             DirHelper::getClassPathAndFileName(StrHelper::class),
             DirHelper::getClassPathAndFileName(Data::class),
+            DirHelper::getClassPathAndFileName(DateHelper::class),
+            DirHelper::getClassPathAndFileName(TimeHelper::class),
+            DirHelper::getClassPathAndFileName(UuidHelper::class),
+            DirHelper::getClassPathAndFileName(ValidationHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
@@ -1379,6 +1390,61 @@ class Duration
     }
 }
 
+// [REMOVED] namespace App\Classes;
+
+class ValidationObj
+{
+    /** @var string|null */
+    private $error;
+    /** @var array */
+    private $data;
+
+    /**
+     * @param string|null $error
+     * @param array $data
+     */
+    public function __construct(string $error = null, array $data = [])
+    {
+        $this->error = $error;
+        $this->data = $data;
+    }
+
+    public function getError(): ?string
+    {
+        return $this->error;
+    }
+
+    public function setError(string $error = null): ValidationObj
+    {
+        $this->error = $error;
+        return $this;
+    }
+
+    public function clearError(): ValidationObj
+    {
+        $this->error = null; // clear
+        return $this;
+    }
+
+
+    public function getData(): array
+    {
+        return $this->data;
+    }
+
+    public function setData(array $data): ValidationObj
+    {
+        $this->data = $data;
+        return $this;
+    }
+
+    // === functions ===
+    public function fails(): bool
+    {
+        return (bool)$this->error;
+    }
+}
+
 // [REMOVED] namespace App\Enum;
 
 class AppInfoEnum
@@ -1386,7 +1452,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.3.11';
+    const APP_VERSION = '3.4.1';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1426,6 +1492,7 @@ class CommandEnum
     const TMP = 'tmp';
     const POST_WORK = 'post-work';
     const CLEAR_OPS_DIR = 'clear-ops-dir';
+    const TIME = 'time';
 
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
@@ -1505,6 +1572,11 @@ class CommandEnum
             ],
             self::POST_WORK => ["do post works. Optional: add param 'skip-check-dir' to skip check dir"],
             self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
+            self::TIME =>[
+                'is used to measure project build time',
+                "use 'time begin' to mark a beginning time, will return an id of time object",
+                "use 'time end' to mark an ending time, will return a text of period time",
+            ],
             // group title
             "PRIVATE" => [],
             self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => ['[PRIVATE] get S3 whitelist IPs to add to AWS Policy'],
@@ -1652,6 +1724,10 @@ class TagEnum
     const DOCKER = 'DOCKER';
     const SLACK = 'SLACK';
 
+    // progress
+    const BEGIN = 'BEGIN';
+    const END = 'END';
+
     const VALIDATION_ERROR = [self::VALIDATION, self::ERROR];
     const VALIDATION_SUCCESS = [self::VALIDATION, self::SUCCESS];
 }
@@ -1704,6 +1780,16 @@ class ValidationTypeEnum
 class PostWorkEnum
 {
     const SKIP_CHECK_DIR = 'skip-check-dir';
+}
+
+// [REMOVED] namespace App\Enum;
+
+class TimeEnum
+{
+    const BEGIN = 'begin';
+    const END = 'end';
+
+    const SUPPORT_SUB_COMMANDS = [self::BEGIN, self::END];
 }
 
 // [REMOVED] namespace App\Helpers;
@@ -1765,6 +1851,18 @@ class DirHelper
 //    {
 //        return exec('git rev-parse --show-toplevel');
 //    }
+
+    /**
+     * usage: <name>::join($part1, $part2, $morePart) -> "$part1/$part2/$morePart"
+     * @param ...$dirOrFileParts
+     * @return string|null
+     */
+    public static function join(...$dirOrFileParts): ?string
+    {
+        return join('/', array_filter($dirOrFileParts, function ($item) {
+            return $item; // filter null or empty parts
+        }));
+    }
 
     /**
      * handle tmp directory
@@ -3288,6 +3386,271 @@ class Data
     }
 }
 
+// [REMOVED] namespace App\Helpers;
+
+// [REMOVED] use DateTime;
+// [REMOVED] use DateTimeImmutable;
+// [REMOVED] use DateTimeInterface;
+// [REMOVED] use DateTimeZone;
+
+class DateHelper
+{
+    /**
+     * @param DateTimeInterface $dateTime
+     * @param DateTimeZone|null $timezone
+     *
+     * @return DateTime
+     */
+    public static function prepareDateTime(DateTimeInterface $dateTime, DateTimeZone $timezone = null): DateTime
+    {
+        return $dateTime instanceof DateTimeImmutable
+            ? (new DateTime())->setTimestamp($dateTime->getTimestamp())
+                ->setTimezone($timezone ?? new DateTimeZone('Z')) // case DateTimeImmutable
+            : $dateTime->setTimezone($timezone ?? new DateTimeZone('Z')); // case DateTime
+    }
+
+    /**
+     * @param DateTimeInterface|null $dateTime1
+     * @param DateTimeInterface|null $dateTime2
+     *
+     * @return bool
+     */
+    public static function isSameDatetime(?DateTimeInterface $dateTime1, ?DateTimeInterface $dateTime2): bool
+    {
+        $dateTime1Format = $dateTime1 ? $dateTime1->format('Y-m-d H:i:s') : '';
+        $dateTime2Format = $dateTime2 ? $dateTime2->format('Y-m-d H:i:s') : '';
+
+        return $dateTime1Format === $dateTime2Format;
+    }
+
+    public static function totalSeconds(DateTimeInterface $dateTime1, DateTimeInterface $dateTime2): int
+    {
+        $interval = $dateTime1->diff($dateTime2);
+        return $interval->s + ($interval->i * 60) + ($interval->h * 3600) + ($interval->d * 86400);
+    }
+
+    public static function getTimePeriodText(DateTimeInterface $dateTime1, DateTimeInterface $dateTime2): string
+    {
+        $interval = $dateTime1->diff($dateTime2);
+        $days = $interval->days ? sprintf("%s day%s", $interval->days, $interval->days > 1 ? 's' : '') : '';
+        $hours = $interval->h ? sprintf(" %s hour%s", $interval->h, $interval->h > 1 ? 's' : '') : '';
+        $minutes = $interval->i ? sprintf(" %s minute%s", $interval->i, $interval->i > 1 ? 's' : '') : '';
+        $seconds = $interval->s ? sprintf(" %s second%s", $interval->s, $interval->s > 1 ? 's' : '') : '';
+        return trim("$days$hours$minutes$seconds") ?: '0 second';
+    }
+}
+
+// [REMOVED] namespace App\Helpers;
+
+// [REMOVED] use App\Enum\TagEnum;
+// [REMOVED] use App\Enum\TimeEnum;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
+// [REMOVED] use App\Traits\ConsoleUITrait;
+// [REMOVED] use DateTimeImmutable;
+
+class TimeHelper
+{
+    use ConsoleBaseTrait, ConsoleUITrait;
+
+    public static function handleTimeInConsole(): void
+    {
+        // validate
+        ValidationHelper::validateSubCommandOrParam1('sub-command-of-time', TimeEnum::SUPPORT_SUB_COMMANDS);
+        //    sub-command 'end'
+        if (self::arg(1) === TIMEEnum::END) {
+            //    id of time progress in handle ending
+            if (!self::arg(2)) {
+                self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("missing a id of time progress");
+                exit(1); // END app
+            }
+            //    id of time progress is uuid 4
+            if (!UuidHelper::isValid(self::arg(2))) {
+                self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("id of time progress is invalid format");
+                exit(1); // END app
+            }
+            //    file to store id of time progress does not exist
+            if (!is_file(DirHelper::join(sys_get_temp_dir(), self::arg(2)))) {
+                self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("file to store id of time progress does not exist");
+                exit(1); // END app
+            }
+        }
+        // handle
+        switch (self::arg(1)) {
+            case TimeEnum::BEGIN:
+                echo self::handleTimeBegin();
+                break;
+            case TimeEnum::END:
+                echo self::handleTimeEnd(self::arg(2));
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Print an id of time progress
+     * @return void
+     */
+    private static function handleTimeBegin(): string
+    {
+        $idOfTimeProgress = UuidHelper::generateUuid4Native();
+        file_put_contents(DirHelper::join(sys_get_temp_dir(), $idOfTimeProgress), time());
+        return $idOfTimeProgress;
+    }
+
+    /**
+     * Handle and print a text of time progress
+     * @return void
+     */
+    private static function handleTimeEnd(string $idOfTimeProgress): string
+    {
+        $beginTime = (new DateTimeImmutable())->setTimestamp((int)file_get_contents(DirHelper::join(sys_get_temp_dir(), $idOfTimeProgress)));
+        return DateHelper::getTimePeriodText($beginTime, new DateTimeImmutable());
+    }
+}
+
+// [REMOVED] namespace App\Helpers;
+
+class UuidHelper
+{
+    /**
+     * The nil UUID is special form of UUID that is specified to have all 128 bits set to zero.
+     * @link http://tools.ietf.org/html/rfc4122#section-4.1.7
+     */
+    const NIL = '00000000-0000-0000-0000-000000000000';
+
+    /**
+     * Regular expression pattern for matching a valid UUID of any variant.
+     */
+    const VALID_PATTERN = '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$';
+
+    /**
+     * @return string
+     */
+    public static function generateUuid4Native(): string
+    {
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff | 0x4000),
+            mt_rand(0, 0x3fff | 0x8000),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
+        );
+    }
+
+    /**
+     * Check if a string is a valid UUID.
+     *
+     * @param string $uuid The string UUID to test
+     * @return boolean
+     */
+    public static function isValid($uuid)
+    {
+        $uuid = str_replace(['urn:', 'uuid:', 'URN:', 'UUID:', '{', '}'], '', $uuid);
+
+        if ($uuid == self::NIL) {
+            return true;
+        }
+
+        if (!preg_match('/' . self::VALID_PATTERN . '/D', $uuid)) {
+            return false;
+        }
+
+        return true;
+    }
+}
+
+// [REMOVED] namespace App\Helpers;
+
+// [REMOVED] use App\Classes\ValidationObj;
+// [REMOVED] use App\Enum\AppInfoEnum;
+// [REMOVED] use App\Enum\CommandEnum;
+// [REMOVED] use App\Enum\TagEnum;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
+// [REMOVED] use App\Traits\ConsoleUITrait;
+
+class ValidationHelper
+{
+    use ConsoleBaseTrait, ConsoleUITrait;
+
+    /**
+     * create a new ValidationObj
+     * @param string|null $error
+     * @param array $data
+     * @return ValidationObj
+     */
+    public static function new(string $error = null, array $data = []): ValidationObj
+    {
+        return new ValidationObj($error, $data);
+    }
+
+    /**
+     * create a new ValidationObj and set valid status
+     * @return ValidationObj
+     */
+    public static function valid(): ValidationObj
+    {
+        return self::new()->clearError();
+    }
+
+    /**
+     * create a new ValidationObj and set invalid status
+     * @param string $errorMessage
+     * @return ValidationObj
+     */
+    public static function invalid(string $errorMessage): ValidationObj
+    {
+        return self::new()->setError($errorMessage);
+    }
+
+    // === console zone ===
+
+    /**
+     * @return void
+     */
+    public static function validateCommand(): void
+    {
+        if (!self::command()) {
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)
+                ->print("Missing a command, should be '%s COMMAND', use the command '%s help' to see more details.",
+                    AppInfoEnum::APP_MAIN_COMMAND, AppInfoEnum::APP_MAIN_COMMAND
+                );
+            exit(1); // END app
+        }
+        if (!array_key_exists(self::command(), CommandEnum::SUPPORT_COMMANDS())) {
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
+                "Do not support the command '%s', use the command '%s help' to see more details.",
+                self::command(), AppInfoEnum::APP_MAIN_COMMAND
+            );
+            exit(); // END
+        }
+    }
+
+    /**
+     * @param string $subCommandNameOrParam1Name
+     * @param array $subCommandSupport
+     * @return void
+     */
+    public static function validateSubCommandOrParam1(string $subCommandNameOrParam1Name = 'sub-command or param 1',
+                                                      array  $subCommandSupport = []): void
+    {
+        if (!self::arg(1)) {
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("missing a %s", $subCommandNameOrParam1Name);
+            exit(1); // END app
+        }
+        if (!in_array(self::arg(1), $subCommandSupport)) {
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
+                "Do not support the sub-command '%s', use these sub-command: %s",
+                self::arg(1), join(', ', $subCommandSupport)
+            );
+            exit(); // END
+        }
+    }
+}
+
 // [REMOVED] namespace App\Services;
 
 // [REMOVED] use App\Enum\GitHubEnum;
@@ -3614,21 +3977,7 @@ class MyOps
     public function run()
     {
         // validate
-        if (!self::command()) {
-            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
-                "Missing a command, should be '%s COMMAND', use the command '%s help' to see more details.",
-                AppInfoEnum::APP_MAIN_COMMAND, AppInfoEnum::APP_MAIN_COMMAND
-            );
-            exit(); // END
-        }
-        if (!array_key_exists(self::command(), CommandEnum::SUPPORT_COMMANDS())) {
-            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
-                "Do not support the command '%s', use the command '%s help' to see more details.",
-                self::command(), AppInfoEnum::APP_MAIN_COMMAND
-            );
-            exit(); // END
-        }
-
+        ValidationHelper::validateCommand();
         // handle
         switch (self::command()) {
             // === this app ===
@@ -3719,6 +4068,9 @@ class MyOps
                 break;
             case CommandEnum::CLEAR_OPS_DIR:
                 OPSHelper::clearOpsDir();
+                break;
+            case CommandEnum::TIME:
+                TimeHelper::handleTimeInConsole();
                 break;
             // === private ===
             case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:

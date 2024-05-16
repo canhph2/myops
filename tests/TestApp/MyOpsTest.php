@@ -15,6 +15,7 @@ require_once 'app/Enum/IconEnum.php';
 require_once 'app/Enum/GitHubEnum.php';
 require_once 'app/Helpers/DirHelper.php';
 require_once 'app/Helpers/StrHelper.php';
+require_once 'app/Helpers/UuidHelper.php';
 //
 require_once 'tests/TestApp/BaseTestCase.php';
 
@@ -22,6 +23,7 @@ use App\Classes\Process;
 use App\Classes\Version;
 use App\Enum\TagEnum;
 use App\Helpers\DirHelper;
+use App\Helpers\UuidHelper;
 
 
 class MyOpsTest extends BaseTestCase
@@ -147,6 +149,13 @@ class MyOpsTest extends BaseTestCase
         $this->customAssertIsStringAndContainsString("--", $result1);
         $this->customAssertIsStringAndContainsString("test sub title", $result1);
         // validate
+    }
+
+    public function testUUIdHelper()
+    {
+        $this->assertIsString(UuidHelper::generateUuid4Native());
+        $this->assertFalse(UuidHelper::isValid("abcd"));
+        $this->assertTrue(UuidHelper::isValid(UuidHelper::generateUuid4Native()));
     }
 
 }

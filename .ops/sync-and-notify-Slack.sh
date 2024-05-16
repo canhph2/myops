@@ -4,7 +4,7 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 [[ -f ~/.zshrc ]] && source ~/.zshrc # MAC
 [[ -f ~/.bashrc ]] && source ~/.bashrc # Ubuntu
 
-# usage:    sh _ops/build-and-deploy-with-caches.sh 'DEVICE_NAME'
+# usage:    sh .ops/sync-and-notify-Slack.sh 'DEVICE_NAME'
 
 myops version
 
