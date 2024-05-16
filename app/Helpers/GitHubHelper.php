@@ -110,7 +110,8 @@ class GitHubHelper
     }
 
     /**
-     * require envs: GITHUB_PERSONAL_ACCESS_TOKEN
+     * - Require envs: GITHUB_PERSONAL_ACCESS_TOKEN
+     * - parameter priority: $customRepository > console arg > getenv()
      * @param string|null $customRepository
      * @param string|null $customBranch
      * @return void
@@ -118,9 +119,9 @@ class GitHubHelper
     public static function handleCachesAndGit(string $customRepository = null, string $customBranch = null): void
     {
         // === validate ===
-        //    validate env vars
-        $repository = $customRepository ?? getenv('REPOSITORY');
-        $branch = $customBranch ?? getenv('BRANCH');
+        //        env vars
+        $repository = $customRepository ?: self::arg(1) ?: getenv('REPOSITORY');
+        $branch = $customBranch ?: self::arg(2) ?: getenv('BRANCH');
         if ($repository === GitHubEnum::ENGAGE_API_DEPLOY) {
             $branch = $customBranch ?? getenv('API_DEPLOY_BRANCH');
         }
@@ -225,11 +226,11 @@ class GitHubHelper
         // validate
         //    workspace dir
         $workspaceDir = self::arg(1);
-        if(!$workspaceDir){
+        if (!$workspaceDir) {
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("require input the 'workspace directory' .e.g 'caches directory' or 'develop workspace directory'");
             return; //END
         }
-        if(!is_dir($workspaceDir)){
+        if (!is_dir($workspaceDir)) {
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist", $workspaceDir);
             return; //END
         }
