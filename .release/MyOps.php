@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.6.8 ===
+// === MyOps v3.6.9 ===
 
 // === Generated libraries classes ===
 
@@ -1480,7 +1480,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.6.8';
+    const APP_VERSION = '3.6.9';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2092,7 +2092,8 @@ class OPSHelper
         // load caches of this source code
         GitHubHelper::handleCachesAndGit(GitHubEnum::MYOPS, GitHubHelper::getCurrentBranch());
         // create an alias 'myops'
-        self::createAlias();
+        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
+        self::createAlias($EngagePlusCachesRepositoryOpsAppReleasePath);
         //
         self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("sync done");
@@ -2110,10 +2111,9 @@ class OPSHelper
      *
      * @return void
      */
-    private static function createAlias()
+    private static function createAlias(string $OpsAppReleasePath)
     {
-        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
-        $alias = sprintf("alias %s=\"php %s\"", AppInfoEnum::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
+        $alias = sprintf("alias %s=\"php %s\"", AppInfoEnum::APP_MAIN_COMMAND, $OpsAppReleasePath);
         $shellConfigurationFiles = [
             DirHelper::getHomeDir('.zshrc'), // Mac
             DirHelper::getHomeDir('.bashrc'), // Ubuntu
@@ -2129,10 +2129,7 @@ class OPSHelper
                     //    remove old alias (wrong path, old date alias)
                     $oldAliases = StrHelper::findLinesContainsTextInFile($shellConfigurationFile, AppInfoEnum::APP_MAIN_COMMAND);
                     foreach ($oldAliases as $oldAlias) {
-                        StrHelper::replaceTextInFile([
-                            'script path', 'command-name', // param 0,1
-                            $oldAlias, '', $shellConfigurationFile
-                        ]);
+                        StrHelper::replaceTextInFile($oldAlias, '', $shellConfigurationFile);
                     }
                     //    add new alias
                     if (file_put_contents($shellConfigurationFile, $alias . PHP_EOL, FILE_APPEND)) {
@@ -2152,44 +2149,11 @@ class OPSHelper
      *
      * @return void
      */
-    public static function  createAliasDirectly()
+    public static function createAliasDirectly()
     {
         self::LineNew()->printTitle(__FUNCTION__);
         //
-        dd(DirHelper::getScriptFullPath());
-        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
-        $alias = sprintf("alias %s=\"php %s\"", AppInfoEnum::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
-        $shellConfigurationFiles = [
-            DirHelper::getHomeDir('.zshrc'), // Mac
-            DirHelper::getHomeDir('.bashrc'), // Ubuntu
-        ];
-        foreach ($shellConfigurationFiles as $shellConfigurationFile) {
-            if (is_file($shellConfigurationFile)) {
-                self::lineNew()->printSubTitle("create alias '%s' at '%s'", AppInfoEnum::APP_MAIN_COMMAND, $shellConfigurationFile);
-                // already setup
-                if (StrHelper::contains(file_get_contents($shellConfigurationFile), $alias)) {
-                    self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)->print("already setup alias '%s'", AppInfoEnum::APP_MAIN_COMMAND);
-                } else {
-                    // setup alias
-                    //    remove old alias (wrong path, old date alias)
-                    $oldAliases = StrHelper::findLinesContainsTextInFile($shellConfigurationFile, AppInfoEnum::APP_MAIN_COMMAND);
-                    foreach ($oldAliases as $oldAlias) {
-                        StrHelper::replaceTextInFile([
-                            'script path', 'command-name', // param 0,1
-                            $oldAlias, '', $shellConfigurationFile
-                        ]);
-                    }
-                    //    add new alias
-                    if (file_put_contents($shellConfigurationFile, $alias . PHP_EOL, FILE_APPEND)) {
-                        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)->print("adding alias done");
-                    } else {
-                        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)->print("adding alias failure");
-                    }
-                }
-                // validate alias
-                self::validateFileContainsText($shellConfigurationFile, $alias);
-            }
-        }
+        self::createAlias(DirHelper::getScriptFullPath());
         // validate the result
         //    show open new session to show right version
         (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
@@ -3419,16 +3383,17 @@ class StrHelper
      * required
      * - "search text"  (param 2)
      * - "replace text"  (param 3)
-     * = "file path" ((param 4)
+     * - "file path" ((param 4)
+     * - Param priority: $customParam (CODE)  > self::arg(A) (CONSOLE)
      * @return void
      */
-    public static function replaceTextInFile()
+    public static function replaceTextInFile(string $customSearchText = null, string $customReplaceText = null, string $customFilePath = null)
     {
-// === validate ===
-//    validate a message
-        $searchText = self::arg(1);
-        $replaceText = self::arg(2);
-        $filePath = self::arg(3);
+        // === validate ===
+        //    validate a message
+        $searchText = $customSearchText ?? self::arg(1);
+        $replaceText = $customReplaceText ?? self::arg(2);
+        $filePath = $customFilePath ?? self::arg(3);
         if (!$searchText || is_null($replaceText) || !$filePath) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                 ->print("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
@@ -3438,12 +3403,11 @@ class StrHelper
             self::LineTag(TagEnum::ERROR)->print("$filePath does not exist");
             exit(); // END
         }
-
-// === handle ===
+        // === handle ===
         $oldText = file_get_contents($filePath);
         file_put_contents($filePath, str_replace($searchText, $replaceText, $oldText));
         $newText = file_get_contents($filePath);
-//    validate result
+        //    validate result
         self::lineNew()->printCondition($oldText !== $newText,
             "replace done with successful result", "replace done with failed result");
     }
