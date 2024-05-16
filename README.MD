@@ -2,18 +2,18 @@
 *DevOps | CICD | Ops App (PHP)*
 
 ## === Usage ===
-- *Add this and the other project's README.MD (should be in the DevOps Notes section):*
-
+- *Add this instruction in the project's README.MD (should be in the DevOps Notes section):*
 
 ---
 ## === DevOps Notes ===
-- Tech stacks: `Mac 14`/`Ubuntu 18`, `Docker 20.x`, `nvm` and `node 12` (Angular), `php 7.2`, `aws 2.x`, `gh 2.47` (GitHub CLI) | all (or above).
+- Require a tech stacks: `Mac 14`/`Ubuntu 18`, `Docker 20.x`, `nvm` and `node 12` (Angular), `php 7.2`, `aws 2.x`, `gh 2.47` (GitHub CLI) | all (or above).
+- Require a support application for DevOps has name `myops`, can clone at https://github.com/congnqnexlesoft/myops (private)
 ### Manual Build And Deploy
 - Manual Build And Deploy
-    - Checkout branch: `develop`, `staging`, `master`
-    - Run command:
+    - Checkout the branch: `develop`, `staging`, `master`
+    - Run the command below:
 ```shell
-sh _ops/build-and-deploy-with-caches.sh 'Developer (manual)'
+sh .ops/build-and-deploy-with-caches.sh 'Developer (manual)'
 ```
 ---
 ### To sync new code (manually) | require installed
