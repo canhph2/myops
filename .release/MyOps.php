@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.6.2 ===
+// === MyOps v3.6.4 ===
 
 // === Generated libraries classes ===
 
@@ -138,6 +138,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Helpers\DockerHelper;
 // [REMOVED] use App\Helpers\GitHubHelper;
 // [REMOVED] use App\Helpers\OPSHelper;
+// [REMOVED] use App\Helpers\ProcessHelper;
 // [REMOVED] use App\Helpers\StrHelper;
 // [REMOVED] use App\Helpers\TimeHelper;
 // [REMOVED] use App\Helpers\UuidHelper;
@@ -199,6 +200,7 @@ class Release
             DirHelper::getClassPathAndFileName(Data::class),
             DirHelper::getClassPathAndFileName(DateHelper::class),
             DirHelper::getClassPathAndFileName(TimeHelper::class),
+            DirHelper::getClassPathAndFileName(ProcessHelper::class),
             DirHelper::getClassPathAndFileName(UuidHelper::class),
             DirHelper::getClassPathAndFileName(ValidationHelper::class),
             // === Services ===
@@ -1478,7 +1480,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.6.2';
+    const APP_VERSION = '3.6.4';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3572,6 +3574,44 @@ class TimeHelper
         $beginTime = (new DateTimeImmutable())->setTimestamp((int)file_get_contents(DirHelper::join(sys_get_temp_dir(), $idOfTimeProgress)));
         return DateHelper::getTimePeriodText($beginTime, new DateTimeImmutable());
     }
+}
+
+// [REMOVED] namespace App\Helpers;
+
+// [REMOVED] use App\Enum\ProcessEnum;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
+// [REMOVED] use App\Traits\ConsoleUITrait;
+
+class ProcessHelper
+{
+    use ConsoleBaseTrait, ConsoleUITrait;
+
+    public static function handleProcessInConsole(): void
+    {
+        // validate
+        ValidationHelper::validateSubCommandOrParam1('sub-command-of-time', ProcessEnum::SUPPORT_SUB_COMMANDS);
+
+        // handle
+        switch (self::arg(1)) {
+            case ProcessEnum::START:
+                echo self::handleProcessStart();
+                break;
+            case ProcessEnum::FINISH:
+                // do something later
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * @return string a 'MyOps process' id
+     */
+    private static function handleProcessStart(): string
+    {
+        return TimeHelper::handleTimeBegin();
+    }
+
 }
 
 // [REMOVED] namespace App\Helpers;
