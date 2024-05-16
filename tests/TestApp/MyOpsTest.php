@@ -158,4 +158,13 @@ class MyOpsTest extends BaseTestCase
         $this->assertTrue(UuidHelper::isValid(UuidHelper::generateUuid4Native()));
     }
 
+    public function testProcess()
+    {
+        $processId = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
+            "myops process start"
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
+        $this->assertIsString($processId);
+        $this->assertTrue(UuidHelper::isValid($processId));
+    }
+
 }

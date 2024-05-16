@@ -54,16 +54,17 @@ class StrHelper
      * required
      * - "search text"  (param 2)
      * - "replace text"  (param 3)
-     * = "file path" ((param 4)
+     * - "file path" ((param 4)
+     * - Param priority: $customParam (CODE)  > self::arg(A) (CONSOLE)
      * @return void
      */
-    public static function replaceTextInFile()
+    public static function replaceTextInFile(string $customSearchText = null, string $customReplaceText = null, string $customFilePath = null)
     {
-// === validate ===
-//    validate a message
-        $searchText = self::arg(1);
-        $replaceText = self::arg(2);
-        $filePath = self::arg(3);
+        // === validate ===
+        //    validate a message
+        $searchText = $customSearchText ?? self::arg(1);
+        $replaceText = $customReplaceText ?? self::arg(2);
+        $filePath = $customFilePath ?? self::arg(3);
         if (!$searchText || is_null($replaceText) || !$filePath) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                 ->print("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
@@ -73,12 +74,11 @@ class StrHelper
             self::LineTag(TagEnum::ERROR)->print("$filePath does not exist");
             exit(); // END
         }
-
-// === handle ===
+        // === handle ===
         $oldText = file_get_contents($filePath);
         file_put_contents($filePath, str_replace($searchText, $replaceText, $oldText));
         $newText = file_get_contents($filePath);
-//    validate result
+        //    validate result
         self::lineNew()->printCondition($oldText !== $newText,
             "replace done with successful result", "replace done with failed result");
     }

@@ -3,8 +3,13 @@
 namespace App\Services;
 
 use App\Enum\GitHubEnum;
+use App\Enum\ProcessEnum;
 use App\Enum\TagEnum;
 use App\Helpers\AWSHelper;
+use App\Helpers\GitHubHelper;
+use App\Helpers\TimeHelper;
+use App\Helpers\UuidHelper;
+use App\Helpers\ValidationHelper;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
@@ -47,6 +52,40 @@ class SlackService
     {
         self::sendMessage(self::arg(1), getenv('REPOSITORY'), getenv('BRANCH'),
             getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
+    }
+
+    /**
+     * required these envs:  DEVICE, REPOSITORY
+     * format: <app> slack-progress sub-command <MyOps process id>
+     * @return void
+     */
+    public static function sendMessageProcessConsole(): void
+    {
+        // validate
+        ValidationHelper::validateSubCommandOrParam1('sub-command-of-process', ProcessEnum::SUPPORT_SUB_COMMANDS);
+        //    process id
+        if (self::arg(2) && !UuidHelper::isValid(self::arg(2))) {
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("id of time progress is invalid format");
+            exit(1); // END app
+        }
+        // handle
+        switch (self::arg(1)) {
+            case ProcessEnum::START:
+                $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
+                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName()));
+                self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
+                    getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
+                break;
+            case ProcessEnum::FINISH:
+                $buildTime = self::arg(2) ? sprintf("in %s", TimeHelper::handleTimeEnd(self::arg(2))) : '';
+                $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
+                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime));
+                self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
+                    getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
+                break;
+            default:
+                break;
+        }
     }
 
     /**
@@ -93,8 +132,7 @@ class SlackService
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
-            "channel" => $slackChannel,
-            "text" => sprintf("[%s] [%s] > %s", $repository, $branch, $message),
+            "channel" => $slackChannel, "text" => sprintf("[%s | %s] %s", $repository, $branch, $message),
         ]));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
         $response = curl_exec($curl);

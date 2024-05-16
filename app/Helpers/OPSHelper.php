@@ -95,7 +95,8 @@ class OPSHelper
         // load caches of this source code
         GitHubHelper::handleCachesAndGit(GitHubEnum::MYOPS, GitHubHelper::getCurrentBranch());
         // create an alias 'myops'
-        self::createAlias();
+        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
+        self::createAlias($EngagePlusCachesRepositoryOpsAppReleasePath);
         //
         self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("sync done");
@@ -113,10 +114,9 @@ class OPSHelper
      *
      * @return void
      */
-    private static function createAlias()
+    private static function createAlias(string $OpsAppReleasePath)
     {
-        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
-        $alias = sprintf("alias %s=\"php %s\"", AppInfoEnum::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
+        $alias = sprintf("alias %s=\"php %s\"", AppInfoEnum::APP_MAIN_COMMAND, $OpsAppReleasePath);
         $shellConfigurationFiles = [
             DirHelper::getHomeDir('.zshrc'), // Mac
             DirHelper::getHomeDir('.bashrc'), // Ubuntu
@@ -132,10 +132,7 @@ class OPSHelper
                     //    remove old alias (wrong path, old date alias)
                     $oldAliases = StrHelper::findLinesContainsTextInFile($shellConfigurationFile, AppInfoEnum::APP_MAIN_COMMAND);
                     foreach ($oldAliases as $oldAlias) {
-                        StrHelper::replaceTextInFile([
-                            'script path', 'command-name', // param 0,1
-                            $oldAlias, '', $shellConfigurationFile
-                        ]);
+                        StrHelper::replaceTextInFile($oldAlias, '', $shellConfigurationFile);
                     }
                     //    add new alias
                     if (file_put_contents($shellConfigurationFile, $alias . PHP_EOL, FILE_APPEND)) {
@@ -148,6 +145,25 @@ class OPSHelper
                 self::validateFileContainsText($shellConfigurationFile, $alias);
             }
         }
+    }
+
+    /**
+     * Create an alias directly to the MyOps.php call this command, use to manually install
+     *
+     * @return void
+     */
+    public static function createAliasDirectly()
+    {
+        self::LineNew()->printTitle(__FUNCTION__);
+        //
+        self::createAlias(DirHelper::getScriptFullPath());
+        // validate the result
+        //    show open new session to show right version
+        (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
+            'myops version'
+        ]))->execMultiInWorkDir(true)->printOutput();
+        //
+        self::LineNew()->printSeparatorLine();
     }
 
     /**

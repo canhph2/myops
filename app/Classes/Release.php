@@ -10,11 +10,13 @@ use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\PostWorkEnum;
+use App\Enum\ProcessEnum;
 use App\Enum\TagEnum;
 use App\Enum\TimeEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\Helpers\AppHelper;
+use App\Helpers\AppInfoHelper;
 use App\Helpers\AWSHelper;
 use App\Helpers\Data;
 use App\Helpers\DateHelper;
@@ -22,6 +24,7 @@ use App\Helpers\DirHelper;
 use App\Helpers\DockerHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OPSHelper;
+use App\Helpers\ProcessHelper;
 use App\Helpers\StrHelper;
 use App\Helpers\TimeHelper;
 use App\Helpers\UuidHelper;
@@ -70,7 +73,9 @@ class Release
             DirHelper::getClassPathAndFileName(ValidationTypeEnum::class),
             DirHelper::getClassPathAndFileName(PostWorkEnum::class),
             DirHelper::getClassPathAndFileName(TimeEnum::class),
+            DirHelper::getClassPathAndFileName(ProcessEnum::class),
             // === Helper ===
+            DirHelper::getClassPathAndFileName(AppInfoHelper::class),
             DirHelper::getClassPathAndFileName(DirHelper::class),
             DirHelper::getClassPathAndFileName(OPSHelper::class),
             DirHelper::getClassPathAndFileName(GitHubHelper::class),
@@ -81,6 +86,7 @@ class Release
             DirHelper::getClassPathAndFileName(Data::class),
             DirHelper::getClassPathAndFileName(DateHelper::class),
             DirHelper::getClassPathAndFileName(TimeHelper::class),
+            DirHelper::getClassPathAndFileName(ProcessHelper::class),
             DirHelper::getClassPathAndFileName(UuidHelper::class),
             DirHelper::getClassPathAndFileName(ValidationHelper::class),
             // === Services ===

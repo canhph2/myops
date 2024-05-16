@@ -8,6 +8,9 @@ class GitHubRepositoryInfo
     private $repositoryName;
 
     /** @var string */
+    private $familyName;
+
+    /** @var string */
     private $username;
 
     /** @var bool */
@@ -24,9 +27,10 @@ class GitHubRepositoryInfo
      * @param string $username
      * @param bool $isGitHubAction
      */
-    public function __construct(string $repositoryName, string $username, bool $isGitHubAction = false)
+    public function __construct(string $repositoryName, string $familyName, string $username, bool $isGitHubAction = false)
     {
         $this->repositoryName = $repositoryName;
+        $this->familyName = $familyName;
         $this->username = $username;
         $this->isGitHubAction = $isGitHubAction;
     }
@@ -46,6 +50,24 @@ class GitHubRepositoryInfo
     public function setRepositoryName(string $repositoryName): GitHubRepositoryInfo
     {
         $this->repositoryName = $repositoryName;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFamilyName(): string
+    {
+        return $this->familyName;
+    }
+
+    /**
+     * @param string $familyName
+     * @return GitHubRepositoryInfo
+     */
+    public function setFamilyName(string $familyName): GitHubRepositoryInfo
+    {
+        $this->familyName = $familyName;
         return $this;
     }
 
