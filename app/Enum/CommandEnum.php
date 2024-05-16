@@ -34,11 +34,12 @@ class CommandEnum
     const WORKING_DIR = 'working-dir';
     const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
     const SLACK = 'slack';
-    const SLACK_PROGRESS = 'slack-progress';
+    const SLACK_PROCESS = 'slack-process';
     const TMP = 'tmp';
     const POST_WORK = 'post-work';
     const CLEAR_OPS_DIR = 'clear-ops-dir';
     const TIME = 'time';
+    const PROCESS = 'process';
 
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
@@ -111,11 +112,11 @@ class CommandEnum
             self::WORKING_DIR => ['get root project directory / current working directory'],
             self::REPLACE_TEXT_IN_FILE => [sprintf('php %s replace-text-in-file "search text" "replace text" "file path"', AppInfoEnum::APP_MAIN_COMMAND)],
             self::SLACK => ["notify a message to Slack"],
-            self::SLACK_PROGRESS => [
-                "notify a message of CICD progress to Slack",
-                "use sub-command 'start' to send a message of progress starting",
-                "use sub-command 'finish' to send a message of progress finishing",
-                "can add addition message after the sub-command",
+            self::SLACK_PROCESS => [
+                "notify a message of CICD process to Slack",
+                "use sub-command 'start' to send a message of process starting",
+                "use sub-command 'finish' to send a message of process finishing",
+                "can add <process id> after the sub-command to handle something",
             ],
             self::TMP => [
                 'handle temporary directory (tmp)',
@@ -124,10 +125,14 @@ class CommandEnum
             ],
             self::POST_WORK => ["do post works. Optional: add param 'skip-check-dir' to skip check dir"],
             self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
-            self::TIME =>[
+            self::TIME => [
                 'is used to measure project build time',
-                "use 'time begin' to mark a beginning time, will return an id of time object",
-                "use 'time end' to mark an ending time, will return a text of period time",
+                "use the sub-command 'begin' to mark a beginning time, will return an id of process object",
+                "use the sub-command 'end' to mark an ending time, will return a text of period time",
+            ],
+            self::PROCESS => [
+                "is used to handle 'MyOps process', the first version just show some info and mark starting time",
+                "use the sub-command 'start' to handle starting a 'MyOps process', wil return a process id "
             ],
             // group title
             "PRIVATE" => [],

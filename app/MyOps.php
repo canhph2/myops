@@ -19,16 +19,16 @@ use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
-use App\Enum\UIEnum;
 use App\Helpers\AppHelper;
+use App\Helpers\AppInfoHelper;
 use App\Helpers\AWSHelper;
 use App\Helpers\DirHelper;
 use App\Helpers\DockerHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OPSHelper;
+use App\Helpers\ProcessHelper;
 use App\Helpers\StrHelper;
 use App\Helpers\TimeHelper;
-use App\Helpers\UuidHelper;
 use App\Helpers\ValidationHelper;
 use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
@@ -81,13 +81,7 @@ class MyOps
                 (new Release())->handle();
                 break;
             case CommandEnum::VERSION:
-                // filter color
-                if (self::arg(1) === 'no-format-color') {
-                    self::lineNew()->print(MyOps::getAppVersionStr());
-                    break;
-                }
-                // default
-                self::lineColorFormat(UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD)->print(MyOps::getAppVersionStr());
+                AppInfoHelper::printVersion();
                 break;
             case CommandEnum::SYNC:
                 OPSHelper::sync();
@@ -152,8 +146,8 @@ class MyOps
             case CommandEnum::SLACK:
                 SlackService::sendMessageConsole();
                 break;
-            case CommandEnum::SLACK_PROGRESS:
-                SlackService::sendMessageProgressConsole();
+            case CommandEnum::SLACK_PROCESS:
+                SlackService::sendMessageProcessConsole();
                 break;
             case CommandEnum::TMP:
                 DirHelper::tmp();
@@ -166,6 +160,9 @@ class MyOps
                 break;
             case CommandEnum::TIME:
                 TimeHelper::handleTimeInConsole();
+                break;
+            case CommandEnum::PROCESS:
+                ProcessHelper::handleProcessInConsole();
                 break;
             // === private ===
             case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
