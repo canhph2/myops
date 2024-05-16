@@ -14,4 +14,4 @@ myops validate device || exit 1
 myops validate branch || exit 1
 
 myops sync
-myops slack "[FINISH] ${DEVICE} synced $(myops version no-format-color) successfully"
+myops slack "${DEVICE} synced $(myops version no-format-color) successfully"
