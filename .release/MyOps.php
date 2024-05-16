@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.6.5 ===
+// === MyOps v3.6.6 ===
 
 // === Generated libraries classes ===
 
@@ -1480,7 +1480,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.6.5';
+    const APP_VERSION = '3.6.6';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2570,6 +2570,7 @@ class GitHubHelper
      */
     public static function handleCachesAndGit(string $customRepository = null, string $customBranch = null): void
     {
+        dd($customRepository);
         // === validate ===
         //        env vars
         $repository = $customRepository ?: self::arg(1) ?: getenv('REPOSITORY');
