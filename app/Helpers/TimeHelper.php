@@ -17,7 +17,7 @@ class TimeHelper
         // validate
         ValidationHelper::validateSubCommandOrParam1('sub-command-of-time', TimeEnum::SUPPORT_SUB_COMMANDS);
         //    sub-command 'end'
-        if (self::arg(1) === TIMEEnum::END) {
+        if (self::arg(1) === TimeEnum::END) {
             //    id of time progress in handle ending
             if (!self::arg(2)) {
                 self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("missing a id of time progress");

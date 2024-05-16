@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Enum\GitHubEnum;
+use App\Enum\ProgressEnum;
 use App\Enum\TagEnum;
 use App\Helpers\AWSHelper;
+use App\Helpers\GitHubHelper;
+use App\Helpers\ValidationHelper;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
@@ -47,6 +50,34 @@ class SlackService
     {
         self::sendMessage(self::arg(1), getenv('REPOSITORY'), getenv('BRANCH'),
             getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
+    }
+
+    /**
+     * required these envs:  DEVICE, REPOSITORY
+     * format: <app> slack-progress sub-command <additional message>
+     * @return void
+     */
+    public static function sendMessageProgressConsole(): void
+    {
+        // validate
+        ValidationHelper::validateSubCommandOrParam1('sub-command-of-progress', ProgressEnum::SUPPORT_SUB_COMMANDS);
+        // handle
+        switch (self::arg(1)) {
+            case ProgressEnum::START:
+                $message = trim(sprintf("%s starts to build the project %s %s", getenv('DEVICE'),
+                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), self::arg(2)));
+                self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
+                    getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
+                break;
+            case ProgressEnum::FINISH:
+                $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
+                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), self::arg(2)));
+                self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
+                    getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
+                break;
+            default:
+                break;
+        }
     }
 
     /**
@@ -93,8 +124,7 @@ class SlackService
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
-            "channel" => $slackChannel,
-            "text" => sprintf("[%s] [%s] > %s", $repository, $branch, $message),
+            "channel" => $slackChannel, "text" => sprintf("[%s | %s] %s", $repository, $branch, $message),
         ]));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
         $response = curl_exec($curl);

@@ -2,6 +2,7 @@
 
 ---
 ## === v3 ===
+- 3.5.0 | Add 'slack-progress' command
 - 3.4.0 | Add 'time' function
 - 3.3.0 | Optimize console arguments
 - 3.2.0 | Optimize text and console UI

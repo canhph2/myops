@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.4.1 ===
+// === MyOps v3.5.1 ===
 
 // === Generated libraries classes ===
 
@@ -124,6 +124,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Enum\IconEnum;
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\PostWorkEnum;
+// [REMOVED] use App\Enum\ProgressEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Enum\TimeEnum;
 // [REMOVED] use App\Enum\UIEnum;
@@ -184,6 +185,7 @@ class Release
             DirHelper::getClassPathAndFileName(ValidationTypeEnum::class),
             DirHelper::getClassPathAndFileName(PostWorkEnum::class),
             DirHelper::getClassPathAndFileName(TimeEnum::class),
+            DirHelper::getClassPathAndFileName(ProgressEnum::class),
             // === Helper ===
             DirHelper::getClassPathAndFileName(DirHelper::class),
             DirHelper::getClassPathAndFileName(OPSHelper::class),
@@ -1228,6 +1230,9 @@ class GitHubRepositoryInfo
     private $repositoryName;
 
     /** @var string */
+    private $familyName;
+
+    /** @var string */
     private $username;
 
     /** @var bool */
@@ -1244,9 +1249,10 @@ class GitHubRepositoryInfo
      * @param string $username
      * @param bool $isGitHubAction
      */
-    public function __construct(string $repositoryName, string $username, bool $isGitHubAction = false)
+    public function __construct(string $repositoryName, string $familyName, string $username, bool $isGitHubAction = false)
     {
         $this->repositoryName = $repositoryName;
+        $this->familyName = $familyName;
         $this->username = $username;
         $this->isGitHubAction = $isGitHubAction;
     }
@@ -1266,6 +1272,24 @@ class GitHubRepositoryInfo
     public function setRepositoryName(string $repositoryName): GitHubRepositoryInfo
     {
         $this->repositoryName = $repositoryName;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFamilyName(): string
+    {
+        return $this->familyName;
+    }
+
+    /**
+     * @param string $familyName
+     * @return GitHubRepositoryInfo
+     */
+    public function setFamilyName(string $familyName): GitHubRepositoryInfo
+    {
+        $this->familyName = $familyName;
         return $this;
     }
 
@@ -1452,7 +1476,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.4.1';
+    const APP_VERSION = '3.5.1';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1489,6 +1513,7 @@ class CommandEnum
     const WORKING_DIR = 'working-dir';
     const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
     const SLACK = 'slack';
+    const SLACK_PROGRESS = 'slack-progress';
     const TMP = 'tmp';
     const POST_WORK = 'post-work';
     const CLEAR_OPS_DIR = 'clear-ops-dir';
@@ -1565,6 +1590,12 @@ class CommandEnum
             self::WORKING_DIR => ['get root project directory / current working directory'],
             self::REPLACE_TEXT_IN_FILE => [sprintf('php %s replace-text-in-file "search text" "replace text" "file path"', AppInfoEnum::APP_MAIN_COMMAND)],
             self::SLACK => ["notify a message to Slack"],
+            self::SLACK_PROGRESS => [
+                "notify a message of CICD progress to Slack",
+                "use sub-command 'start' to send a message of progress starting",
+                "use sub-command 'finish' to send a message of progress finishing",
+                "can add addition message after the sub-command",
+            ],
             self::TMP => [
                 'handle temporary directory (tmp)',
                 "use 'tmp add' to add new tmp dir",
@@ -1658,24 +1689,24 @@ class GitHubEnum
         return [
             // === projects / modules / services ===
             //    backend
-            new GitHubRepositoryInfo(self::ENGAGE_API, self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_API, self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::INVOICE_SERVICE, self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::PAYMENT_SERVICE, self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::INTEGRATION_API, self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::EMAIL_SERVICE, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_API, 'Admin API (backend)', self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_API, 'Booking API (backend)', self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::INVOICE_SERVICE, 'Invoice Service (backend)', self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::PAYMENT_SERVICE, 'Payment Service (backend)', self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::INTEGRATION_API, 'Integration API (backend)', self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::EMAIL_SERVICE, 'Email Service (backend)', self::INFOHKENGAGE, true),
             //    frontend
-            new GitHubRepositoryInfo(self::ENGAGE_SPA, self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_SPA, self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_SPA, 'Admin SPA (frontend)', self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_SPA, 'Booking SPA (frontend)', self::INFOHKENGAGE, true),
             //    mobile
-            new GitHubRepositoryInfo(self::ENGAGE_MOBILE_APP, self::INFOHKENGAGE),
-            new GitHubRepositoryInfo(self::ENGAGE_TEACHER_APP, self::INFOHKENGAGE),
+            new GitHubRepositoryInfo(self::ENGAGE_MOBILE_APP, 'EngagePlus App', self::INFOHKENGAGE),
+            new GitHubRepositoryInfo(self::ENGAGE_TEACHER_APP, 'EngagePlus Teacher App', self::INFOHKENGAGE),
             //    support
-            new GitHubRepositoryInfo(self::ENGAGE_API_DEPLOY, self::INFOHKENGAGE),
-            new GitHubRepositoryInfo(self::ENGAGE_DATABASE_UTILS, self::CONGNQNEXLESOFT),
-            new GitHubRepositoryInfo(self::MYOPS, self::CONGNQNEXLESOFT, true),
-            new GitHubRepositoryInfo(self::DOCKER_BASE_IMAGES, self::CONGNQNEXLESOFT),
-            new GitHubRepositoryInfo(self::ENGAGE_SELENIUM_TEST_1, self::CONGNQNEXLESOFT),
+            new GitHubRepositoryInfo(self::ENGAGE_API_DEPLOY, 'API Deploy (CICD)', self::INFOHKENGAGE),
+            new GitHubRepositoryInfo(self::ENGAGE_DATABASE_UTILS, 'Engage Database Utilities', self::CONGNQNEXLESOFT),
+            new GitHubRepositoryInfo(self::MYOPS, 'MyOps', self::CONGNQNEXLESOFT, true),
+            new GitHubRepositoryInfo(self::DOCKER_BASE_IMAGES, '(Engage) Docker Base Images', self::CONGNQNEXLESOFT),
+            new GitHubRepositoryInfo(self::ENGAGE_SELENIUM_TEST_1, "(Engage) Selenium Test 1", self::CONGNQNEXLESOFT),
         ];
     }
 }
@@ -1723,10 +1754,6 @@ class TagEnum
     const GIT = 'GIT/GITHUB';
     const DOCKER = 'DOCKER';
     const SLACK = 'SLACK';
-
-    // progress
-    const BEGIN = 'BEGIN';
-    const END = 'END';
 
     const VALIDATION_ERROR = [self::VALIDATION, self::ERROR];
     const VALIDATION_SUCCESS = [self::VALIDATION, self::SUCCESS];
@@ -1790,6 +1817,16 @@ class TimeEnum
     const END = 'end';
 
     const SUPPORT_SUB_COMMANDS = [self::BEGIN, self::END];
+}
+
+// [REMOVED] namespace App\Enum;
+
+class ProgressEnum
+{
+    const START = 'start';
+    const FINISH = 'finish';
+
+    const SUPPORT_SUB_COMMANDS = [self::START, self::FINISH];
 }
 
 // [REMOVED] namespace App\Helpers;
@@ -3457,7 +3494,7 @@ class TimeHelper
         // validate
         ValidationHelper::validateSubCommandOrParam1('sub-command-of-time', TimeEnum::SUPPORT_SUB_COMMANDS);
         //    sub-command 'end'
-        if (self::arg(1) === TIMEEnum::END) {
+        if (self::arg(1) === TimeEnum::END) {
             //    id of time progress in handle ending
             if (!self::arg(2)) {
                 self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("missing a id of time progress");
@@ -3654,8 +3691,11 @@ class ValidationHelper
 // [REMOVED] namespace App\Services;
 
 // [REMOVED] use App\Enum\GitHubEnum;
+// [REMOVED] use App\Enum\ProgressEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Helpers\AWSHelper;
+// [REMOVED] use App\Helpers\GitHubHelper;
+// [REMOVED] use App\Helpers\ValidationHelper;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
@@ -3698,6 +3738,34 @@ class SlackService
     {
         self::sendMessage(self::arg(1), getenv('REPOSITORY'), getenv('BRANCH'),
             getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
+    }
+
+    /**
+     * required these envs:  DEVICE, REPOSITORY
+     * format: <app> slack-progress sub-command <additional message>
+     * @return void
+     */
+    public static function sendMessageProgressConsole(): void
+    {
+        // validate
+        ValidationHelper::validateSubCommandOrParam1('sub-command-of-progress', ProgressEnum::SUPPORT_SUB_COMMANDS);
+        // handle
+        switch (self::arg(1)) {
+            case ProgressEnum::START:
+                $message = trim(sprintf("%s starts to build the project %s %s", getenv('DEVICE'),
+                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), self::arg(2)));
+                self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
+                    getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
+                break;
+            case ProgressEnum::FINISH:
+                $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
+                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), self::arg(2)));
+                self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
+                    getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
+                break;
+            default:
+                break;
+        }
     }
 
     /**
@@ -3744,8 +3812,7 @@ class SlackService
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
-            "channel" => $slackChannel,
-            "text" => sprintf("[%s] [%s] > %s", $repository, $branch, $message),
+            "channel" => $slackChannel, "text" => sprintf("[%s | %s] %s", $repository, $branch, $message),
         ]));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
         $response = curl_exec($curl);
@@ -4059,6 +4126,9 @@ class MyOps
                 break;
             case CommandEnum::SLACK:
                 SlackService::sendMessageConsole();
+                break;
+            case CommandEnum::SLACK_PROGRESS:
+                SlackService::sendMessageProgressConsole();
                 break;
             case CommandEnum::TMP:
                 DirHelper::tmp();
