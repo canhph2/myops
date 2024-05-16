@@ -159,9 +159,7 @@ class OPSHelper
         self::createAlias(DirHelper::getScriptFullPath());
         // validate the result
         //    show open new session to show right version
-        (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
-            'myops version'
-        ]))->execMultiInWorkDir(true)->printOutput();
+        self::LineNew()->print(exec('myops version'));
         //
         self::LineNew()->printSeparatorLine();
     }
