@@ -24,6 +24,7 @@ use App\Helpers\DirHelper;
 use App\Helpers\DockerHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OPSHelper;
+use App\Helpers\ProcessHelper;
 use App\Helpers\StrHelper;
 use App\Helpers\TimeHelper;
 use App\Helpers\UuidHelper;
@@ -85,6 +86,7 @@ class Release
             DirHelper::getClassPathAndFileName(Data::class),
             DirHelper::getClassPathAndFileName(DateHelper::class),
             DirHelper::getClassPathAndFileName(TimeHelper::class),
+            DirHelper::getClassPathAndFileName(ProcessHelper::class),
             DirHelper::getClassPathAndFileName(UuidHelper::class),
             DirHelper::getClassPathAndFileName(ValidationHelper::class),
             // === Services ===
