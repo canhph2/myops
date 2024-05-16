@@ -27,6 +27,9 @@ use App\Helpers\DockerHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OPSHelper;
 use App\Helpers\StrHelper;
+use App\Helpers\TimeHelper;
+use App\Helpers\UuidHelper;
+use App\Helpers\ValidationHelper;
 use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
@@ -66,21 +69,7 @@ class MyOps
     public function run()
     {
         // validate
-        if (!self::command()) {
-            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
-                "Missing a command, should be '%s COMMAND', use the command '%s help' to see more details.",
-                AppInfoEnum::APP_MAIN_COMMAND, AppInfoEnum::APP_MAIN_COMMAND
-            );
-            exit(); // END
-        }
-        if (!array_key_exists(self::command(), CommandEnum::SUPPORT_COMMANDS())) {
-            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
-                "Do not support the command '%s', use the command '%s help' to see more details.",
-                self::command(), AppInfoEnum::APP_MAIN_COMMAND
-            );
-            exit(); // END
-        }
-
+        ValidationHelper::validateCommand();
         // handle
         switch (self::command()) {
             // === this app ===
@@ -171,6 +160,9 @@ class MyOps
                 break;
             case CommandEnum::CLEAR_OPS_DIR:
                 OPSHelper::clearOpsDir();
+                break;
+            case CommandEnum::TIME:
+                TimeHelper::handleTimeInConsole();
                 break;
             // === private ===
             case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
