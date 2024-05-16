@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.6.4 ===
+// === MyOps v3.6.7 ===
 
 // === Generated libraries classes ===
 
@@ -1480,7 +1480,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.6.4';
+    const APP_VERSION = '3.6.7';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2562,7 +2562,8 @@ class GitHubHelper
     }
 
     /**
-     * require envs: GITHUB_PERSONAL_ACCESS_TOKEN
+     * - Require envs: GITHUB_PERSONAL_ACCESS_TOKEN
+     * - parameter priority: $customRepository > console arg > getenv()
      * @param string|null $customRepository
      * @param string|null $customBranch
      * @return void
@@ -2570,9 +2571,9 @@ class GitHubHelper
     public static function handleCachesAndGit(string $customRepository = null, string $customBranch = null): void
     {
         // === validate ===
-        //    validate env vars
-        $repository = $customRepository ?? getenv('REPOSITORY');
-        $branch = $customBranch ?? getenv('BRANCH');
+        //        env vars
+        $repository = $customRepository ?: self::arg(1) ?: getenv('REPOSITORY');
+        $branch = $customBranch ?: self::arg(2) ?: getenv('BRANCH');
         if ($repository === GitHubEnum::ENGAGE_API_DEPLOY) {
             $branch = $customBranch ?? getenv('API_DEPLOY_BRANCH');
         }
@@ -2587,8 +2588,16 @@ class GitHubHelper
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        self::LineTag($customRepository ? 'CUSTOM' : 'ENV')->print("REPOSITORY = %s", $repository)
-            ->setTag($customBranch ? 'CUSTOM' : 'ENV')->print("BRANCH = %s", $branch)
+        if($customRepository) $repositoryFrom = "CODE";
+        elseif(self::arg(1)) $repositoryFrom = "CONSOLE";
+        elseif(getenv('REPOSITORY')) $repositoryFrom = "ENV";
+
+        if($customBranch) $branchFrom = "CODE";
+        elseif(self::arg(2)) $branchFrom = "CONSOLE";
+        elseif(getenv('BRANCH')) $branchFrom = "ENV";
+
+        self::LineTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
+            ->setTag($branchFrom)->print("BRANCH = %s", $branch)
             ->print("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
@@ -2677,11 +2686,11 @@ class GitHubHelper
         // validate
         //    workspace dir
         $workspaceDir = self::arg(1);
-        if(!$workspaceDir){
+        if (!$workspaceDir) {
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("require input the 'workspace directory' .e.g 'caches directory' or 'develop workspace directory'");
             return; //END
         }
-        if(!is_dir($workspaceDir)){
+        if (!is_dir($workspaceDir)) {
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist", $workspaceDir);
             return; //END
         }
