@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.3.10 ===
+// === MyOps v3.3.11 ===
 
 // === Generated libraries classes ===
 
@@ -259,7 +259,7 @@ class Release
     }
 
     /**
-     * remove tab
+     * remove tab 
      * remove namespace
      * remove some unused elements
      * @param string $classPath
@@ -1386,7 +1386,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.3.10';
+    const APP_VERSION = '3.3.11';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2508,12 +2508,6 @@ class GitHubHelper
         $branchToBuild = GitHubEnum::DEVELOP;
         self::LineNew()->printTitle("Build all projects to keep the GitHub runner token connecting (develop env)");
         // validate
-        //    token
-        $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
-        if (!$GitHubToken) {
-            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("GitHub token not found (in Secret Manager)");
-            return; //END
-        }
         //    workspace dir
         $workspaceDir = self::arg(1);
         if(!$workspaceDir){
@@ -2521,7 +2515,14 @@ class GitHubHelper
             return; //END
         }
         if(!is_dir($workspaceDir)){
-            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist");
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist", $workspaceDir);
+            return; //END
+        }
+        //    token
+        $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
+        if (!$GitHubToken) {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("GitHub token not found (in Secret Manager)");
+            return; //END
         }
         // handle
         //    notify
@@ -2530,7 +2531,7 @@ class GitHubHelper
         self::LineNew()->printSubTitle("login gh (GitHub CLI)");
         (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
             sprintf("echo %s | gh auth login --with-token", $GitHubToken),
-        ]))->execMultiInWorkDir();
+        ]))->execMultiInWorkDir(true);
         //    send command to build all projects
         self::LineNew()->printSubTitle("send command to build all projects");
         self::LineNew()->print("WORKSPACE DIR = $workspaceDir");
@@ -2545,8 +2546,7 @@ class GitHubHelper
                 );
                 // handle send command to build
                 if ($repoInfo->isGitHubAction()) {
-                    (new Process("build project " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
-                        sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
+                    (new Process("build project " . $repoInfo->getRepositoryName(), $repoInfo->getCurrentRepositoryDir(), [
                         sprintf('gh workflow run workflow--%s--%s -r %s', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch(), $repoInfo->getCurrentBranch())
                     ]))->execMultiInWorkDir();
                     // check completed
@@ -2577,13 +2577,11 @@ class GitHubHelper
     private static function isActionsWorkflowQueuedOrInProgress(GitHubRepositoryInfo $repoInfo): bool
     {
         // in progress
-        $resultInProgress = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
-            sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
+        $resultInProgress = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), $repoInfo->getCurrentRepositoryDir(), [
             sprintf('gh run list --workflow workflow--%s--%s.yml --status in_progress --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
         ]))->execMultiInWorkDirAndGetOutputStrAll();
         // queue
-        $resultQueued = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
-            sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
+        $resultQueued = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), $repoInfo->getCurrentRepositoryDir(), [
             sprintf('gh run list --workflow workflow--%s--%s.yml --status queued --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
         ]))->execMultiInWorkDirAndGetOutputStrAll();
         //
