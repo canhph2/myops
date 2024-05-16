@@ -121,7 +121,9 @@ class GitHubHelper
         // === validate ===
         //        env vars
         $repository = $customRepository ?: self::arg(1) ?: getenv('REPOSITORY');
+        $repositoryFrom = $customRepository ? 'CODE' : self::arg(1) ? 'CONSOLE' : 'ENV';
         $branch = $customBranch ?: self::arg(2) ?: getenv('BRANCH');
+        $branchFrom = $customBranch ? 'CODE' : self::arg(2) ? 'CONSOLE' : 'ENV';
         if ($repository === GitHubEnum::ENGAGE_API_DEPLOY) {
             $branch = $customBranch ?? getenv('API_DEPLOY_BRANCH');
         }
@@ -136,8 +138,8 @@ class GitHubHelper
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        self::LineTag($customRepository ? 'CUSTOM' : 'ENV')->print("REPOSITORY = %s", $repository)
-            ->setTag($customBranch ? 'CUSTOM' : 'ENV')->print("BRANCH = %s", $branch)
+        self::LineTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
+            ->setTag($branchFrom)->print("BRANCH = %s", $branch)
             ->print("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
