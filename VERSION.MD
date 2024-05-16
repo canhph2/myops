@@ -2,7 +2,7 @@
 
 ---
 ## === v3 ===
-- 3.4.0 | TODO ADD SOME CHANGE LOGS
+- 3.4.0 | Add 'time' function
 - 3.3.0 | Optimize console arguments
 - 3.2.0 | Optimize text and console UI
 - 3.1.0 | change project name `myops`, update position of *myops* strategy
