@@ -7,5 +7,5 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.5.0';
+    const APP_VERSION = '3.5.1';
 }
