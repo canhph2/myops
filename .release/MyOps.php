@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.6.7 ===
+// === MyOps v3.6.9 ===
 
 // === Generated libraries classes ===
 
@@ -1480,7 +1480,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.6.7';
+    const APP_VERSION = '3.6.9';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1492,6 +1492,7 @@ class CommandEnum
     const RELEASE = 'release';
     const VERSION = 'version';
     const SYNC = 'sync';
+    const CREATE_ALIAS_DIRECTLY = 'create-alias-directly';
 
     // === AWS related DATA commands
     const LOAD_ENV_OPS = 'load-env-ops';
@@ -1561,6 +1562,7 @@ class CommandEnum
             ],
             self::VERSION => ["show app version, (without format and color, using option 'no-format-color'"],
             self::SYNC => [sprintf("sync new release code to caches dir and create an alias '%s'", AppInfoEnum::APP_MAIN_COMMAND)],
+            self::CREATE_ALIAS_DIRECTLY => ['create an alias directly to the MyOps.php call this command, use to manually install'],
             // group title
             "AWS Related" => [],
             self::LOAD_ENV_OPS => [
@@ -1894,7 +1896,7 @@ class DirHelper
      */
     public static function getWorkingDir(string $subDirOrFile = null): string
     {
-        return $subDirOrFile ? sprintf("%s/%s", $_SERVER['PWD'], $subDirOrFile) : $_SERVER['PWD'];
+        return $subDirOrFile ? self::join($_SERVER['PWD'], $subDirOrFile) : $_SERVER['PWD'];
     }
 
     /**
@@ -1913,6 +1915,14 @@ class DirHelper
     {
         $scriptDir = substr($_SERVER['SCRIPT_FILENAME'], 0, strlen($_SERVER['SCRIPT_FILENAME']) - strlen(basename($_SERVER['SCRIPT_FILENAME'])) - 1);
         return self::getWorkingDir($scriptDir);
+    }
+
+    /**
+     * @return string
+     */
+    public static function getScriptFullPath(): string
+    {
+        return self::getWorkingDir($_SERVER['SCRIPT_FILENAME']);
     }
 
     // backup code
@@ -2082,7 +2092,8 @@ class OPSHelper
         // load caches of this source code
         GitHubHelper::handleCachesAndGit(GitHubEnum::MYOPS, GitHubHelper::getCurrentBranch());
         // create an alias 'myops'
-        self::createAlias();
+        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
+        self::createAlias($EngagePlusCachesRepositoryOpsAppReleasePath);
         //
         self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("sync done");
@@ -2100,10 +2111,9 @@ class OPSHelper
      *
      * @return void
      */
-    private static function createAlias()
+    private static function createAlias(string $OpsAppReleasePath)
     {
-        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
-        $alias = sprintf("alias %s=\"php %s\"", AppInfoEnum::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
+        $alias = sprintf("alias %s=\"php %s\"", AppInfoEnum::APP_MAIN_COMMAND, $OpsAppReleasePath);
         $shellConfigurationFiles = [
             DirHelper::getHomeDir('.zshrc'), // Mac
             DirHelper::getHomeDir('.bashrc'), // Ubuntu
@@ -2119,10 +2129,7 @@ class OPSHelper
                     //    remove old alias (wrong path, old date alias)
                     $oldAliases = StrHelper::findLinesContainsTextInFile($shellConfigurationFile, AppInfoEnum::APP_MAIN_COMMAND);
                     foreach ($oldAliases as $oldAlias) {
-                        StrHelper::replaceTextInFile([
-                            'script path', 'command-name', // param 0,1
-                            $oldAlias, '', $shellConfigurationFile
-                        ]);
+                        StrHelper::replaceTextInFile($oldAlias, '', $shellConfigurationFile);
                     }
                     //    add new alias
                     if (file_put_contents($shellConfigurationFile, $alias . PHP_EOL, FILE_APPEND)) {
@@ -2135,6 +2142,25 @@ class OPSHelper
                 self::validateFileContainsText($shellConfigurationFile, $alias);
             }
         }
+    }
+
+    /**
+     * Create an alias directly to the MyOps.php call this command, use to manually install
+     *
+     * @return void
+     */
+    public static function createAliasDirectly()
+    {
+        self::LineNew()->printTitle(__FUNCTION__);
+        //
+        self::createAlias(DirHelper::getScriptFullPath());
+        // validate the result
+        //    show open new session to show right version
+        (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
+            'myops version'
+        ]))->execMultiInWorkDir(true)->printOutput();
+        //
+        self::LineNew()->printSeparatorLine();
     }
 
     /**
@@ -3357,16 +3383,17 @@ class StrHelper
      * required
      * - "search text"  (param 2)
      * - "replace text"  (param 3)
-     * = "file path" ((param 4)
+     * - "file path" ((param 4)
+     * - Param priority: $customParam (CODE)  > self::arg(A) (CONSOLE)
      * @return void
      */
-    public static function replaceTextInFile()
+    public static function replaceTextInFile(string $customSearchText = null, string $customReplaceText = null, string $customFilePath = null)
     {
-// === validate ===
-//    validate a message
-        $searchText = self::arg(1);
-        $replaceText = self::arg(2);
-        $filePath = self::arg(3);
+        // === validate ===
+        //    validate a message
+        $searchText = $customSearchText ?? self::arg(1);
+        $replaceText = $customReplaceText ?? self::arg(2);
+        $filePath = $customFilePath ?? self::arg(3);
         if (!$searchText || is_null($replaceText) || !$filePath) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
                 ->print("missing a SEARCH TEXT or REPLACE TEXT or FILE PATH");
@@ -3376,12 +3403,11 @@ class StrHelper
             self::LineTag(TagEnum::ERROR)->print("$filePath does not exist");
             exit(); // END
         }
-
-// === handle ===
+        // === handle ===
         $oldText = file_get_contents($filePath);
         file_put_contents($filePath, str_replace($searchText, $replaceText, $oldText));
         $newText = file_get_contents($filePath);
-//    validate result
+        //    validate result
         self::lineNew()->printCondition($oldText !== $newText,
             "replace done with successful result", "replace done with failed result");
     }
@@ -4145,6 +4171,9 @@ class MyOps
                 break;
             case CommandEnum::SYNC:
                 OPSHelper::sync();
+                break;
+            case CommandEnum::CREATE_ALIAS_DIRECTLY:
+                OPSHelper::createAliasDirectly();
                 break;
             // === AWS related ===
             case CommandEnum::LOAD_ENV_OPS:
