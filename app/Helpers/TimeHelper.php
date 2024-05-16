@@ -51,7 +51,7 @@ class TimeHelper
      * Print an id of time progress
      * @return void
      */
-    private static function handleTimeBegin(): string
+    public static function handleTimeBegin(): string
     {
         $idOfTimeProgress = UuidHelper::generateUuid4Native();
         file_put_contents(DirHelper::join(sys_get_temp_dir(), $idOfTimeProgress), time());
@@ -62,7 +62,7 @@ class TimeHelper
      * Handle and print a text of time progress
      * @return void
      */
-    private static function handleTimeEnd(string $idOfTimeProgress): string
+    public static function handleTimeEnd(string $idOfTimeProgress): string
     {
         $beginTime = (new DateTimeImmutable())->setTimestamp((int)file_get_contents(DirHelper::join(sys_get_temp_dir(), $idOfTimeProgress)));
         return DateHelper::getTimePeriodText($beginTime, new DateTimeImmutable());

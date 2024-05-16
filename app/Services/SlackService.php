@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Enum\GitHubEnum;
-use App\Enum\ProgressEnum;
+use App\Enum\ProcessEnum;
 use App\Enum\TagEnum;
 use App\Helpers\AWSHelper;
 use App\Helpers\GitHubHelper;
+use App\Helpers\TimeHelper;
+use App\Helpers\UuidHelper;
 use App\Helpers\ValidationHelper;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
@@ -54,24 +56,30 @@ class SlackService
 
     /**
      * required these envs:  DEVICE, REPOSITORY
-     * format: <app> slack-progress sub-command <additional message>
+     * format: <app> slack-progress sub-command <MyOps process id>
      * @return void
      */
-    public static function sendMessageProgressConsole(): void
+    public static function sendMessageProcessConsole(): void
     {
         // validate
-        ValidationHelper::validateSubCommandOrParam1('sub-command-of-progress', ProgressEnum::SUPPORT_SUB_COMMANDS);
+        ValidationHelper::validateSubCommandOrParam1('sub-command-of-process', ProcessEnum::SUPPORT_SUB_COMMANDS);
+        //    process id
+        if (self::arg(2) && !UuidHelper::isValid(self::arg(2))) {
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("id of time progress is invalid format");
+            exit(1); // END app
+        }
         // handle
         switch (self::arg(1)) {
-            case ProgressEnum::START:
-                $message = trim(sprintf("%s starts to build the project %s %s", getenv('DEVICE'),
-                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), self::arg(2)));
+            case ProcessEnum::START:
+                $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
+                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName()));
                 self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
                     getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
                 break;
-            case ProgressEnum::FINISH:
+            case ProcessEnum::FINISH:
+                $buildTime = self::arg(2) ? sprintf("in %s", TimeHelper::handleTimeEnd(self::arg(2))) : '';
                 $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
-                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), self::arg(2)));
+                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime));
                 self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
                     getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
                 break;

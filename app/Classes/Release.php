@@ -10,12 +10,13 @@ use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\PostWorkEnum;
-use App\Enum\ProgressEnum;
+use App\Enum\ProcessEnum;
 use App\Enum\TagEnum;
 use App\Enum\TimeEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\Helpers\AppHelper;
+use App\Helpers\AppInfoHelper;
 use App\Helpers\AWSHelper;
 use App\Helpers\Data;
 use App\Helpers\DateHelper;
@@ -71,8 +72,9 @@ class Release
             DirHelper::getClassPathAndFileName(ValidationTypeEnum::class),
             DirHelper::getClassPathAndFileName(PostWorkEnum::class),
             DirHelper::getClassPathAndFileName(TimeEnum::class),
-            DirHelper::getClassPathAndFileName(ProgressEnum::class),
+            DirHelper::getClassPathAndFileName(ProcessEnum::class),
             // === Helper ===
+            DirHelper::getClassPathAndFileName(AppInfoHelper::class),
             DirHelper::getClassPathAndFileName(DirHelper::class),
             DirHelper::getClassPathAndFileName(OPSHelper::class),
             DirHelper::getClassPathAndFileName(GitHubHelper::class),

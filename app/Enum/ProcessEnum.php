@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-class ProgressEnum
+class ProcessEnum
 {
     const START = 'start';
     const FINISH = 'finish';

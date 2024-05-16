@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.5.1 ===
+// === MyOps v3.6.1 ===
 
 // === Generated libraries classes ===
 
@@ -124,12 +124,13 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Enum\IconEnum;
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\PostWorkEnum;
-// [REMOVED] use App\Enum\ProgressEnum;
+// [REMOVED] use App\Enum\ProcessEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Enum\TimeEnum;
 // [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
 // [REMOVED] use App\Helpers\AppHelper;
+// [REMOVED] use App\Helpers\AppInfoHelper;
 // [REMOVED] use App\Helpers\AWSHelper;
 // [REMOVED] use App\Helpers\Data;
 // [REMOVED] use App\Helpers\DateHelper;
@@ -185,8 +186,9 @@ class Release
             DirHelper::getClassPathAndFileName(ValidationTypeEnum::class),
             DirHelper::getClassPathAndFileName(PostWorkEnum::class),
             DirHelper::getClassPathAndFileName(TimeEnum::class),
-            DirHelper::getClassPathAndFileName(ProgressEnum::class),
+            DirHelper::getClassPathAndFileName(ProcessEnum::class),
             // === Helper ===
+            DirHelper::getClassPathAndFileName(AppInfoHelper::class),
             DirHelper::getClassPathAndFileName(DirHelper::class),
             DirHelper::getClassPathAndFileName(OPSHelper::class),
             DirHelper::getClassPathAndFileName(GitHubHelper::class),
@@ -1476,7 +1478,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.5.1';
+    const APP_VERSION = '3.6.1';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1513,11 +1515,12 @@ class CommandEnum
     const WORKING_DIR = 'working-dir';
     const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
     const SLACK = 'slack';
-    const SLACK_PROGRESS = 'slack-progress';
+    const SLACK_PROCESS = 'slack-process';
     const TMP = 'tmp';
     const POST_WORK = 'post-work';
     const CLEAR_OPS_DIR = 'clear-ops-dir';
     const TIME = 'time';
+    const PROCESS = 'process';
 
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
@@ -1590,11 +1593,11 @@ class CommandEnum
             self::WORKING_DIR => ['get root project directory / current working directory'],
             self::REPLACE_TEXT_IN_FILE => [sprintf('php %s replace-text-in-file "search text" "replace text" "file path"', AppInfoEnum::APP_MAIN_COMMAND)],
             self::SLACK => ["notify a message to Slack"],
-            self::SLACK_PROGRESS => [
-                "notify a message of CICD progress to Slack",
-                "use sub-command 'start' to send a message of progress starting",
-                "use sub-command 'finish' to send a message of progress finishing",
-                "can add addition message after the sub-command",
+            self::SLACK_PROCESS => [
+                "notify a message of CICD process to Slack",
+                "use sub-command 'start' to send a message of process starting",
+                "use sub-command 'finish' to send a message of process finishing",
+                "can add <process id> after the sub-command to handle something",
             ],
             self::TMP => [
                 'handle temporary directory (tmp)',
@@ -1603,10 +1606,14 @@ class CommandEnum
             ],
             self::POST_WORK => ["do post works. Optional: add param 'skip-check-dir' to skip check dir"],
             self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
-            self::TIME =>[
+            self::TIME => [
                 'is used to measure project build time',
-                "use 'time begin' to mark a beginning time, will return an id of time object",
-                "use 'time end' to mark an ending time, will return a text of period time",
+                "use the sub-command 'begin' to mark a beginning time, will return an id of process object",
+                "use the sub-command 'end' to mark an ending time, will return a text of period time",
+            ],
+            self::PROCESS => [
+                "is used to handle 'MyOps process', the first version just show some info and mark starting time",
+                "use the sub-command 'start' to handle starting a 'MyOps process', wil return a process id "
             ],
             // group title
             "PRIVATE" => [],
@@ -1821,12 +1828,35 @@ class TimeEnum
 
 // [REMOVED] namespace App\Enum;
 
-class ProgressEnum
+class ProcessEnum
 {
     const START = 'start';
     const FINISH = 'finish';
 
     const SUPPORT_SUB_COMMANDS = [self::START, self::FINISH];
+}
+
+// [REMOVED] namespace App\Helpers;
+
+// [REMOVED] use App\Enum\UIEnum;
+// [REMOVED] use App\MyOps;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
+// [REMOVED] use App\Traits\ConsoleUITrait;
+
+class AppInfoHelper
+{
+    use ConsoleBaseTrait, ConsoleUITrait;
+
+    public static function printVersion(): void
+    {
+        // filter color
+        if (self::arg(1) === 'no-format-color') {
+            self::lineNew()->print(MyOps::getAppVersionStr());
+        } else {
+            // default
+            self::lineColorFormat(UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD)->print(MyOps::getAppVersionStr());
+        }
+    }
 }
 
 // [REMOVED] namespace App\Helpers;
@@ -2990,10 +3020,8 @@ class AWSHelper
 
 // [REMOVED] namespace App\Helpers;
 
-// [REMOVED] use App\Enum\AppInfoEnum;
-// [REMOVED] use App\MyOps;
-// [REMOVED] use App\Classes\Release;
 // [REMOVED] use App\Classes\Version;
+// [REMOVED] use App\Enum\AppInfoEnum;
 
 class AppHelper
 {
@@ -3528,7 +3556,7 @@ class TimeHelper
      * Print an id of time progress
      * @return void
      */
-    private static function handleTimeBegin(): string
+    public static function handleTimeBegin(): string
     {
         $idOfTimeProgress = UuidHelper::generateUuid4Native();
         file_put_contents(DirHelper::join(sys_get_temp_dir(), $idOfTimeProgress), time());
@@ -3539,7 +3567,7 @@ class TimeHelper
      * Handle and print a text of time progress
      * @return void
      */
-    private static function handleTimeEnd(string $idOfTimeProgress): string
+    public static function handleTimeEnd(string $idOfTimeProgress): string
     {
         $beginTime = (new DateTimeImmutable())->setTimestamp((int)file_get_contents(DirHelper::join(sys_get_temp_dir(), $idOfTimeProgress)));
         return DateHelper::getTimePeriodText($beginTime, new DateTimeImmutable());
@@ -3691,10 +3719,12 @@ class ValidationHelper
 // [REMOVED] namespace App\Services;
 
 // [REMOVED] use App\Enum\GitHubEnum;
-// [REMOVED] use App\Enum\ProgressEnum;
+// [REMOVED] use App\Enum\ProcessEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Helpers\AWSHelper;
 // [REMOVED] use App\Helpers\GitHubHelper;
+// [REMOVED] use App\Helpers\TimeHelper;
+// [REMOVED] use App\Helpers\UuidHelper;
 // [REMOVED] use App\Helpers\ValidationHelper;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
@@ -3742,24 +3772,30 @@ class SlackService
 
     /**
      * required these envs:  DEVICE, REPOSITORY
-     * format: <app> slack-progress sub-command <additional message>
+     * format: <app> slack-progress sub-command <MyOps process id>
      * @return void
      */
-    public static function sendMessageProgressConsole(): void
+    public static function sendMessageProcessConsole(): void
     {
         // validate
-        ValidationHelper::validateSubCommandOrParam1('sub-command-of-progress', ProgressEnum::SUPPORT_SUB_COMMANDS);
+        ValidationHelper::validateSubCommandOrParam1('sub-command-of-process', ProcessEnum::SUPPORT_SUB_COMMANDS);
+        //    process id
+        if (self::arg(2) && !UuidHelper::isValid(self::arg(2))) {
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("id of time progress is invalid format");
+            exit(1); // END app
+        }
         // handle
         switch (self::arg(1)) {
-            case ProgressEnum::START:
-                $message = trim(sprintf("%s starts to build the project %s %s", getenv('DEVICE'),
-                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), self::arg(2)));
+            case ProcessEnum::START:
+                $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
+                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName()));
                 self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
                     getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
                 break;
-            case ProgressEnum::FINISH:
+            case ProcessEnum::FINISH:
+                $buildTime = self::arg(2) ? sprintf("in %s", TimeHelper::handleTimeEnd(self::arg(2))) : '';
                 $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
-                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), self::arg(2)));
+                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime));
                 self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
                     getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
                 break;
@@ -4056,13 +4092,7 @@ class MyOps
                 (new Release())->handle();
                 break;
             case CommandEnum::VERSION:
-                // filter color
-                if (self::arg(1) === 'no-format-color') {
-                    self::lineNew()->print(MyOps::getAppVersionStr());
-                    break;
-                }
-                // default
-                self::lineColorFormat(UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD)->print(MyOps::getAppVersionStr());
+                AppInfoHelper::printVersion();
                 break;
             case CommandEnum::SYNC:
                 OPSHelper::sync();
@@ -4127,8 +4157,8 @@ class MyOps
             case CommandEnum::SLACK:
                 SlackService::sendMessageConsole();
                 break;
-            case CommandEnum::SLACK_PROGRESS:
-                SlackService::sendMessageProgressConsole();
+            case CommandEnum::SLACK_PROCESS:
+                SlackService::sendMessageProcessConsole();
                 break;
             case CommandEnum::TMP:
                 DirHelper::tmp();
@@ -4141,6 +4171,9 @@ class MyOps
                 break;
             case CommandEnum::TIME:
                 TimeHelper::handleTimeInConsole();
+                break;
+            case CommandEnum::PROCESS:
+                ProcessHelper::handleProcessInConsole();
                 break;
             // === private ===
             case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
