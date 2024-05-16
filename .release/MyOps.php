@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.6.9 ===
+// === MyOps v3.6.10 ===
 
 // === Generated libraries classes ===
 
@@ -1480,7 +1480,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.6.9';
+    const APP_VERSION = '3.6.10';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2156,9 +2156,7 @@ class OPSHelper
         self::createAlias(DirHelper::getScriptFullPath());
         // validate the result
         //    show open new session to show right version
-        (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
-            'myops version'
-        ]))->execMultiInWorkDir(true)->printOutput();
+        self::LineNew()->print(exec('myops version'));
         //
         self::LineNew()->printSeparatorLine();
     }
