@@ -10,6 +10,7 @@ use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\PostWorkEnum;
+use App\Enum\ProgressEnum;
 use App\Enum\TagEnum;
 use App\Enum\TimeEnum;
 use App\Enum\UIEnum;
@@ -70,6 +71,7 @@ class Release
             DirHelper::getClassPathAndFileName(ValidationTypeEnum::class),
             DirHelper::getClassPathAndFileName(PostWorkEnum::class),
             DirHelper::getClassPathAndFileName(TimeEnum::class),
+            DirHelper::getClassPathAndFileName(ProgressEnum::class),
             // === Helper ===
             DirHelper::getClassPathAndFileName(DirHelper::class),
             DirHelper::getClassPathAndFileName(OPSHelper::class),

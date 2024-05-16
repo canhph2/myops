@@ -34,6 +34,7 @@ class CommandEnum
     const WORKING_DIR = 'working-dir';
     const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
     const SLACK = 'slack';
+    const SLACK_PROGRESS = 'slack-progress';
     const TMP = 'tmp';
     const POST_WORK = 'post-work';
     const CLEAR_OPS_DIR = 'clear-ops-dir';
@@ -110,6 +111,12 @@ class CommandEnum
             self::WORKING_DIR => ['get root project directory / current working directory'],
             self::REPLACE_TEXT_IN_FILE => [sprintf('php %s replace-text-in-file "search text" "replace text" "file path"', AppInfoEnum::APP_MAIN_COMMAND)],
             self::SLACK => ["notify a message to Slack"],
+            self::SLACK_PROGRESS => [
+                "notify a message of CICD progress to Slack",
+                "use sub-command 'start' to send a message of progress starting",
+                "use sub-command 'finish' to send a message of progress finishing",
+                "can add addition message after the sub-command",
+            ],
             self::TMP => [
                 'handle temporary directory (tmp)',
                 "use 'tmp add' to add new tmp dir",

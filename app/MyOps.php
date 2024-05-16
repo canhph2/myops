@@ -152,6 +152,9 @@ class MyOps
             case CommandEnum::SLACK:
                 SlackService::sendMessageConsole();
                 break;
+            case CommandEnum::SLACK_PROGRESS:
+                SlackService::sendMessageProgressConsole();
+                break;
             case CommandEnum::TMP:
                 DirHelper::tmp();
                 break;
