@@ -230,7 +230,8 @@ class GitHubHelper
             return; //END
         }
         if(!is_dir($workspaceDir)){
-            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist");
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Dir '%s' does not exist", $workspaceDir);
+            return; //END
         }
         //    token
         $GitHubToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
@@ -240,7 +241,7 @@ class GitHubHelper
         }
         // handle
         //    notify
-        SlackService::sendMessageInternal(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternal(sprintf("[BEGIN] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), basename($workspaceDir), $branchToBuild);
         //    get GitHub token and login gh
         self::LineNew()->printSubTitle("login gh (GitHub CLI)");
         (new Process("login gh (GitHub CLI)", DirHelper::getWorkingDir(), [
@@ -260,8 +261,7 @@ class GitHubHelper
                 );
                 // handle send command to build
                 if ($repoInfo->isGitHubAction()) {
-                    (new Process("build project " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
-                        sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
+                    (new Process("build project " . $repoInfo->getRepositoryName(), $repoInfo->getCurrentRepositoryDir(), [
                         sprintf('gh workflow run workflow--%s--%s -r %s', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch(), $repoInfo->getCurrentBranch())
                     ]))->execMultiInWorkDir();
                     // check completed
@@ -285,20 +285,18 @@ class GitHubHelper
             }
         } // end loop
         //    notify
-        SlackService::sendMessageInternal(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), DirHelper::getProjectDirName(), $branchToBuild);
+        SlackService::sendMessageInternal(sprintf("[END] %s", CommandEnum::SUPPORT_COMMANDS()[CommandEnum::BUILD_ALL_PROJECTS][0]), basename($workspaceDir), $branchToBuild);
     }
 
 
     private static function isActionsWorkflowQueuedOrInProgress(GitHubRepositoryInfo $repoInfo): bool
     {
         // in progress
-        $resultInProgress = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
-            sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
+        $resultInProgress = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), $repoInfo->getCurrentRepositoryDir(), [
             sprintf('gh run list --workflow workflow--%s--%s.yml --status in_progress --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
         ]))->execMultiInWorkDirAndGetOutputStrAll();
         // queue
-        $resultQueued = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), DirHelper::getWorkingDir(), [
-            sprintf("cd '%s'", $repoInfo->getCurrentRepositoryDir()),
+        $resultQueued = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), $repoInfo->getCurrentRepositoryDir(), [
             sprintf('gh run list --workflow workflow--%s--%s.yml --status queued --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
         ]))->execMultiInWorkDirAndGetOutputStrAll();
         //
