@@ -7,18 +7,12 @@
 ---
 ## === DevOps Notes ===
 - Require a tech stacks: `Mac 14`/`Ubuntu 18`, `Docker 20.x`, `nvm` and `node 12` (Angular), `php 7.2`, `aws 2.x`, `gh 2.47` (GitHub CLI) | all (or above).
-- Require a support application for DevOps has name `myops`, can clone at https://github.com/congnqnexlesoft/myops (private)
+- Require a `myops` app, a support application for DevOps, can clone at https://github.com/congnqnexlesoft/myops (private)
 ### Manual Build And Deploy
-- Manual Build And Deploy
-    - Checkout the branch: `develop`, `staging`, `master`
-    - Run the command below:
+- Checkout the branch: `develop`, `staging`, `master`
+- Run the command below:
 ```shell
 sh .ops/build-and-deploy-with-caches.sh 'Developer (manual)'
-```
----
-### To sync new code (manually) | require installed
-```shell
-myops sync
 ```
 
 ---
