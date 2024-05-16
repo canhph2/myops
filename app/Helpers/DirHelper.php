@@ -33,7 +33,7 @@ class DirHelper
      */
     public static function getWorkingDir(string $subDirOrFile = null): string
     {
-        return $subDirOrFile ? sprintf("%s/%s", $_SERVER['PWD'], $subDirOrFile) : $_SERVER['PWD'];
+        return $subDirOrFile ? self::join($_SERVER['PWD'], $subDirOrFile) : $_SERVER['PWD'];
     }
 
     /**
@@ -52,6 +52,14 @@ class DirHelper
     {
         $scriptDir = substr($_SERVER['SCRIPT_FILENAME'], 0, strlen($_SERVER['SCRIPT_FILENAME']) - strlen(basename($_SERVER['SCRIPT_FILENAME'])) - 1);
         return self::getWorkingDir($scriptDir);
+    }
+
+    /**
+     * @return string
+     */
+    public static function getScriptFullPath(): string
+    {
+        return self::getWorkingDir($_SERVER['SCRIPT_FILENAME']);
     }
 
     // backup code

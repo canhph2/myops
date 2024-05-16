@@ -86,6 +86,9 @@ class MyOps
             case CommandEnum::SYNC:
                 OPSHelper::sync();
                 break;
+            case CommandEnum::CREATE_ALIAS_DIRECTLY:
+                OPSHelper::createAliasDirectly();
+                break;
             // === AWS related ===
             case CommandEnum::LOAD_ENV_OPS:
                 echo AWSHelper::loadOpsEnvAndHandleMore();

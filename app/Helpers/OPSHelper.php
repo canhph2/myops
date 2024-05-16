@@ -151,6 +151,58 @@ class OPSHelper
     }
 
     /**
+     * Create an alias directly to the MyOps.php call this command, use to manually install
+     *
+     * @return void
+     */
+    public static function  createAliasDirectly()
+    {
+        self::LineNew()->printTitle(__FUNCTION__);
+        //
+        dd(DirHelper::getScriptFullPath());
+        $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
+        $alias = sprintf("alias %s=\"php %s\"", AppInfoEnum::APP_MAIN_COMMAND, $EngagePlusCachesRepositoryOpsAppReleasePath);
+        $shellConfigurationFiles = [
+            DirHelper::getHomeDir('.zshrc'), // Mac
+            DirHelper::getHomeDir('.bashrc'), // Ubuntu
+        ];
+        foreach ($shellConfigurationFiles as $shellConfigurationFile) {
+            if (is_file($shellConfigurationFile)) {
+                self::lineNew()->printSubTitle("create alias '%s' at '%s'", AppInfoEnum::APP_MAIN_COMMAND, $shellConfigurationFile);
+                // already setup
+                if (StrHelper::contains(file_get_contents($shellConfigurationFile), $alias)) {
+                    self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)->print("already setup alias '%s'", AppInfoEnum::APP_MAIN_COMMAND);
+                } else {
+                    // setup alias
+                    //    remove old alias (wrong path, old date alias)
+                    $oldAliases = StrHelper::findLinesContainsTextInFile($shellConfigurationFile, AppInfoEnum::APP_MAIN_COMMAND);
+                    foreach ($oldAliases as $oldAlias) {
+                        StrHelper::replaceTextInFile([
+                            'script path', 'command-name', // param 0,1
+                            $oldAlias, '', $shellConfigurationFile
+                        ]);
+                    }
+                    //    add new alias
+                    if (file_put_contents($shellConfigurationFile, $alias . PHP_EOL, FILE_APPEND)) {
+                        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::CHECK)->print("adding alias done");
+                    } else {
+                        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::X)->print("adding alias failure");
+                    }
+                }
+                // validate alias
+                self::validateFileContainsText($shellConfigurationFile, $alias);
+            }
+        }
+        // validate the result
+        //    show open new session to show right version
+        (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
+            'myops version'
+        ]))->execMultiInWorkDir(true)->printOutput();
+        //
+        self::LineNew()->printSeparatorLine();
+    }
+
+    /**
      * need to get
      * - ENGAGEPLUS_CACHES_FOLDER
      * - ENGAGEPLUS_CACHES_DIR="$(myops home-dir)/${ENGAGEPLUS_CACHES_FOLDER}"

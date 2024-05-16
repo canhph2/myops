@@ -9,6 +9,7 @@ class CommandEnum
     const RELEASE = 'release';
     const VERSION = 'version';
     const SYNC = 'sync';
+    const CREATE_ALIAS_DIRECTLY = 'create-alias-directly';
 
     // === AWS related DATA commands
     const LOAD_ENV_OPS = 'load-env-ops';
@@ -78,6 +79,7 @@ class CommandEnum
             ],
             self::VERSION => ["show app version, (without format and color, using option 'no-format-color'"],
             self::SYNC => [sprintf("sync new release code to caches dir and create an alias '%s'", AppInfoEnum::APP_MAIN_COMMAND)],
+            self::CREATE_ALIAS_DIRECTLY => ['create an alias directly to the MyOps.php call this command, use to manually install'],
             // group title
             "AWS Related" => [],
             self::LOAD_ENV_OPS => [
