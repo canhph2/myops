@@ -118,13 +118,10 @@ class GitHubHelper
      */
     public static function handleCachesAndGit(string $customRepository = null, string $customBranch = null): void
     {
-        dd($customRepository);
         // === validate ===
         //        env vars
         $repository = $customRepository ?: self::arg(1) ?: getenv('REPOSITORY');
-        $repositoryFrom = $customRepository ? 'CODE' : self::arg(1) ? 'CONSOLE' : 'ENV';
         $branch = $customBranch ?: self::arg(2) ?: getenv('BRANCH');
-        $branchFrom = $customBranch ? 'CODE' : self::arg(2) ? 'CONSOLE' : 'ENV';
         if ($repository === GitHubEnum::ENGAGE_API_DEPLOY) {
             $branch = $customBranch ?? getenv('API_DEPLOY_BRANCH');
         }
@@ -139,6 +136,14 @@ class GitHubHelper
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
+        if($customRepository) $repositoryFrom = "CODE";
+        elseif(self::arg(1)) $repositoryFrom = "CONSOLE";
+        elseif(getenv('REPOSITORY')) $repositoryFrom = "ENV";
+
+        if($customBranch) $branchFrom = "CODE";
+        elseif(self::arg(2)) $branchFrom = "CONSOLE";
+        elseif(getenv('BRANCH')) $branchFrom = "ENV";
+
         self::LineTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
             ->setTag($branchFrom)->print("BRANCH = %s", $branch)
             ->print("DIR = '$EngagePlusCachesRepositoryDir'");
