@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.6.16 ===
+// === MyOps v3.6.17 ===
 
 // === Generated libraries classes ===
 
@@ -1480,7 +1480,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.6.16';
+    const APP_VERSION = '3.6.17';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1625,9 +1625,8 @@ class CommandEnum
             self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => ['[PRIVATE] update token all projects in workspace'],
             // group title
             "VALIDATION" => [],
-            self::VALIDATE => [
+            self::VALIDATE => [ // set -e # tells the shell to exit if a command returns a non-zero exit status
                 "required: 'set -e' in bash file",
-                sprintf('  should combine with exit 1, eg:   php %s validate TYPE || exit 1', AppInfoEnum::APP_MAIN_COMMAND),
                 '  support TYPEs:',
                 '    branch  : to only allow develop, staging, master',
                 '    docker  : docker should is running',
@@ -2159,9 +2158,6 @@ class OPSHelper
         self::LineNew()->printTitle(__FUNCTION__);
         //
         self::createAlias(DirHelper::getScriptFullPath());
-        // validate the result
-        //    show open new session to show right version
-        self::LineNew()->print(exec('myops version'));
         //
         self::LineNew()->printSeparatorLine();
     }
