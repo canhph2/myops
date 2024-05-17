@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.6.11 ===
+// === MyOps v3.6.12 ===
 
 // === Generated libraries classes ===
 
@@ -1480,7 +1480,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.6.11';
+    const APP_VERSION = '3.6.12';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1691,6 +1691,9 @@ class GitHubEnum
     const MYOPS = 'myops';
     const DOCKER_BASE_IMAGES = 'docker-base-images';
     const ENGAGE_SELENIUM_TEST_1 = 'engage-selenium-test-1';
+
+    //
+    const DEVELOPMENT_ONLY_REPOSITORIES = [self::MYOPS, self::DOCKER_BASE_IMAGES, self::ENGAGE_SELENIUM_TEST_1];
 
     /**
      * @return array
@@ -3816,8 +3819,8 @@ class SlackService
      */
     private static function selectSlackChannel(): ?string
     {
-        // myops | testing
-        if (getenv('REPOSITORY') === GitHubEnum::MYOPS) {
+        // development only
+        if (in_array(getenv('REPOSITORY'), GitHubEnum::DEVELOPMENT_ONLY_REPOSITORIES)) {
             return getenv('SLACK_CHANNEL_DEV'); // END
         }
         // database-utils
