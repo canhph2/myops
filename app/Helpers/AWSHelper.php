@@ -232,17 +232,9 @@ class AWSHelper
                 ]))->execMulti()->getOutputStrAll();
                 if (in_array(self::ELB_LOG_UPDATE_SUCCESSFULLY, json_decode($lastELBLogs))) {
                     self::LineTag(TagEnum::SUCCESS)->print(self::ELB_LOG_UPDATE_SUCCESSFULLY);
-                    SlackService::sendMessage(['script path', 'slack', sprintf(
-                        "[FINISH] [SUCCESS] %s just finished building and deploying the project %s",
-                        getenv('DEVICE'), getenv('REPOSITORY')
-                    )]);
                     exit(0); // END | successful
                 } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
                     self::LineTag(TagEnum::ERROR)->print(self::ELB_LOG_UPDATE_FAILED);
-                    SlackService::sendMessage(['script path', 'slack', sprintf(
-                        "[FINISH] [FAILURE 1 | Deploy failed] %s just finished building and deploying the project %s",
-                        getenv('DEVICE'), getenv('REPOSITORY')
-                    )]);
                     exit(1); // END | failed
                 } else {
                     self::LineNew()->print("Environment is still not healthy");
@@ -252,10 +244,6 @@ class AWSHelper
             }
             //             case timeout
             self::LineTag(TagEnum::ERROR)->print("Deployment got a timeout result");
-            SlackService::sendMessage(['script path', 'slack', sprintf(
-                "[FINISH] [FAILURE 2 | Timeout] %s just finished building and deploying the project %s",
-                getenv('DEVICE'), getenv('REPOSITORY')
-            )]);
             exit(1); // END | failed
         } catch (Exception $ex) {
             self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
