@@ -49,6 +49,9 @@ class GitHubEnum
     const DOCKER_BASE_IMAGES = 'docker-base-images';
     const ENGAGE_SELENIUM_TEST_1 = 'engage-selenium-test-1';
 
+    //
+    const DEVELOPMENT_ONLY_REPOSITORIES = [self::MYOPS, self::DOCKER_BASE_IMAGES, self::ENGAGE_SELENIUM_TEST_1];
+
     /**
      * @return array
      */
