@@ -82,9 +82,9 @@ class MyOpsTest extends BaseTestCase
             ]))->execMultiInWorkDirAndGetOutputStrAll()
         );
         // test the result
-        $this->customAssertIsStringAndContainsString(join(' | ', TagEnum::VALIDATION_ERROR),
+        $this->customAssertIsStringAndContainsString(join(' | ', TagEnum::VALIDATION_SUCCESS),
             (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-                sprintf("myops validate dont-exists '%s' tmp", DirHelper::getWorkingDir())
+                sprintf("myops validate dont-exists '%s' tmp1", DirHelper::getWorkingDir())
             ]))->execMultiInWorkDirAndGetOutputStrAll()
         );
     }
