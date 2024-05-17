@@ -157,9 +157,6 @@ class OPSHelper
         self::LineNew()->printTitle(__FUNCTION__);
         //
         self::createAlias(DirHelper::getScriptFullPath());
-        // validate the result
-        //    show open new session to show right version
-        self::LineNew()->print(exec('myops version'));
         //
         self::LineNew()->printSeparatorLine();
     }
