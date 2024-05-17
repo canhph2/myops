@@ -126,7 +126,7 @@ class CommandEnum
                 "use 'tmp remove' to remove tmp dir"
             ],
             self::POST_WORK => ["do post works. Optional: add param 'skip-check-dir' to skip check dir"],
-            self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
+            self::CLEAR_OPS_DIR => ["clear .ops directory, usually use in Docker image"],
             self::TIME => [
                 'is used to measure project build time',
                 "use the sub-command 'begin' to mark a beginning time, will return an id of process object",

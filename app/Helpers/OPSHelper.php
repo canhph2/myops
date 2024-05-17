@@ -308,13 +308,13 @@ class OPSHelper
 
     public static function clearOpsDir(): void
     {
-        self::LineNew()->printTitle("Clear _ops directory");
-        (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
-            sprintf("rm -rf '%s'", DirHelper::getWorkingDir('_ops'))
+        self::LineNew()->printTitle("Clear .ops directory");
+        (new Process("Clear .ops directory", DirHelper::getWorkingDir(), [
+            sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.ops'))
         ]))->execMultiInWorkDir(true)->printOutput();
         // validate result
-        $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
-        self::LineNew()->printCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
+        $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.ops'", DirHelper::getWorkingDir()));
+        self::LineNew()->printCondition(!$checkTmpDir, "clear .ops dir successfully", "clear .ops dir failed");
     }
 
     /**
