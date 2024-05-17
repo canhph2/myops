@@ -142,9 +142,8 @@ class CommandEnum
             self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => ['[PRIVATE] update token all projects in workspace'],
             // group title
             "VALIDATION" => [],
-            self::VALIDATE => [
+            self::VALIDATE => [ // set -e # tells the shell to exit if a command returns a non-zero exit status
                 "required: 'set -e' in bash file",
-                sprintf('  should combine with exit 1, eg:   php %s validate TYPE || exit 1', AppInfoEnum::APP_MAIN_COMMAND),
                 '  support TYPEs:',
                 '    branch  : to only allow develop, staging, master',
                 '    docker  : docker should is running',
