@@ -27,8 +27,8 @@ class SlackService
      */
     private static function selectSlackChannel(): ?string
     {
-        // myops | testing
-        if (getenv('REPOSITORY') === GitHubEnum::MYOPS) {
+        // development only
+        if (in_array(getenv('REPOSITORY'), GitHubEnum::DEVELOPMENT_ONLY_REPOSITORIES)) {
             return getenv('SLACK_CHANNEL_DEV'); // END
         }
         // database-utils
