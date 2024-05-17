@@ -354,6 +354,9 @@ class OPSHelper
             case ValidationTypeEnum::EXISTS:
                 self::validateExists();
                 break;
+            case ValidationTypeEnum::DONT_EXISTS:
+                self::validateExists(true);
+                break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
                     ->print("should be like eg:   '%s validate branch'", AppInfoEnum::APP_MAIN_COMMAND);
@@ -447,7 +450,7 @@ class OPSHelper
         }
     }
 
-    private static function validateExists()
+    private static function validateExists(bool $isValidateDontExists = false)
     {
         // validate
         $dirToCheck1 = self::arg(2);
@@ -462,19 +465,40 @@ class OPSHelper
         }
         // handle
         $dirToCheck1FilesAndDirs = scandir($dirToCheck1);
-        $invalid = false;
-        foreach ($fileOrDirToValidate1 as $fileOrDir) {
-            if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
-                self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
-                    ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
-            } else {
-                $invalid = true;
-                self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
-                    ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
+        //    case: exist
+        if (!$isValidateDontExists) {
+            $invalid = false;
+            foreach ($fileOrDirToValidate1 as $fileOrDir) {
+                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
+                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
+                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                } else {
+                    $invalid = true;
+                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
+                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                }
+            }
+            if ($invalid) {
+                exit(1); // END
             }
         }
-        if ($invalid) {
-            exit(1); // END
+        //    case: don't exist
+        if ($isValidateDontExists) {
+            $invalid = false;
+            foreach ($fileOrDirToValidate1 as $fileOrDir) {
+                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
+                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
+                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                    $invalid = true;
+                } else {
+                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
+                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                }
+            }
+            if ($invalid) {
+                exit(1); // END
+            }
         }
+
     }
 }

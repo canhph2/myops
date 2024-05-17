@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.6.12 ===
+// === MyOps v3.6.16 ===
 
 // === Generated libraries classes ===
 
@@ -1480,7 +1480,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.6.12';
+    const APP_VERSION = '3.6.16';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1634,6 +1634,7 @@ class CommandEnum
                 '    device  : should pass env var: DEVICE in your first command',
                 '    file-contains-text  : check if a file should contain a text or some texts',
                 '    exists DIR FILE_OR_DIR_1 FILE_OR_DIR_1 ... : check if a file or a directory should exists in a directory',
+                '    dont-exists DIR FILE_OR_DIR_1 FILE_OR_DIR_1 ... : check if a file or a directory should exists in a directory',
             ],
             // group title
             "UI/Text" => [],
@@ -1811,6 +1812,7 @@ class ValidationTypeEnum
     const DEVICE = 'device';
     const FILE_CONTAINS_TEXT = 'file-contains-text';
     const EXISTS = 'exists';
+    const DONT_EXISTS = 'dont-exists';
 
     // ===
     const SUPPORT_LIST = [self::BRANCH, self::DOCKER, self::DEVICE, self::FILE_CONTAINS_TEXT, self::EXISTS];
@@ -2354,6 +2356,9 @@ class OPSHelper
             case ValidationTypeEnum::EXISTS:
                 self::validateExists();
                 break;
+            case ValidationTypeEnum::DONT_EXISTS:
+                self::validateExists(true);
+                break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
                     ->print("should be like eg:   '%s validate branch'", AppInfoEnum::APP_MAIN_COMMAND);
@@ -2447,7 +2452,7 @@ class OPSHelper
         }
     }
 
-    private static function validateExists()
+    private static function validateExists(bool $isValidateDontExists = false)
     {
         // validate
         $dirToCheck1 = self::arg(2);
@@ -2462,20 +2467,41 @@ class OPSHelper
         }
         // handle
         $dirToCheck1FilesAndDirs = scandir($dirToCheck1);
-        $invalid = false;
-        foreach ($fileOrDirToValidate1 as $fileOrDir) {
-            if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
-                self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
-                    ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
-            } else {
-                $invalid = true;
-                self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
-                    ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
+        //    case: exist
+        if (!$isValidateDontExists) {
+            $invalid = false;
+            foreach ($fileOrDirToValidate1 as $fileOrDir) {
+                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
+                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
+                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                } else {
+                    $invalid = true;
+                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
+                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                }
+            }
+            if ($invalid) {
+                exit(1); // END
             }
         }
-        if ($invalid) {
-            exit(1); // END
+        //    case: don't exist
+        if ($isValidateDontExists) {
+            $invalid = false;
+            foreach ($fileOrDirToValidate1 as $fileOrDir) {
+                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
+                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
+                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                    $invalid = true;
+                } else {
+                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
+                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                }
+            }
+            if ($invalid) {
+                exit(1); // END
+            }
         }
+
     }
 }
 
@@ -3024,17 +3050,9 @@ class AWSHelper
                 ]))->execMulti()->getOutputStrAll();
                 if (in_array(self::ELB_LOG_UPDATE_SUCCESSFULLY, json_decode($lastELBLogs))) {
                     self::LineTag(TagEnum::SUCCESS)->print(self::ELB_LOG_UPDATE_SUCCESSFULLY);
-                    SlackService::sendMessage(['script path', 'slack', sprintf(
-                        "[FINISH] [SUCCESS] %s just finished building and deploying the project %s",
-                        getenv('DEVICE'), getenv('REPOSITORY')
-                    )]);
                     exit(0); // END | successful
                 } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
                     self::LineTag(TagEnum::ERROR)->print(self::ELB_LOG_UPDATE_FAILED);
-                    SlackService::sendMessage(['script path', 'slack', sprintf(
-                        "[FINISH] [FAILURE 1 | Deploy failed] %s just finished building and deploying the project %s",
-                        getenv('DEVICE'), getenv('REPOSITORY')
-                    )]);
                     exit(1); // END | failed
                 } else {
                     self::LineNew()->print("Environment is still not healthy");
@@ -3044,10 +3062,6 @@ class AWSHelper
             }
             //             case timeout
             self::LineTag(TagEnum::ERROR)->print("Deployment got a timeout result");
-            SlackService::sendMessage(['script path', 'slack', sprintf(
-                "[FINISH] [FAILURE 2 | Timeout] %s just finished building and deploying the project %s",
-                getenv('DEVICE'), getenv('REPOSITORY')
-            )]);
             exit(1); // END | failed
         } catch (Exception $ex) {
             self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
