@@ -18,6 +18,7 @@ use App\Enum\ValidationTypeEnum;
 use App\Helpers\AppHelper;
 use App\Helpers\AppInfoHelper;
 use App\Helpers\AWSHelper;
+use App\Helpers\ConsoleHelper;
 use App\Helpers\Data;
 use App\Helpers\DateHelper;
 use App\Helpers\DirHelper;
@@ -33,6 +34,7 @@ use App\MyOps;
 use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
+use ConsoleEnum;
 use DateTime;
 
 class Release
@@ -74,6 +76,7 @@ class Release
             DirHelper::getClassPathAndFileName(PostWorkEnum::class),
             DirHelper::getClassPathAndFileName(TimeEnum::class),
             DirHelper::getClassPathAndFileName(ProcessEnum::class),
+            DirHelper::getClassPathAndFileName(ConsoleEnum::class),
             // === Helper ===
             DirHelper::getClassPathAndFileName(AppInfoHelper::class),
             DirHelper::getClassPathAndFileName(DirHelper::class),
@@ -89,6 +92,7 @@ class Release
             DirHelper::getClassPathAndFileName(ProcessHelper::class),
             DirHelper::getClassPathAndFileName(UuidHelper::class),
             DirHelper::getClassPathAndFileName(ValidationHelper::class),
+            DirHelper::getClassPathAndFileName(ConsoleHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===

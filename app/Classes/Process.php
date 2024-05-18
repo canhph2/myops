@@ -200,7 +200,7 @@ class Process
         //    handle alias when run alias 'myops' in Process
         $isContainsAlias = false;
         foreach ($this->commands as $command) {
-            if (StrHelper::startWith($command, AppInfoEnum::APP_MAIN_COMMAND)) {
+            if (StrHelper::startsWith($command, AppInfoEnum::APP_MAIN_COMMAND)) {
                 $isContainsAlias = true;
                 break;
             }
@@ -208,7 +208,7 @@ class Process
         if ($isContainsAlias) {
             // replace alias
             for ($i = 0; $i < count($this->commands); $i++) {
-                if (StrHelper::startWith($this->commands[$i], AppInfoEnum::APP_MAIN_COMMAND)) {
+                if (StrHelper::startsWith($this->commands[$i], AppInfoEnum::APP_MAIN_COMMAND)) {
                     $this->commands[$i] = "php " . AppInfoEnum::RELEASE_PATH . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
                 }
             }
