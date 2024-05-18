@@ -122,8 +122,9 @@ class CommandEnum
             ],
             self::TMP => [
                 'handle temporary directory (tmp)',
-                "use 'tmp add' to add new tmp dir",
-                "use 'tmp remove' to remove tmp dir"
+                "use the sub-command 'add' to add new tmp dir",
+                "use the sub-command 'remove' to remove tmp dir",
+                "user the option --sub-dir=<sub-dir 1> --sub-dir=<sub-dir 2> to handle temp dir in the sub-dir"
             ],
             self::POST_WORK => ["do post works. Optional: add param 'skip-check-dir' to skip check dir"],
             self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],

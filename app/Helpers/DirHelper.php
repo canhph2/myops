@@ -2,12 +2,19 @@
 
 namespace App\Helpers;
 
+use App\Classes\Base\CustomCollection;
 use App\Classes\Process;
+use App\Enum\IconEnum;
+use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
+use App\Enum\UIEnum;
+use App\Enum\ValidationTypeEnum;
+use App\Factories\ShellFactory;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
 /**
+ * Last modified on May 18, 2024.
  * this is a DIRectory helper / folder helper
  */
 class DirHelper
@@ -28,12 +35,12 @@ class DirHelper
     }
 
     /**
-     * @param string|null $subDirOrFile
+     * @param ...$subDirOrFiles
      * @return string
      */
-    public static function getWorkingDir(string $subDirOrFile = null): string
+    public static function getWorkingDir(...$subDirOrFiles): string
     {
-        return $subDirOrFile ? self::join($_SERVER['PWD'], $subDirOrFile) : $_SERVER['PWD'];
+        return count($subDirOrFiles) ? self::join($_SERVER['PWD'], ...$subDirOrFiles) : $_SERVER['PWD'];
     }
 
     /**
@@ -91,28 +98,34 @@ class DirHelper
     {
         switch (self::arg(1)) {
             case 'add':
-                if (is_dir(self::getWorkingDir('tmp'))) {
-                    $commands[] = sprintf("rm -rf '%s'", self::getWorkingDir('tmp'));
+                // handle
+                //    single dir
+                $commands = ShellFactory::generateMakeDirCommand(self::getWorkingDir('tmp'));
+                //    multiple sub-dir
+                foreach (self::inputArr('sub-dir') as $subDir) {
+                    $commands->merge(ShellFactory::generateMakeDirCommand(self::getWorkingDir($subDir, 'tmp')));
                 }
-                $commands[] = sprintf("mkdir -p '%s'", self::getWorkingDir('tmp'));
+                //    execute
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
                     ->execMultiInWorkDir()->printOutput();
-                // validate result
-                self::LineNew()->printCondition(is_dir(self::getWorkingDir('tmp')),
-                    'create a tmp dir successfully', 'create a tmp dir failure');
+                // validate the result
+                self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), 'tmp', ...self::inputArr('sub-dir')->toArr());
                 break;
             case 'remove':
-                if (is_dir(self::getWorkingDir('tmp'))) {
-                    $commands[] = sprintf("rm -rf '%s'", self::getWorkingDir('tmp'));
-                    (new Process("Remove tmp dir", self::getWorkingDir(), $commands))
-                        ->execMultiInWorkDir()->printOutput();
-                    // validate result
-                    $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", self::getWorkingDir()));
-                    self::LineNew()->printCondition(!$checkTmpDir,
-                        'remove a tmp dir successfully', 'remove a tmp dir failure');
-                } else {
-                    self::LineNew()->print("tmp directory doesn't exist, do nothing");
+                // handle
+                //    single dir
+                $commands = ShellFactory::generateRemoveDirCommand(self::getWorkingDir('tmp'));
+                //    multiple sub-dir
+                foreach (self::inputArr('sub-dir') as $subDir) {
+                    $commands->merge(ShellFactory::generateRemoveDirCommand(self::getWorkingDir($subDir, 'tmp')));
                 }
+                //    execute
+                (new Process("Remove tmp dir", self::getWorkingDir(), $commands))
+                    ->execMultiInWorkDir()->printOutput();
+                // validate the result
+                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), 'tmp', ...self::inputArr('sub-dir')->map(function ($subDir) {
+                    return self::join($subDir, 'tmp');
+                }));
                 break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("missing action, action should be 'add' or 'remove'");
@@ -129,6 +142,103 @@ class DirHelper
     public static function getClassPathAndFileName(string $ClassDotClass): string
     {
         return lcfirst(sprintf("%s.php", str_replace("\\", "/", $ClassDotClass)));
+    }
+
+    /**
+     * Parameters priority: custom > console
+     * @param string $type
+     * @param string|null $customDirToCheck1
+     * @param mixed ...$customFileOrDirToValidate1
+     * @return void
+     */
+    public static function validateDirOrFileExisting(string $type = ValidationTypeEnum::EXISTS, string $customDirToCheck1 = null, ...$customFileOrDirToValidate1)
+    {
+        // validate
+        $dirToCheck1 = $customDirToCheck1 ?? self::arg(2);
+        $fileOrDirToValidate1 = count($customFileOrDirToValidate1) ? new CustomCollection($customFileOrDirToValidate1) : self::args(2);
+        if (!$dirToCheck1 || $fileOrDirToValidate1->isEmpty()) {
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing 'dirToCheck' or 'fileOrDirToValidate' (can path multiple fileOrDir1 fileOrDir2)");
+            exit(1); // END
+        }
+        if (!is_dir($dirToCheck1)) {
+            self::LineTag(TagEnum::ERROR)->print(" dir '%s' does not exist", $dirToCheck1);
+            exit(1); // END
+        }
+        // handle
+        $dirToCheck1FilesAndDirs = scandir($dirToCheck1);
+        //    case: exist
+        if ($type === ValidationTypeEnum::EXISTS) {
+            $invalid = false;
+            foreach ($fileOrDirToValidate1 as $fileOrDir) {
+                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
+                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
+                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                } else {
+                    $invalid = true;
+                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
+                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                }
+            }
+            if ($invalid) {
+                exit(1); // END
+            }
+        }
+        //    case: don't exist
+        if ($type === ValidationTypeEnum::DONT_EXISTS) {
+            $invalid = false;
+            foreach ($fileOrDirToValidate1 as $fileOrDir) {
+                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
+                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
+                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                    $invalid = true;
+                } else {
+                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
+                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                }
+            }
+            if ($invalid) {
+                exit(1); // END
+            }
+        }
+    }
+
+    public static function validateFileContainsText(string $customFilePath = null, ...$customSearchTexts)
+    {
+        // validate
+        $filePath = $customFilePath ?? self::arg(2);
+        $searchTexts = count($customSearchTexts) ? new CustomCollection($customSearchTexts) : self::args(2);
+        if (!$filePath || $searchTexts->isEmpty()) {
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
+            exit(1); // END
+        }
+        if (!is_file($filePath)) {
+            self::LineTag(TagEnum::ERROR)->print("'%s' does not exist", $filePath);
+            exit(1); // END
+        }
+        // handle
+        $fileContent = file_get_contents($filePath);
+        $validationResult = [];
+        foreach ($searchTexts as $searchText) {
+            $validationResult[] = [
+                'searchText' => $searchText,
+                'isContains' => StrHelper::contains($fileContent, $searchText)
+            ];
+        }
+        $amountValidationPass = count(array_filter($validationResult, function ($item) {
+            return $item['isContains'];
+        }));
+        if ($amountValidationPass === $searchTexts->count()) {
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
+        } else {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("file '%s' does not contains (some) text(s):", $filePath);
+            foreach ($validationResult as $result) {
+                self::LineIndent(IndentLevelEnum::ITEM_LINE)
+                    ->setIcon($result['isContains'] ? IconEnum::CHECK : IconEnum::X)
+                    ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
+                    ->print($result['searchText']);
+            }
+            exit(1); // END
+        }
     }
 
 

@@ -346,13 +346,13 @@ class OPSHelper
                 self::validateDevice();
                 break;
             case ValidationTypeEnum::FILE_CONTAINS_TEXT:
-                self::validateFileContainsText();
+                DirHelper::validateFileContainsText();
                 break;
             case ValidationTypeEnum::EXISTS:
-                self::validateExists();
+                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::EXISTS);
                 break;
             case ValidationTypeEnum::DONT_EXISTS:
-                self::validateExists(true);
+                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
                 break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
@@ -406,96 +406,5 @@ class OPSHelper
             self::LineTag(TagEnum::ERROR)->print("Invalid device | should pass in your command");
             exit(1); // END app
         }
-    }
-
-    private static function validateFileContainsText(string $customFilePath = null, ...$customSearchTexts)
-    {
-        // validate
-        $filePath = $customFilePath ?? self::arg(2);
-        $searchTexts = count($customSearchTexts) ? new CustomCollection($customSearchTexts) : self::args(2);
-        if (!$filePath || $searchTexts->isEmpty()) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
-            exit(1); // END
-        }
-        if (!is_file($filePath)) {
-            self::LineTag(TagEnum::ERROR)->print("'%s' does not exist", $filePath);
-            exit(1); // END
-        }
-        // handle
-        $fileContent = file_get_contents($filePath);
-        $validationResult = [];
-        foreach ($searchTexts as $searchText) {
-            $validationResult[] = [
-                'searchText' => $searchText,
-                'isContains' => StrHelper::contains($fileContent, $searchText)
-            ];
-        }
-        $amountValidationPass = count(array_filter($validationResult, function ($item) {
-            return $item['isContains'];
-        }));
-        if ($amountValidationPass === $searchTexts->count()) {
-            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
-        } else {
-            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("file '%s' does not contains (some) text(s):", $filePath);
-            foreach ($validationResult as $result) {
-                self::LineIndent(IndentLevelEnum::ITEM_LINE)
-                    ->setIcon($result['isContains'] ? IconEnum::CHECK : IconEnum::X)
-                    ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
-                    ->print($result['searchText']);
-            }
-            exit(1); // END
-        }
-    }
-
-    private static function validateExists(bool $isValidateDontExists = false)
-    {
-        // validate
-        $dirToCheck1 = self::arg(2);
-        $fileOrDirToValidate1 = self::args(2);
-        if (!$dirToCheck1 || $fileOrDirToValidate1->isEmpty()) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing 'dirToCheck' or 'fileOrDirToValidate' (can path multiple fileOrDir1 fileOrDir2)");
-            exit(1); // END
-        }
-        if (!is_dir($dirToCheck1)) {
-            self::LineTag(TagEnum::ERROR)->print(" dir '%s' does not exist", $dirToCheck1);
-            exit(1); // END
-        }
-        // handle
-        $dirToCheck1FilesAndDirs = scandir($dirToCheck1);
-        //    case: exist
-        if (!$isValidateDontExists) {
-            $invalid = false;
-            foreach ($fileOrDirToValidate1 as $fileOrDir) {
-                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
-                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
-                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
-                } else {
-                    $invalid = true;
-                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
-                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
-                }
-            }
-            if ($invalid) {
-                exit(1); // END
-            }
-        }
-        //    case: don't exist
-        if ($isValidateDontExists) {
-            $invalid = false;
-            foreach ($fileOrDirToValidate1 as $fileOrDir) {
-                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
-                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
-                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
-                    $invalid = true;
-                } else {
-                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
-                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
-                }
-            }
-            if ($invalid) {
-                exit(1); // END
-            }
-        }
-
     }
 }

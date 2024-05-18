@@ -2,6 +2,7 @@
 
 namespace App\Classes;
 
+use App\Classes\Base\CustomCollection;
 use App\Enum\AppInfoEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
@@ -21,10 +22,10 @@ class Process
     /** @var string|null */
     private $workDir;
 
-    /** @var array|null */
+    /** @var CustomCollection */
     private $commands;
 
-    /** @var array|null */
+    /** @var CustomCollection */
     private $output;
 
     /** @var int */
@@ -36,19 +37,20 @@ class Process
     /**
      * @param string|null $workName
      * @param string|null $workDir
-     * @param array|null $commands
+     * @param CustomCollection|array|null $commands
      */
     public function __construct(
-        string $workName = null,
-        string $workDir = null,
-        array  $commands = null
+        string           $workName = null,
+        string           $workDir = null,
+        CustomCollection $commands = null
     )
     {
         $this->workName = $workName;
         $this->workDir = $workDir;
-        $this->commands = $commands;
+        $this->commands = $commands instanceof CustomCollection ? $commands : new CustomCollection($commands ?? []);
         // default
         $this->isExitOnError = true; // default
+        $this->output = new CustomCollection();
     }
 
     /**
@@ -88,29 +90,29 @@ class Process
     }
 
     /**
-     * @return array|null
+     * @return CustomCollection|null
      */
-    public function getCommands(): ?array
+    public function getCommands(): ?CustomCollection
     {
         return $this->commands;
     }
 
     /**
-     * @param array|null $commands
+     * @param CustomCollection|null $commands
      * @return Process
      */
-    public function setCommands(?array $commands): Process
+    public function setCommands(?CustomCollection $commands): Process
     {
         $this->commands = $commands;
         return $this;
     }
 
     /**
-     * @return array
+     * @return CustomCollection
      */
-    public function getOutput(): array
+    public function getOutput(): CustomCollection
     {
-        return $this->output ?? [];
+        return $this->output;
     }
 
     /**
@@ -118,14 +120,14 @@ class Process
      */
     public function getOutputStrAll(): string
     {
-        return join(PHP_EOL, $this->output);
+        return $this->output->join(PHP_EOL);
     }
 
     /**
-     * @param array|null $output
+     * @param CustomCollection $output
      * @return Process
      */
-    public function setOutput(?array $output): Process
+    public function setOutput(CustomCollection $output): Process
     {
         $this->output = $output;
         return $this;
@@ -207,16 +209,17 @@ class Process
         }
         if ($isContainsAlias) {
             // replace alias
-            for ($i = 0; $i < count($this->commands); $i++) {
-                if (StrHelper::startsWith($this->commands[$i], AppInfoEnum::APP_MAIN_COMMAND)) {
-                    $this->commands[$i] = "php " . AppInfoEnum::RELEASE_PATH . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
+            for ($i = 0; $i < $this->commands->count(); $i++) {
+                if (StrHelper::startsWith($this->commands->get($i), AppInfoEnum::APP_MAIN_COMMAND)) {
+                    $this->commands->setStr($i, "php %s%s", AppInfoEnum::RELEASE_PATH, substr($this->commands->get($i), strlen(AppInfoEnum::APP_MAIN_COMMAND)));
                 }
             }
         }
         //
-        if ($this->commands) {
+        if ($this->commands->count()) {
             $resultCode = null;
-            exec(join(';', $this->commands), $this->output, $exitCode);
+            exec($this->commands->join(';'), $tempOutput, $exitCode);
+            $this->output = new CustomCollection($tempOutput);
             if ($exitCode && $this->isExitOnError) {
                 $this->printOutput();
                 self::LineTag(TagEnum::ERROR)->print("detect execute shell command failed, exit app | exit code = $exitCode");
@@ -230,11 +233,11 @@ class Process
     public function execMultiInWorkDir(bool $skipCheckDir = false): Process
     {
         // dir commands
-        $arrDirCommands[] = sprintf("cd '%s'", $this->workDir); // cd
+        $dirCommands = (new CustomCollection())->addStr("cd '%s'", $this->workDir); // cd
         if (!$skipCheckDir) {
-            $arrDirCommands[] = GitHubEnum::GET_REPOSITORY_DIR_COMMAND; // check dir
+            $dirCommands->add(GitHubEnum::GET_REPOSITORY_DIR_COMMAND); // check dir
         }
-        $this->commands = array_merge($arrDirCommands, $this->commands);
+        $this->commands->merge($dirCommands);
         $this->execMulti();
         //
         return $this;

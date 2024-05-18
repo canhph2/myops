@@ -16,6 +16,7 @@ use App\Enum\TagEnum;
 use App\Enum\TimeEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
+use App\Factories\ShellFactory;
 use App\Helpers\AppHelper;
 use App\Helpers\AppInfoHelper;
 use App\Helpers\AWSHelper;
@@ -77,7 +78,9 @@ class Release
             DirHelper::getClassPathAndFileName(TimeEnum::class),
             DirHelper::getClassPathAndFileName(ProcessEnum::class),
             DirHelper::getClassPathAndFileName(ConsoleEnum::class),
-            // === Helper ===
+            // === Factories ===
+            DirHelper::getClassPathAndFileName(ShellFactory::class),
+            // === Helpers ===
             DirHelper::getClassPathAndFileName(AppInfoHelper::class),
             DirHelper::getClassPathAndFileName(DirHelper::class),
             DirHelper::getClassPathAndFileName(OPSHelper::class),
