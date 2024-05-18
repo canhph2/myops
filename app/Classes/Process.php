@@ -42,7 +42,7 @@ class Process
     public function __construct(
         string           $workName = null,
         string           $workDir = null,
-        CustomCollection $commands = null
+        $commands = null
     )
     {
         $this->workName = $workName;

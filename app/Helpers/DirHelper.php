@@ -109,7 +109,10 @@ class DirHelper
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
                     ->execMultiInWorkDir()->printOutput();
                 // validate the result
-                self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), 'tmp', ...self::inputArr('sub-dir')->toArr());
+                self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), 'tmp');
+                foreach (self::inputArr('sub-dir') as $subDir) {
+                    self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir($subDir), 'tmp');
+                }
                 break;
             case 'remove':
                 // handle
@@ -123,9 +126,10 @@ class DirHelper
                 (new Process("Remove tmp dir", self::getWorkingDir(), $commands))
                     ->execMultiInWorkDir()->printOutput();
                 // validate the result
-                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), 'tmp', ...self::inputArr('sub-dir')->map(function ($subDir) {
-                    return self::join($subDir, 'tmp');
-                }));
+                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), 'tmp');
+                foreach (self::inputArr('sub-dir') as $subDir) {
+                    self::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir($subDir), 'tmp');
+                }
                 break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("missing action, action should be 'add' or 'remove'");
