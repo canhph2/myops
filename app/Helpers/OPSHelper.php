@@ -142,7 +142,7 @@ class OPSHelper
                     }
                 }
                 // validate alias
-                self::validateFileContainsText($shellConfigurationFile, $alias);
+                DirHelper::validateFileContainsText($shellConfigurationFile, $alias);
             }
         }
     }

@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.4 ===
+// === MyOps v3.7.5 ===
 
 // === Generated libraries classes ===
 
@@ -1554,7 +1554,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.4';
+    const APP_VERSION = '3.7.5';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2378,7 +2378,7 @@ class OPSHelper
                     }
                 }
                 // validate alias
-                self::validateFileContainsText($shellConfigurationFile, $alias);
+                DirHelper::validateFileContainsText($shellConfigurationFile, $alias);
             }
         }
     }
