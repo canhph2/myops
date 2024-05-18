@@ -2,6 +2,7 @@
 
 ---
 ## === v3 ===
+- 3.7.0 | TODO ADD SOME CHANGE LOGS
 - 3.6.0 | Add 'process' command
 - 3.5.0 | Add 'slack-progress' command
 - 3.4.0 | Add 'time' function
