@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.0 ===
+// === MyOps v3.7.2 ===
 
 // === Generated libraries classes ===
 
@@ -119,6 +119,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Enum\AppInfoEnum;
 // [REMOVED] use App\Enum\CommandEnum;
+// [REMOVED] use App\Enum\ConsoleEnum;
 // [REMOVED] use App\Enum\DockerEnum;
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\IconEnum;
@@ -132,6 +133,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Helpers\AppHelper;
 // [REMOVED] use App\Helpers\AppInfoHelper;
 // [REMOVED] use App\Helpers\AWSHelper;
+// [REMOVED] use App\Helpers\ConsoleHelper;
 // [REMOVED] use App\Helpers\Data;
 // [REMOVED] use App\Helpers\DateHelper;
 // [REMOVED] use App\Helpers\DirHelper;
@@ -188,6 +190,7 @@ class Release
             DirHelper::getClassPathAndFileName(PostWorkEnum::class),
             DirHelper::getClassPathAndFileName(TimeEnum::class),
             DirHelper::getClassPathAndFileName(ProcessEnum::class),
+            DirHelper::getClassPathAndFileName(ConsoleEnum::class),
             // === Helper ===
             DirHelper::getClassPathAndFileName(AppInfoHelper::class),
             DirHelper::getClassPathAndFileName(DirHelper::class),
@@ -203,6 +206,7 @@ class Release
             DirHelper::getClassPathAndFileName(ProcessHelper::class),
             DirHelper::getClassPathAndFileName(UuidHelper::class),
             DirHelper::getClassPathAndFileName(ValidationHelper::class),
+            DirHelper::getClassPathAndFileName(ConsoleHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
@@ -548,7 +552,7 @@ class Process
         //    handle alias when run alias 'myops' in Process
         $isContainsAlias = false;
         foreach ($this->commands as $command) {
-            if (StrHelper::startWith($command, AppInfoEnum::APP_MAIN_COMMAND)) {
+            if (StrHelper::startsWith($command, AppInfoEnum::APP_MAIN_COMMAND)) {
                 $isContainsAlias = true;
                 break;
             }
@@ -556,7 +560,7 @@ class Process
         if ($isContainsAlias) {
             // replace alias
             for ($i = 0; $i < count($this->commands); $i++) {
-                if (StrHelper::startWith($this->commands[$i], AppInfoEnum::APP_MAIN_COMMAND)) {
+                if (StrHelper::startsWith($this->commands[$i], AppInfoEnum::APP_MAIN_COMMAND)) {
                     $this->commands[$i] = "php " . AppInfoEnum::RELEASE_PATH . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
                 }
             }
@@ -1480,7 +1484,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.0';
+    const APP_VERSION = '3.7.2';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1842,6 +1846,13 @@ class ProcessEnum
     const FINISH = 'finish';
 
     const SUPPORT_SUB_COMMANDS = [self::START, self::FINISH];
+}
+
+// [REMOVED] namespace App\Enum;
+
+class ConsoleEnum
+{
+    const FIELD_PREFIX = '--';
 }
 
 // [REMOVED] namespace App\Helpers;
@@ -3369,7 +3380,7 @@ class StrHelper
      * @param string $search
      * @return bool
      */
-    public static function startWith(string $toCheck, string $search): bool
+    public static function startsWith(string $toCheck, string $search): bool
     {
         return strpos($toCheck, $search) === 0;
     }
@@ -3802,6 +3813,18 @@ class ValidationHelper
     }
 }
 
+// [REMOVED] namespace App\Helpers;
+
+// [REMOVED] use App\Enum\ConsoleEnum;
+
+class ConsoleHelper
+{
+    public static function generateFullField(string $field): string
+    {
+        return sprintf("%s%s=", ConsoleEnum::FIELD_PREFIX, $field);
+    }
+}
+
 // [REMOVED] namespace App\Services;
 
 // [REMOVED] use App\Enum\GitHubEnum;
@@ -3958,6 +3981,8 @@ class SlackService
 // [REMOVED] namespace App\Traits;
 
 // [REMOVED] use App\Classes\Base\CustomCollection;
+// [REMOVED] use App\Helpers\ConsoleHelper;
+// [REMOVED] use App\Helpers\StrHelper;
 
 trait ConsoleBaseTrait
 {
@@ -4023,6 +4048,33 @@ trait ConsoleBaseTrait
     private static function args(int $slicePosition = 0): CustomCollection
     {
         return new CustomCollection(array_slice(self::getPHPArgs(), 2 + $slicePosition));
+    }
+
+    /**
+     * - a Field starts with prefix --, .e.g --field=value
+     * - Get single input field will get first item
+     * @param string $field
+     * @return string
+     */
+    private static function input(string $field): ?string
+    {
+        foreach (self::args() as $arg) {
+            if (StrHelper::startsWith($arg, ConsoleHelper::generateFullField($field))) {
+                return str_replace(ConsoleHelper::generateFullField($field), '', $arg); // END
+            }
+        }
+        return null; // END
+    }
+
+    private static function inputArr(string $field): CustomCollection
+    {
+        $values = new CustomCollection();
+        foreach (self::args() as $arg) {
+            if (StrHelper::startsWith($arg, ConsoleHelper::generateFullField($field))) {
+                $values->add(str_replace(ConsoleHelper::generateFullField($field), '', $arg));
+            }
+        }
+        return $values; // END
     }
 
 }

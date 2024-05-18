@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-use ConsoleEnum;
+use App\Enum\ConsoleEnum;
 
 class ConsoleHelper
 {

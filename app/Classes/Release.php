@@ -5,6 +5,7 @@ namespace App\Classes;
 use App\Classes\Base\CustomCollection;
 use App\Enum\AppInfoEnum;
 use App\Enum\CommandEnum;
+use App\Enum\ConsoleEnum;
 use App\Enum\DockerEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
@@ -34,7 +35,6 @@ use App\MyOps;
 use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
-use ConsoleEnum;
 use DateTime;
 
 class Release
