@@ -29,7 +29,7 @@ class StrHelper
      * @param string $search
      * @return bool
      */
-    public static function startWith(string $toCheck, string $search): bool
+    public static function startsWith(string $toCheck, string $search): bool
     {
         return strpos($toCheck, $search) === 0;
     }

@@ -11,6 +11,7 @@ require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
+use App\Classes\Base\CustomCollection;
 use App\Classes\Release;
 use App\Classes\Version;
 use App\Enum\AppInfoEnum;

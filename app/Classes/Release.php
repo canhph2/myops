@@ -5,6 +5,7 @@ namespace App\Classes;
 use App\Classes\Base\CustomCollection;
 use App\Enum\AppInfoEnum;
 use App\Enum\CommandEnum;
+use App\Enum\ConsoleEnum;
 use App\Enum\DockerEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
@@ -15,9 +16,11 @@ use App\Enum\TagEnum;
 use App\Enum\TimeEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
+use App\Factories\ShellFactory;
 use App\Helpers\AppHelper;
 use App\Helpers\AppInfoHelper;
 use App\Helpers\AWSHelper;
+use App\Helpers\ConsoleHelper;
 use App\Helpers\Data;
 use App\Helpers\DateHelper;
 use App\Helpers\DirHelper;
@@ -74,7 +77,10 @@ class Release
             DirHelper::getClassPathAndFileName(PostWorkEnum::class),
             DirHelper::getClassPathAndFileName(TimeEnum::class),
             DirHelper::getClassPathAndFileName(ProcessEnum::class),
-            // === Helper ===
+            DirHelper::getClassPathAndFileName(ConsoleEnum::class),
+            // === Factories ===
+            DirHelper::getClassPathAndFileName(ShellFactory::class),
+            // === Helpers ===
             DirHelper::getClassPathAndFileName(AppInfoHelper::class),
             DirHelper::getClassPathAndFileName(DirHelper::class),
             DirHelper::getClassPathAndFileName(OPSHelper::class),
@@ -89,6 +95,7 @@ class Release
             DirHelper::getClassPathAndFileName(ProcessHelper::class),
             DirHelper::getClassPathAndFileName(UuidHelper::class),
             DirHelper::getClassPathAndFileName(ValidationHelper::class),
+            DirHelper::getClassPathAndFileName(ConsoleHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===

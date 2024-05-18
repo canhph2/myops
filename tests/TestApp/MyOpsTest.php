@@ -4,6 +4,7 @@ namespace TestApp;
 
 require_once 'app/Traits/ConsoleBaseTrait.php';
 require_once 'app/Traits/ConsoleUITrait.php';
+require_once 'app/Classes/Base/CustomCollection.php';
 require_once 'app/Classes/Version.php';
 require_once 'app/Classes/Process.php';
 require_once 'app/Classes/TextLine.php';
@@ -72,13 +73,18 @@ class MyOpsTest extends BaseTestCase
     public function testAddTmpDir()
     {
         // add a 'tmp' dir
-        (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-            "myops tmp add"
-        ]))->execMultiInWorkDir();
+        $result = (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
+            "myops tmp add --sub-dir=vendor"
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
+        $this->customAssertIsStringAndContainsString(join(' | ', TagEnum::VALIDATION_SUCCESS), $result);
+        $this->customAssertIsStringAndContainsString("tmp", $result);
+        $this->customAssertIsStringAndContainsString("is existing", $result);
+
         // test the result
         $this->customAssertIsStringAndContainsString(join(' | ', TagEnum::VALIDATION_SUCCESS),
             (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-                sprintf("myops validate exists '%s' tmp", DirHelper::getWorkingDir())
+                sprintf("myops validate exists '%s' tmp", DirHelper::getWorkingDir()),
+                sprintf("myops validate exists '%s' tmp", DirHelper::getWorkingDir('vendor')),
             ]))->execMultiInWorkDirAndGetOutputStrAll()
         );
         // test the result

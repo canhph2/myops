@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.6.16 ===
+// === MyOps v3.7.3 ===
 
 // === Generated libraries classes ===
 
@@ -40,6 +40,7 @@ if (!function_exists('dd')) {
 // [REMOVED] namespace App\Classes\Base;
 
 // [REMOVED] use ArrayIterator;
+// [REMOVED] use Closure;
 // [REMOVED] use IteratorAggregate;
 
 class CustomCollection implements IteratorAggregate
@@ -69,6 +70,38 @@ class CustomCollection implements IteratorAggregate
     }
 
     /**
+     * set item at position index A
+     * @param int $index
+     * @param $value
+     * @return bool
+     */
+    public function set(int $index, $value): bool
+    {
+        if ($index < $this->count()) {
+            $this->items[$index] = $value;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * - set item at position index A
+     * - support sprintf()
+     * @param int $index
+     * @param string $format
+     * @param mixed ...$values
+     * @return bool
+     */
+    public function setStr(int $index, string $format, ...$values): bool
+    {
+        if ($index < $this->count()) {
+            $this->items[$index] = sprintf($format, ...$values);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * get item at position index A
      * @param int $index
      * @return mixed|null
@@ -83,9 +116,21 @@ class CustomCollection implements IteratorAggregate
      * @param $item
      * @return CustomCollection
      */
-    public function add($item):CustomCollection
+    public function add($item): CustomCollection
     {
         $this->items[] = $item;
+        return $this;
+    }
+
+    /**
+     * support add without sprintf()
+     * @param string $format
+     * @param ...$values
+     * @return $this
+     */
+    public function addStr(string $format, ...$values): CustomCollection
+    {
+        $this->items[] = sprintf($format, ...$values);
         return $this;
     }
 
@@ -93,11 +138,30 @@ class CustomCollection implements IteratorAggregate
      * @param array|CustomCollection $arrOrCustomCollection
      * @return CustomCollection
      */
-    public function merge($arrOrCustomCollection):CustomCollection
+    public function merge($arrOrCustomCollection): CustomCollection
     {
         $this->items = array_merge($this->items,
             $arrOrCustomCollection instanceof self ? $arrOrCustomCollection->toArr() : $arrOrCustomCollection);
         return $this;
+    }
+
+    /**
+     * support array of strings
+     * @param string $separator
+     * @return string
+     */
+    public function join(string $separator): string
+    {
+        return join($separator, $this->items);
+    }
+
+    public function map(Closure $func): CustomCollection
+    {
+        $mapItems = [];
+        foreach ($this->items as $item) {
+            $mapItems[] = $func($item);
+        }
+        return new CustomCollection($mapItems);
     }
 
     /**
@@ -119,6 +183,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Enum\AppInfoEnum;
 // [REMOVED] use App\Enum\CommandEnum;
+// [REMOVED] use App\Enum\ConsoleEnum;
 // [REMOVED] use App\Enum\DockerEnum;
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\IconEnum;
@@ -129,9 +194,11 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Enum\TimeEnum;
 // [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
+// [REMOVED] use App\Factories\ShellFactory;
 // [REMOVED] use App\Helpers\AppHelper;
 // [REMOVED] use App\Helpers\AppInfoHelper;
 // [REMOVED] use App\Helpers\AWSHelper;
+// [REMOVED] use App\Helpers\ConsoleHelper;
 // [REMOVED] use App\Helpers\Data;
 // [REMOVED] use App\Helpers\DateHelper;
 // [REMOVED] use App\Helpers\DirHelper;
@@ -188,7 +255,10 @@ class Release
             DirHelper::getClassPathAndFileName(PostWorkEnum::class),
             DirHelper::getClassPathAndFileName(TimeEnum::class),
             DirHelper::getClassPathAndFileName(ProcessEnum::class),
-            // === Helper ===
+            DirHelper::getClassPathAndFileName(ConsoleEnum::class),
+            // === Factories ===
+            DirHelper::getClassPathAndFileName(ShellFactory::class),
+            // === Helpers ===
             DirHelper::getClassPathAndFileName(AppInfoHelper::class),
             DirHelper::getClassPathAndFileName(DirHelper::class),
             DirHelper::getClassPathAndFileName(OPSHelper::class),
@@ -203,6 +273,7 @@ class Release
             DirHelper::getClassPathAndFileName(ProcessHelper::class),
             DirHelper::getClassPathAndFileName(UuidHelper::class),
             DirHelper::getClassPathAndFileName(ValidationHelper::class),
+            DirHelper::getClassPathAndFileName(ConsoleHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
@@ -350,6 +421,7 @@ class Release
 
 // [REMOVED] namespace App\Classes;
 
+// [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Enum\AppInfoEnum;
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\IconEnum;
@@ -369,10 +441,10 @@ class Process
     /** @var string|null */
     private $workDir;
 
-    /** @var array|null */
+    /** @var CustomCollection */
     private $commands;
 
-    /** @var array|null */
+    /** @var CustomCollection */
     private $output;
 
     /** @var int */
@@ -384,19 +456,20 @@ class Process
     /**
      * @param string|null $workName
      * @param string|null $workDir
-     * @param array|null $commands
+     * @param CustomCollection|array|null $commands
      */
     public function __construct(
-        string $workName = null,
-        string $workDir = null,
-        array  $commands = null
+        string           $workName = null,
+        string           $workDir = null,
+        $commands = null
     )
     {
         $this->workName = $workName;
         $this->workDir = $workDir;
-        $this->commands = $commands;
+        $this->commands = $commands instanceof CustomCollection ? $commands : new CustomCollection($commands ?? []);
         // default
         $this->isExitOnError = true; // default
+        $this->output = new CustomCollection();
     }
 
     /**
@@ -436,29 +509,29 @@ class Process
     }
 
     /**
-     * @return array|null
+     * @return CustomCollection|null
      */
-    public function getCommands(): ?array
+    public function getCommands(): ?CustomCollection
     {
         return $this->commands;
     }
 
     /**
-     * @param array|null $commands
+     * @param CustomCollection|null $commands
      * @return Process
      */
-    public function setCommands(?array $commands): Process
+    public function setCommands(?CustomCollection $commands): Process
     {
         $this->commands = $commands;
         return $this;
     }
 
     /**
-     * @return array
+     * @return CustomCollection
      */
-    public function getOutput(): array
+    public function getOutput(): CustomCollection
     {
-        return $this->output ?? [];
+        return $this->output;
     }
 
     /**
@@ -466,14 +539,14 @@ class Process
      */
     public function getOutputStrAll(): string
     {
-        return join(PHP_EOL, $this->output);
+        return $this->output->join(PHP_EOL);
     }
 
     /**
-     * @param array|null $output
+     * @param CustomCollection $output
      * @return Process
      */
-    public function setOutput(?array $output): Process
+    public function setOutput(CustomCollection $output): Process
     {
         $this->output = $output;
         return $this;
@@ -548,23 +621,24 @@ class Process
         //    handle alias when run alias 'myops' in Process
         $isContainsAlias = false;
         foreach ($this->commands as $command) {
-            if (StrHelper::startWith($command, AppInfoEnum::APP_MAIN_COMMAND)) {
+            if (StrHelper::startsWith($command, AppInfoEnum::APP_MAIN_COMMAND)) {
                 $isContainsAlias = true;
                 break;
             }
         }
         if ($isContainsAlias) {
             // replace alias
-            for ($i = 0; $i < count($this->commands); $i++) {
-                if (StrHelper::startWith($this->commands[$i], AppInfoEnum::APP_MAIN_COMMAND)) {
-                    $this->commands[$i] = "php " . AppInfoEnum::RELEASE_PATH . substr($this->commands[$i], strlen(AppInfoEnum::APP_MAIN_COMMAND));
+            for ($i = 0; $i < $this->commands->count(); $i++) {
+                if (StrHelper::startsWith($this->commands->get($i), AppInfoEnum::APP_MAIN_COMMAND)) {
+                    $this->commands->setStr($i, "php %s%s", AppInfoEnum::RELEASE_PATH, substr($this->commands->get($i), strlen(AppInfoEnum::APP_MAIN_COMMAND)));
                 }
             }
         }
         //
-        if ($this->commands) {
+        if ($this->commands->count()) {
             $resultCode = null;
-            exec(join(';', $this->commands), $this->output, $exitCode);
+            exec($this->commands->join(';'), $tempOutput, $exitCode);
+            $this->output = new CustomCollection($tempOutput);
             if ($exitCode && $this->isExitOnError) {
                 $this->printOutput();
                 self::LineTag(TagEnum::ERROR)->print("detect execute shell command failed, exit app | exit code = $exitCode");
@@ -578,11 +652,11 @@ class Process
     public function execMultiInWorkDir(bool $skipCheckDir = false): Process
     {
         // dir commands
-        $arrDirCommands[] = sprintf("cd '%s'", $this->workDir); // cd
+        $dirCommands = (new CustomCollection())->addStr("cd '%s'", $this->workDir); // cd
         if (!$skipCheckDir) {
-            $arrDirCommands[] = GitHubEnum::GET_REPOSITORY_DIR_COMMAND; // check dir
+            $dirCommands->add(GitHubEnum::GET_REPOSITORY_DIR_COMMAND); // check dir
         }
-        $this->commands = array_merge($arrDirCommands, $this->commands);
+        $this->commands->merge($dirCommands);
         $this->execMulti();
         //
         return $this;
@@ -1480,7 +1554,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.6.16';
+    const APP_VERSION = '3.7.3';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1605,8 +1679,9 @@ class CommandEnum
             ],
             self::TMP => [
                 'handle temporary directory (tmp)',
-                "use 'tmp add' to add new tmp dir",
-                "use 'tmp remove' to remove tmp dir"
+                "use the sub-command 'add' to add new tmp dir",
+                "use the sub-command 'remove' to remove tmp dir",
+                "user the option --sub-dir=<sub-dir 1> --sub-dir=<sub-dir 2> to handle temp dir in the sub-dir"
             ],
             self::POST_WORK => ["do post works. Optional: add param 'skip-check-dir' to skip check dir"],
             self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
@@ -1625,9 +1700,8 @@ class CommandEnum
             self::UPDATE_GITHUB_TOKEN_ALL_PROJECT => ['[PRIVATE] update token all projects in workspace'],
             // group title
             "VALIDATION" => [],
-            self::VALIDATE => [
+            self::VALIDATE => [ // set -e # tells the shell to exit if a command returns a non-zero exit status
                 "required: 'set -e' in bash file",
-                sprintf('  should combine with exit 1, eg:   php %s validate TYPE || exit 1', AppInfoEnum::APP_MAIN_COMMAND),
                 '  support TYPEs:',
                 '    branch  : to only allow develop, staging, master',
                 '    docker  : docker should is running',
@@ -1845,6 +1919,47 @@ class ProcessEnum
     const SUPPORT_SUB_COMMANDS = [self::START, self::FINISH];
 }
 
+// [REMOVED] namespace App\Enum;
+
+class ConsoleEnum
+{
+    const FIELD_PREFIX = '--';
+}
+
+// [REMOVED] namespace App\Factories;
+
+// [REMOVED] use App\Classes\Base\CustomCollection;
+
+class ShellFactory
+{
+    /**
+     * @param string $dirFullPath
+     * @param bool $isRemoveOldDir
+     * @return CustomCollection
+     */
+    public static function generateMakeDirCommand(string $dirFullPath, bool $isRemoveOldDir = true): CustomCollection
+    {
+        $commands = new CustomCollection();
+        if ($isRemoveOldDir && is_dir($dirFullPath)) {
+            $commands->addStr("rm -rf '%s'", $dirFullPath);
+        }
+        return $commands->addStr("mkdir -p '%s'", $dirFullPath);
+    }
+
+    /**
+     * @param string $dirFullPath
+     * @return CustomCollection
+     */
+    public static function generateRemoveDirCommand(string $dirFullPath): CustomCollection
+    {
+        $commands = new CustomCollection();
+        if (is_dir($dirFullPath)) {
+            $commands->addStr("rm -rf '%s'", $dirFullPath);
+        }
+        return $commands;
+    }
+}
+
 // [REMOVED] namespace App\Helpers;
 
 // [REMOVED] use App\Enum\UIEnum;
@@ -1870,12 +1985,19 @@ class AppInfoHelper
 
 // [REMOVED] namespace App\Helpers;
 
+// [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Classes\Process;
+// [REMOVED] use App\Enum\IconEnum;
+// [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\TagEnum;
+// [REMOVED] use App\Enum\UIEnum;
+// [REMOVED] use App\Enum\ValidationTypeEnum;
+// [REMOVED] use App\Factories\ShellFactory;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
 /**
+ * Last modified on May 18, 2024.
  * this is a DIRectory helper / folder helper
  */
 class DirHelper
@@ -1896,12 +2018,12 @@ class DirHelper
     }
 
     /**
-     * @param string|null $subDirOrFile
+     * @param ...$subDirOrFiles
      * @return string
      */
-    public static function getWorkingDir(string $subDirOrFile = null): string
+    public static function getWorkingDir(...$subDirOrFiles): string
     {
-        return $subDirOrFile ? self::join($_SERVER['PWD'], $subDirOrFile) : $_SERVER['PWD'];
+        return count($subDirOrFiles) ? self::join($_SERVER['PWD'], ...$subDirOrFiles) : $_SERVER['PWD'];
     }
 
     /**
@@ -1959,27 +2081,37 @@ class DirHelper
     {
         switch (self::arg(1)) {
             case 'add':
-                if (is_dir(self::getWorkingDir('tmp'))) {
-                    $commands[] = sprintf("rm -rf '%s'", self::getWorkingDir('tmp'));
+                // handle
+                //    single dir
+                $commands = ShellFactory::generateMakeDirCommand(self::getWorkingDir('tmp'));
+                //    multiple sub-dir
+                foreach (self::inputArr('sub-dir') as $subDir) {
+                    $commands->merge(ShellFactory::generateMakeDirCommand(self::getWorkingDir($subDir, 'tmp')));
                 }
-                $commands[] = sprintf("mkdir -p '%s'", self::getWorkingDir('tmp'));
+                //    execute
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
                     ->execMultiInWorkDir()->printOutput();
-                // validate result
-                self::LineNew()->printCondition(is_dir(self::getWorkingDir('tmp')),
-                    'create a tmp dir successfully', 'create a tmp dir failure');
+                // validate the result
+                self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), 'tmp');
+                foreach (self::inputArr('sub-dir') as $subDir) {
+                    self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir($subDir), 'tmp');
+                }
                 break;
             case 'remove':
-                if (is_dir(self::getWorkingDir('tmp'))) {
-                    $commands[] = sprintf("rm -rf '%s'", self::getWorkingDir('tmp'));
-                    (new Process("Remove tmp dir", self::getWorkingDir(), $commands))
-                        ->execMultiInWorkDir()->printOutput();
-                    // validate result
-                    $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", self::getWorkingDir()));
-                    self::LineNew()->printCondition(!$checkTmpDir,
-                        'remove a tmp dir successfully', 'remove a tmp dir failure');
-                } else {
-                    self::LineNew()->print("tmp directory doesn't exist, do nothing");
+                // handle
+                //    single dir
+                $commands = ShellFactory::generateRemoveDirCommand(self::getWorkingDir('tmp'));
+                //    multiple sub-dir
+                foreach (self::inputArr('sub-dir') as $subDir) {
+                    $commands->merge(ShellFactory::generateRemoveDirCommand(self::getWorkingDir($subDir, 'tmp')));
+                }
+                //    execute
+                (new Process("Remove tmp dir", self::getWorkingDir(), $commands))
+                    ->execMultiInWorkDir()->printOutput();
+                // validate the result
+                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), 'tmp');
+                foreach (self::inputArr('sub-dir') as $subDir) {
+                    self::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir($subDir), 'tmp');
                 }
                 break;
             default:
@@ -1997,6 +2129,103 @@ class DirHelper
     public static function getClassPathAndFileName(string $ClassDotClass): string
     {
         return lcfirst(sprintf("%s.php", str_replace("\\", "/", $ClassDotClass)));
+    }
+
+    /**
+     * Parameters priority: custom > console
+     * @param string $type
+     * @param string|null $customDirToCheck1
+     * @param mixed ...$customFileOrDirToValidate1
+     * @return void
+     */
+    public static function validateDirOrFileExisting(string $type = ValidationTypeEnum::EXISTS, string $customDirToCheck1 = null, ...$customFileOrDirToValidate1)
+    {
+        // validate
+        $dirToCheck1 = $customDirToCheck1 ?? self::arg(2);
+        $fileOrDirToValidate1 = count($customFileOrDirToValidate1) ? new CustomCollection($customFileOrDirToValidate1) : self::args(2);
+        if (!$dirToCheck1 || $fileOrDirToValidate1->isEmpty()) {
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing 'dirToCheck' or 'fileOrDirToValidate' (can path multiple fileOrDir1 fileOrDir2)");
+            exit(1); // END
+        }
+        if (!is_dir($dirToCheck1)) {
+            self::LineTag(TagEnum::ERROR)->print(" dir '%s' does not exist", $dirToCheck1);
+            exit(1); // END
+        }
+        // handle
+        $dirToCheck1FilesAndDirs = scandir($dirToCheck1);
+        //    case: exist
+        if ($type === ValidationTypeEnum::EXISTS) {
+            $invalid = false;
+            foreach ($fileOrDirToValidate1 as $fileOrDir) {
+                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
+                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
+                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                } else {
+                    $invalid = true;
+                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
+                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                }
+            }
+            if ($invalid) {
+                exit(1); // END
+            }
+        }
+        //    case: don't exist
+        if ($type === ValidationTypeEnum::DONT_EXISTS) {
+            $invalid = false;
+            foreach ($fileOrDirToValidate1 as $fileOrDir) {
+                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
+                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
+                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                    $invalid = true;
+                } else {
+                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
+                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
+                }
+            }
+            if ($invalid) {
+                exit(1); // END
+            }
+        }
+    }
+
+    public static function validateFileContainsText(string $customFilePath = null, ...$customSearchTexts)
+    {
+        // validate
+        $filePath = $customFilePath ?? self::arg(2);
+        $searchTexts = count($customSearchTexts) ? new CustomCollection($customSearchTexts) : self::args(2);
+        if (!$filePath || $searchTexts->isEmpty()) {
+            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
+            exit(1); // END
+        }
+        if (!is_file($filePath)) {
+            self::LineTag(TagEnum::ERROR)->print("'%s' does not exist", $filePath);
+            exit(1); // END
+        }
+        // handle
+        $fileContent = file_get_contents($filePath);
+        $validationResult = [];
+        foreach ($searchTexts as $searchText) {
+            $validationResult[] = [
+                'searchText' => $searchText,
+                'isContains' => StrHelper::contains($fileContent, $searchText)
+            ];
+        }
+        $amountValidationPass = count(array_filter($validationResult, function ($item) {
+            return $item['isContains'];
+        }));
+        if ($amountValidationPass === $searchTexts->count()) {
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
+        } else {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("file '%s' does not contains (some) text(s):", $filePath);
+            foreach ($validationResult as $result) {
+                self::LineIndent(IndentLevelEnum::ITEM_LINE)
+                    ->setIcon($result['isContains'] ? IconEnum::CHECK : IconEnum::X)
+                    ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
+                    ->print($result['searchText']);
+            }
+            exit(1); // END
+        }
     }
 
 
@@ -2159,9 +2388,6 @@ class OPSHelper
         self::LineNew()->printTitle(__FUNCTION__);
         //
         self::createAlias(DirHelper::getScriptFullPath());
-        // validate the result
-        //    show open new session to show right version
-        self::LineNew()->print(exec('myops version'));
         //
         self::LineNew()->printSeparatorLine();
     }
@@ -2351,13 +2577,13 @@ class OPSHelper
                 self::validateDevice();
                 break;
             case ValidationTypeEnum::FILE_CONTAINS_TEXT:
-                self::validateFileContainsText();
+                DirHelper::validateFileContainsText();
                 break;
             case ValidationTypeEnum::EXISTS:
-                self::validateExists();
+                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::EXISTS);
                 break;
             case ValidationTypeEnum::DONT_EXISTS:
-                self::validateExists(true);
+                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
                 break;
             default:
                 self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
@@ -2411,97 +2637,6 @@ class OPSHelper
             self::LineTag(TagEnum::ERROR)->print("Invalid device | should pass in your command");
             exit(1); // END app
         }
-    }
-
-    private static function validateFileContainsText(string $customFilePath = null, ...$customSearchTexts)
-    {
-        // validate
-        $filePath = $customFilePath ?? self::arg(2);
-        $searchTexts = count($customSearchTexts) ? new CustomCollection($customSearchTexts) : self::args(2);
-        if (!$filePath || $searchTexts->isEmpty()) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
-            exit(1); // END
-        }
-        if (!is_file($filePath)) {
-            self::LineTag(TagEnum::ERROR)->print("'%s' does not exist", $filePath);
-            exit(1); // END
-        }
-        // handle
-        $fileContent = file_get_contents($filePath);
-        $validationResult = [];
-        foreach ($searchTexts as $searchText) {
-            $validationResult[] = [
-                'searchText' => $searchText,
-                'isContains' => StrHelper::contains($fileContent, $searchText)
-            ];
-        }
-        $amountValidationPass = count(array_filter($validationResult, function ($item) {
-            return $item['isContains'];
-        }));
-        if ($amountValidationPass === $searchTexts->count()) {
-            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("file '%s' contains text(s): '%s'", $filePath, join("', '", $searchTexts->toArr()));
-        } else {
-            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("file '%s' does not contains (some) text(s):", $filePath);
-            foreach ($validationResult as $result) {
-                self::LineIndent(IndentLevelEnum::ITEM_LINE)
-                    ->setIcon($result['isContains'] ? IconEnum::CHECK : IconEnum::X)
-                    ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
-                    ->print($result['searchText']);
-            }
-            exit(1); // END
-        }
-    }
-
-    private static function validateExists(bool $isValidateDontExists = false)
-    {
-        // validate
-        $dirToCheck1 = self::arg(2);
-        $fileOrDirToValidate1 = self::args(2);
-        if (!$dirToCheck1 || $fileOrDirToValidate1->isEmpty()) {
-            self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing 'dirToCheck' or 'fileOrDirToValidate' (can path multiple fileOrDir1 fileOrDir2)");
-            exit(1); // END
-        }
-        if (!is_dir($dirToCheck1)) {
-            self::LineTag(TagEnum::ERROR)->print(" dir '%s' does not exist", $dirToCheck1);
-            exit(1); // END
-        }
-        // handle
-        $dirToCheck1FilesAndDirs = scandir($dirToCheck1);
-        //    case: exist
-        if (!$isValidateDontExists) {
-            $invalid = false;
-            foreach ($fileOrDirToValidate1 as $fileOrDir) {
-                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
-                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
-                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
-                } else {
-                    $invalid = true;
-                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
-                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
-                }
-            }
-            if ($invalid) {
-                exit(1); // END
-            }
-        }
-        //    case: don't exist
-        if ($isValidateDontExists) {
-            $invalid = false;
-            foreach ($fileOrDirToValidate1 as $fileOrDir) {
-                if (in_array($fileOrDir, $dirToCheck1FilesAndDirs)) {
-                    self::lineIcon(IconEnum::X)->setTagMultiple(TagEnum::VALIDATION_ERROR)
-                        ->print("'%s' is existing in dir '%s'", $fileOrDir, $dirToCheck1);
-                    $invalid = true;
-                } else {
-                    self::lineIcon(IconEnum::CHECK)->setTagMultiple(TagEnum::VALIDATION_SUCCESS)
-                        ->print("'%s' isn't existing in dir '%s'", $fileOrDir, $dirToCheck1);
-                }
-            }
-            if ($invalid) {
-                exit(1); // END
-            }
-        }
-
     }
 }
 
@@ -3373,7 +3508,7 @@ class StrHelper
      * @param string $search
      * @return bool
      */
-    public static function startWith(string $toCheck, string $search): bool
+    public static function startsWith(string $toCheck, string $search): bool
     {
         return strpos($toCheck, $search) === 0;
     }
@@ -3806,6 +3941,18 @@ class ValidationHelper
     }
 }
 
+// [REMOVED] namespace App\Helpers;
+
+// [REMOVED] use App\Enum\ConsoleEnum;
+
+class ConsoleHelper
+{
+    public static function generateFullField(string $field): string
+    {
+        return sprintf("%s%s=", ConsoleEnum::FIELD_PREFIX, $field);
+    }
+}
+
 // [REMOVED] namespace App\Services;
 
 // [REMOVED] use App\Enum\GitHubEnum;
@@ -3962,6 +4109,8 @@ class SlackService
 // [REMOVED] namespace App\Traits;
 
 // [REMOVED] use App\Classes\Base\CustomCollection;
+// [REMOVED] use App\Helpers\ConsoleHelper;
+// [REMOVED] use App\Helpers\StrHelper;
 
 trait ConsoleBaseTrait
 {
@@ -4027,6 +4176,33 @@ trait ConsoleBaseTrait
     private static function args(int $slicePosition = 0): CustomCollection
     {
         return new CustomCollection(array_slice(self::getPHPArgs(), 2 + $slicePosition));
+    }
+
+    /**
+     * - a Field starts with prefix --, .e.g --field=value
+     * - Get single input field will get first item
+     * @param string $field
+     * @return string
+     */
+    private static function input(string $field): ?string
+    {
+        foreach (self::args() as $arg) {
+            if (StrHelper::startsWith($arg, ConsoleHelper::generateFullField($field))) {
+                return str_replace(ConsoleHelper::generateFullField($field), '', $arg); // END
+            }
+        }
+        return null; // END
+    }
+
+    private static function inputArr(string $field): CustomCollection
+    {
+        $values = new CustomCollection();
+        foreach (self::args() as $arg) {
+            if (StrHelper::startsWith($arg, ConsoleHelper::generateFullField($field))) {
+                $values->add(str_replace(ConsoleHelper::generateFullField($field), '', $arg));
+            }
+        }
+        return $values; // END
     }
 
 }

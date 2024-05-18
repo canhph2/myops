@@ -3,6 +3,8 @@
 namespace App\Traits;
 
 use App\Classes\Base\CustomCollection;
+use App\Helpers\ConsoleHelper;
+use App\Helpers\StrHelper;
 
 trait ConsoleBaseTrait
 {
@@ -68,6 +70,33 @@ trait ConsoleBaseTrait
     private static function args(int $slicePosition = 0): CustomCollection
     {
         return new CustomCollection(array_slice(self::getPHPArgs(), 2 + $slicePosition));
+    }
+
+    /**
+     * - a Field starts with prefix --, .e.g --field=value
+     * - Get single input field will get first item
+     * @param string $field
+     * @return string
+     */
+    private static function input(string $field): ?string
+    {
+        foreach (self::args() as $arg) {
+            if (StrHelper::startsWith($arg, ConsoleHelper::generateFullField($field))) {
+                return str_replace(ConsoleHelper::generateFullField($field), '', $arg); // END
+            }
+        }
+        return null; // END
+    }
+
+    private static function inputArr(string $field): CustomCollection
+    {
+        $values = new CustomCollection();
+        foreach (self::args() as $arg) {
+            if (StrHelper::startsWith($arg, ConsoleHelper::generateFullField($field))) {
+                $values->add(str_replace(ConsoleHelper::generateFullField($field), '', $arg));
+            }
+        }
+        return $values; // END
     }
 
 }
