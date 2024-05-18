@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.3 ===
+// === MyOps v3.7.4 ===
 
 // === Generated libraries classes ===
 
@@ -1554,7 +1554,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.3';
+    const APP_VERSION = '3.7.4';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2071,21 +2071,26 @@ class DirHelper
     }
 
     /**
-     * handle tmp directory
-     * - tmp add : create a tmp directory
-     * - tmp remove : remove the tmp directory
+     * - Parameter priority: custom > console
+     * - handle tmp directory
+     *    - tmp add : create a tmp directory
+     *    - tmp remove : remove the tmp directory
      *
+     * @param string|null $customSubCommand
+     * @param mixed ...$customSubDirs
      * @return void
      */
-    public static function tmp(): void
+    public static function tmp(string $customSubCommand = null, ...$customSubDirs): void
     {
-        switch (self::arg(1)) {
+        $subCommand = $customSubCommand ?? self::arg(1);
+        $subDirs = count($customSubDirs) ? new CustomCollection($customSubDirs): self::inputArr('sub-dir');
+        switch ($subCommand) {
             case 'add':
                 // handle
                 //    single dir
                 $commands = ShellFactory::generateMakeDirCommand(self::getWorkingDir('tmp'));
                 //    multiple sub-dir
-                foreach (self::inputArr('sub-dir') as $subDir) {
+                foreach ($subDirs as $subDir) {
                     $commands->merge(ShellFactory::generateMakeDirCommand(self::getWorkingDir($subDir, 'tmp')));
                 }
                 //    execute
@@ -2093,7 +2098,7 @@ class DirHelper
                     ->execMultiInWorkDir()->printOutput();
                 // validate the result
                 self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), 'tmp');
-                foreach (self::inputArr('sub-dir') as $subDir) {
+                foreach ($subDirs as $subDir) {
                     self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir($subDir), 'tmp');
                 }
                 break;
@@ -2102,7 +2107,7 @@ class DirHelper
                 //    single dir
                 $commands = ShellFactory::generateRemoveDirCommand(self::getWorkingDir('tmp'));
                 //    multiple sub-dir
-                foreach (self::inputArr('sub-dir') as $subDir) {
+                foreach ($subDirs as $subDir) {
                     $commands->merge(ShellFactory::generateRemoveDirCommand(self::getWorkingDir($subDir, 'tmp')));
                 }
                 //    execute
@@ -2110,7 +2115,7 @@ class DirHelper
                     ->execMultiInWorkDir()->printOutput();
                 // validate the result
                 DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), 'tmp');
-                foreach (self::inputArr('sub-dir') as $subDir) {
+                foreach ($subDirs as $subDir) {
                     self::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir($subDir), 'tmp');
                 }
                 break;
@@ -2462,28 +2467,10 @@ class OPSHelper
                 //
                 $isDoNothing = false;
             }
-            //        [payment-service] payment-credentials.json
-            if (is_file(DirHelper::getWorkingDir('payment-credentials.json'))) {
-                (new Process("Remove 'payment-credentials.json'", DirHelper::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('payment-credentials.json'))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-                // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'payment-credentials.json'", DirHelper::getWorkingDir()));
-                self::LineNew()->printCondition(!$checkTmpDir,
-                    "remove a 'payment-credentials.json' file successfully", "remove a 'payment-credentials.json' file failed");
-                //
-                $isDoNothing = false;
-            }
         }
         //    tmp dir (PHP project)
-        if (is_dir(DirHelper::getWorkingDir('tmp'))) {
-            (new Process("Remove tmp dir", DirHelper::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('tmp'))
-            ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-            // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DirHelper::getWorkingDir()));
-            self::LineNew()->printCondition(!$checkTmpDir,
-                'remove a tmp dir successfully', 'remove a tmp dir failure');
+        if (is_dir(DirHelper::getWorkingDir('tmp')) || self::inputArr('sub-dir')->count()) {
+            DirHelper::tmp('remove', ...self::inputArr('sub-dir'));
             //
             $isDoNothing = false;
         }

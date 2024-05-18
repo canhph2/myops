@@ -231,28 +231,10 @@ class OPSHelper
                 //
                 $isDoNothing = false;
             }
-            //        [payment-service] payment-credentials.json
-            if (is_file(DirHelper::getWorkingDir('payment-credentials.json'))) {
-                (new Process("Remove 'payment-credentials.json'", DirHelper::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('payment-credentials.json'))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-                // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'payment-credentials.json'", DirHelper::getWorkingDir()));
-                self::LineNew()->printCondition(!$checkTmpDir,
-                    "remove a 'payment-credentials.json' file successfully", "remove a 'payment-credentials.json' file failed");
-                //
-                $isDoNothing = false;
-            }
         }
         //    tmp dir (PHP project)
-        if (is_dir(DirHelper::getWorkingDir('tmp'))) {
-            (new Process("Remove tmp dir", DirHelper::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('tmp'))
-            ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-            // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DirHelper::getWorkingDir()));
-            self::LineNew()->printCondition(!$checkTmpDir,
-                'remove a tmp dir successfully', 'remove a tmp dir failure');
+        if (is_dir(DirHelper::getWorkingDir('tmp')) || self::inputArr('sub-dir')->count()) {
+            DirHelper::tmp('remove', ...self::inputArr('sub-dir'));
             //
             $isDoNothing = false;
         }

@@ -88,21 +88,26 @@ class DirHelper
     }
 
     /**
-     * handle tmp directory
-     * - tmp add : create a tmp directory
-     * - tmp remove : remove the tmp directory
+     * - Parameter priority: custom > console
+     * - handle tmp directory
+     *    - tmp add : create a tmp directory
+     *    - tmp remove : remove the tmp directory
      *
+     * @param string|null $customSubCommand
+     * @param mixed ...$customSubDirs
      * @return void
      */
-    public static function tmp(): void
+    public static function tmp(string $customSubCommand = null, ...$customSubDirs): void
     {
-        switch (self::arg(1)) {
+        $subCommand = $customSubCommand ?? self::arg(1);
+        $subDirs = count($customSubDirs) ? new CustomCollection($customSubDirs): self::inputArr('sub-dir');
+        switch ($subCommand) {
             case 'add':
                 // handle
                 //    single dir
                 $commands = ShellFactory::generateMakeDirCommand(self::getWorkingDir('tmp'));
                 //    multiple sub-dir
-                foreach (self::inputArr('sub-dir') as $subDir) {
+                foreach ($subDirs as $subDir) {
                     $commands->merge(ShellFactory::generateMakeDirCommand(self::getWorkingDir($subDir, 'tmp')));
                 }
                 //    execute
@@ -110,7 +115,7 @@ class DirHelper
                     ->execMultiInWorkDir()->printOutput();
                 // validate the result
                 self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), 'tmp');
-                foreach (self::inputArr('sub-dir') as $subDir) {
+                foreach ($subDirs as $subDir) {
                     self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir($subDir), 'tmp');
                 }
                 break;
@@ -119,7 +124,7 @@ class DirHelper
                 //    single dir
                 $commands = ShellFactory::generateRemoveDirCommand(self::getWorkingDir('tmp'));
                 //    multiple sub-dir
-                foreach (self::inputArr('sub-dir') as $subDir) {
+                foreach ($subDirs as $subDir) {
                     $commands->merge(ShellFactory::generateRemoveDirCommand(self::getWorkingDir($subDir, 'tmp')));
                 }
                 //    execute
@@ -127,7 +132,7 @@ class DirHelper
                     ->execMultiInWorkDir()->printOutput();
                 // validate the result
                 DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), 'tmp');
-                foreach (self::inputArr('sub-dir') as $subDir) {
+                foreach ($subDirs as $subDir) {
                     self::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir($subDir), 'tmp');
                 }
                 break;
