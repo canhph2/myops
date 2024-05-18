@@ -1,4 +1,4 @@
-# MyOps v3.7.7
+# MyOps v3.7.8
 *DevOps | CICD | MyOps App (PHP)*
 
 ## === Usage ===
