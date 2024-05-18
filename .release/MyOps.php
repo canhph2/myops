@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.5 ===
+// === MyOps v3.7.6 ===
 
 // === Generated libraries classes ===
 
@@ -136,12 +136,13 @@ class CustomCollection implements IteratorAggregate
 
     /**
      * @param array|CustomCollection $arrOrCustomCollection
+     * @param bool $isMergeToHead
      * @return CustomCollection
      */
-    public function merge($arrOrCustomCollection): CustomCollection
+    public function merge($arrOrCustomCollection, bool $isMergeToHead = false): CustomCollection
     {
-        $this->items = array_merge($this->items,
-            $arrOrCustomCollection instanceof self ? $arrOrCustomCollection->toArr() : $arrOrCustomCollection);
+        $newItems = $arrOrCustomCollection instanceof self ? $arrOrCustomCollection->toArr() : $arrOrCustomCollection;
+        $this->items = $isMergeToHead ? array_merge($newItems, $this->items) : array_merge($this->items, $newItems);
         return $this;
     }
 
@@ -656,7 +657,7 @@ class Process
         if (!$skipCheckDir) {
             $dirCommands->add(GitHubEnum::GET_REPOSITORY_DIR_COMMAND); // check dir
         }
-        $this->commands->merge($dirCommands);
+        $this->commands->merge($dirCommands, true);
         $this->execMulti();
         //
         return $this;
@@ -1554,7 +1555,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.5';
+    const APP_VERSION = '3.7.6';
 }
 
 // [REMOVED] namespace App\Enum;

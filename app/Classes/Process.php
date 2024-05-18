@@ -237,7 +237,7 @@ class Process
         if (!$skipCheckDir) {
             $dirCommands->add(GitHubEnum::GET_REPOSITORY_DIR_COMMAND); // check dir
         }
-        $this->commands->merge($dirCommands);
+        $this->commands->merge($dirCommands, true);
         $this->execMulti();
         //
         return $this;
