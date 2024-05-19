@@ -187,11 +187,12 @@ class TextLine
 
 
     // === functions ===
-    private function toString(): string
+    private function toString(bool $excludeIndent = false): string
     {
         return sprintf(
             "%s%s%s%s",
-            str_repeat(" ", (ConsoleHelper::$currentIndentLevel + $this->indentLevel) * IndentLevelEnum::AMOUNT_SPACES),
+            $excludeIndent ? ''
+                : str_repeat(" ", (ConsoleHelper::$currentIndentLevel + $this->indentLevel) * IndentLevelEnum::AMOUNT_SPACES),
             $this->icon ? $this->icon . ' ' : '',
             $this->tag ? sprintf("[%s] ", $this->tag) : '',
             $this->text
@@ -227,7 +228,7 @@ class TextLine
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
-        echo self::colorFormat(sprintf("=== %s ===\n", $this->toString()),
+        echo self::colorFormat(sprintf("=== %s ===\n", $this->toString(true)),
             UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD);
         //
         return $this;
@@ -238,7 +239,7 @@ class TextLine
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
-        echo self::color(sprintf("-- %s --\n", $this->toString()), UIEnum::COLOR_BLUE);
+        echo self::color(sprintf("-- %s --\n", $this->toString(true)), UIEnum::COLOR_BLUE);
         //
         return $this;
     }
