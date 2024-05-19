@@ -255,7 +255,8 @@ class Process
     public function printOutput(int $outputIndentLevel = IndentLevelEnum::MAIN_LINE): Process
     {
         $this->setOutputIndentLevel($outputIndentLevel);
-        self::LineIndent($this->getOutputIndentLevel())->setTag(TagEnum::WORK)->print($this->workName);
+        self::LineIndent($this->getOutputIndentLevel())->printSeparatorLine()
+            ->setTag(TagEnum::WORK)->print($this->workName);
         self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Commands:");
         if ($this->commands) {
             foreach ($this->commands as $command) {
