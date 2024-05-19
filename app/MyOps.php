@@ -166,7 +166,7 @@ class MyOps
                 OPSHelper::postWork();
                 break;
             case CommandEnum::CLEAR_OPS_DIR:
-                DirHelper::removeFileOrDirInCachesDir(DevelopmentEnum::OPS_DIR);
+                DirHelper::removeFileOrDirInDir(DevelopmentEnum::OPS_DIR);
                 break;
             case CommandEnum::TIME:
                 TimeHelper::handleTimeInConsole();

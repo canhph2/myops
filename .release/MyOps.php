@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.8.18 ===
+// === MyOps v3.8.19 ===
 
 // === Generated libraries classes ===
 
@@ -1600,7 +1600,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.8.18';
+    const APP_VERSION = '3.8.19';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -4547,7 +4547,7 @@ class MyOps
                 OPSHelper::postWork();
                 break;
             case CommandEnum::CLEAR_OPS_DIR:
-                DirHelper::removeFileOrDirInCachesDir(DevelopmentEnum::OPS_DIR);
+                DirHelper::removeFileOrDirInDir(DevelopmentEnum::OPS_DIR);
                 break;
             case CommandEnum::TIME:
                 TimeHelper::handleTimeInConsole();
