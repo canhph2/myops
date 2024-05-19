@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.8.4 ===
+// === MyOps v3.8.5 ===
 
 // === Generated libraries classes ===
 
@@ -1598,7 +1598,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.8.4';
+    const APP_VERSION = '3.8.5';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2048,16 +2048,6 @@ class AppInfoHelper
             self::lineColorFormat(UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD)->print(MyOps::getAppVersionStr());
         }
     }
-
-    /** to use in raw shell (command) */
-    public static function getVersionStr($isNoFormat = false, $isEndLine = true): string
-    {
-        if ($isNoFormat) {
-            return MyOps::getAppVersionStr();
-        } else {
-            return self::colorFormat(MyOps::getAppVersionStr(), UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD, $isEndLine);
-        }
-    }
 }
 
 // [REMOVED] namespace App\Helpers;
@@ -2501,8 +2491,8 @@ class OPSHelper
 
     /**
      * do some pre-works:
-     *    - support eval "$(%s pre-work)"
-     *    - show version
+     *    - support    eval "$(<app> pre-work)"
+     *    - show version ( handle at end of handle-env-ops.sh file)
      *    - load env ops
      *    - create a MyOps process, will export PROCESS_ID to the env
      *    - slack notify start, will support --custom-message=<custom message>
@@ -2512,6 +2502,7 @@ class OPSHelper
     {
        return (new CustomCollection([
            AWSHelper::loadOpsEnvAndHandleMore(), // bash content
+           sprintf("export PROCESS_ID=%s", ProcessHelper::handleProcessStart()),
        ]))->join(PHP_EOL);
     }
 
@@ -3779,7 +3770,7 @@ class ProcessHelper
     /**
      * @return string a 'MyOps process' id
      */
-    private static function handleProcessStart(): string
+    public static function handleProcessStart(): string
     {
         return TimeHelper::handleTimeBegin();
     }

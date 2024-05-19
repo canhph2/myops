@@ -188,8 +188,8 @@ class OPSHelper
 
     /**
      * do some pre-works:
-     *    - support eval "$(%s pre-work)"
-     *    - show version
+     *    - support    eval "$(<app> pre-work)"
+     *    - show version ( handle at end of handle-env-ops.sh file)
      *    - load env ops
      *    - create a MyOps process, will export PROCESS_ID to the env
      *    - slack notify start, will support --custom-message=<custom message>
@@ -199,6 +199,7 @@ class OPSHelper
     {
        return (new CustomCollection([
            AWSHelper::loadOpsEnvAndHandleMore(), // bash content
+           sprintf("export PROCESS_ID=%s", ProcessHelper::handleProcessStart()),
        ]))->join(PHP_EOL);
     }
 
