@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.13 ===
+// === MyOps v3.7.14 ===
 
 // === Generated libraries classes ===
 
@@ -332,30 +332,30 @@ class Release
         //    validate version part
         $part = self::arg(1) ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
-            self::LineTag(TagEnum::ERROR)->print("invalid part of version, should be: %s", join(', ', Version::PARTS));
+            self::lineIndent(IndentLevelEnum::ITEM_LINE)->setTag(TagEnum::ERROR)->print("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END
         }
         // handle
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
         //    combine files
-        self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
+        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
         file_put_contents(AppInfoEnum::RELEASE_PATH, sprintf("\n// === %s ===\n", MyOps::getAppVersionStr($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
         //
-        self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
+        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
         //        ask what news
         $whatNewsDefault = sprintf("Release %s on %s UTC", MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
-        $whatNewsInput = ucfirst(readline("What are news in this release?  (default = '$whatNewsDefault')  :"));
+        $whatNewsInput = ucfirst(readline("  What are news in this release?  (default = '$whatNewsDefault')  :"));
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNews'", GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
         //
-        self::LineNew()->printSeparatorLine()
+        self::lineIndent(IndentLevelEnum::ITEM_LINE)->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::getAppVersionStr($newVersion));
     }
 
@@ -1568,7 +1568,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.13';
+    const APP_VERSION = '3.7.14';
 }
 
 // [REMOVED] namespace App\Enum;
