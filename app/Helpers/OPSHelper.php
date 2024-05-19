@@ -197,10 +197,11 @@ class OPSHelper
      */
     public static function preWork(): string
     {
-       return (new CustomCollection([
-           AWSHelper::loadOpsEnvAndHandleMore(), // bash content
-           sprintf("export PROCESS_ID=%s", ProcessHelper::handleProcessStart()),
-       ]))->join(PHP_EOL);
+        AppInfoHelper::printVersion();
+        return (new CustomCollection([
+            AWSHelper::loadOpsEnvAndHandleMore(), // bash content
+            sprintf("export PROCESS_ID=%s", ProcessHelper::handleProcessStart()),
+        ]))->join(PHP_EOL);
     }
 
     /**
