@@ -71,7 +71,10 @@ class CommandEnum
                 "        [[ -f ~/.zshrc ]] && source ~/.zshrc # MAC",
                 "        [[ -f ~/.bashrc ]] && source ~/.bashrc # Ubuntu",
             ],
-            self::HELP => ['show list support command and usage'],
+            self::HELP => [
+                'show list support command and usage',
+                sprintf("add arg1 is your <search command> to highlight red the command .e.g % help searchA", AppInfoEnum::APP_MAIN_COMMAND),
+            ],
             self::RELEASE => [
                 sprintf("combine all PHP files into '.release/MyOps.php' and install a alias '%s'", AppInfoEnum::APP_MAIN_COMMAND),
                 "default version increasing is 'patch'",
