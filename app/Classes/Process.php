@@ -266,11 +266,10 @@ class Process
     {
         $indentCdCommandToAdjust = 0;
         self::LineIndent($this->getOutputIndentLevel())->printSeparatorLine()
-            ->setTag(TagEnum::WORK)->print($this->workName);
-        self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Commands:");
+            ->setTag(TagEnum::SHELL)->print($this->workName);
         if ($this->commands) {
             foreach ($this->commands as $command) {
-                self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)
+                self::LineIndent($this->getOutputIndentLevel())
                     ->setIcon(IconEnum::CHEVRON_RIGHT)->print(StrHelper::hideSensitiveInformation($command));
                 // check cd command
                 if (StrHelper::startsWith($command, 'cd ')) {

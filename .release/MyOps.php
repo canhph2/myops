@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.26 ===
+// === MyOps v3.7.27 ===
 
 // === Generated libraries classes ===
 
@@ -698,11 +698,10 @@ class Process
     {
         $indentCdCommandToAdjust = 0;
         self::LineIndent($this->getOutputIndentLevel())->printSeparatorLine()
-            ->setTag(TagEnum::WORK)->print($this->workName);
-        self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Commands:");
+            ->setTag(TagEnum::SHELL)->print($this->workName);
         if ($this->commands) {
             foreach ($this->commands as $command) {
-                self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)
+                self::LineIndent($this->getOutputIndentLevel())
                     ->setIcon(IconEnum::CHEVRON_RIGHT)->print(StrHelper::hideSensitiveInformation($command));
                 // check cd command
                 if (StrHelper::startsWith($command, 'cd ')) {
@@ -1599,7 +1598,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.26';
+    const APP_VERSION = '3.7.27';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1892,6 +1891,7 @@ class TagEnum
     const GIT = 'GIT/GITHUB';
     const DOCKER = 'DOCKER';
     const SLACK = 'SLACK';
+    const SHELL = 'SHELL';
 
     const VALIDATION_ERROR = [self::VALIDATION, self::ERROR];
     const VALIDATION_SUCCESS = [self::VALIDATION, self::SUCCESS];

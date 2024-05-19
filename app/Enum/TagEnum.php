@@ -16,6 +16,7 @@ class TagEnum
     const GIT = 'GIT/GITHUB';
     const DOCKER = 'DOCKER';
     const SLACK = 'SLACK';
+    const SHELL = 'SHELL';
 
     const VALIDATION_ERROR = [self::VALIDATION, self::ERROR];
     const VALIDATION_SUCCESS = [self::VALIDATION, self::SUCCESS];
