@@ -145,8 +145,7 @@ class GitHubHelper
         elseif(self::arg(2)) $branchFrom = "CONSOLE";
         elseif(getenv('BRANCH')) $branchFrom = "ENV";
 
-        self::lineIndent(IndentLevelEnum::ITEM_LINE)
-            ->setTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
+        self::lineTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
             ->setTag($branchFrom)->print("BRANCH = %s", $branch)
             ->setTag(null)->print("DIR = '$EngagePlusCachesRepositoryDir'");
 

@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.22 ===
+// === MyOps v3.7.23 ===
 
 // === Generated libraries classes ===
 
@@ -1580,7 +1580,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.22';
+    const APP_VERSION = '3.7.23';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2711,8 +2711,7 @@ class GitHubHelper
         elseif(self::arg(2)) $branchFrom = "CONSOLE";
         elseif(getenv('BRANCH')) $branchFrom = "ENV";
 
-        self::lineIndent(IndentLevelEnum::ITEM_LINE)
-            ->setTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
+        self::lineTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
             ->setTag($branchFrom)->print("BRANCH = %s", $branch)
             ->setTag(null)->print("DIR = '$EngagePlusCachesRepositoryDir'");
 
