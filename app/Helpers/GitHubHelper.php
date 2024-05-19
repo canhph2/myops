@@ -214,11 +214,11 @@ class GitHubHelper
             GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout -f %s", $BRANCH_TO_FORCE_CHECKOUT),
             GitHubEnum::PULL_COMMAND,
-        ])))->execMultiInWorkDir(true)->printOutput();
+        ])))->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
         // === validate result ===
         (new Process("Validate branch", DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
-        ]))->execMultiInWorkDir()->printOutput();
+        ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
     }
 
     /**

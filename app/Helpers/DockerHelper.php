@@ -70,7 +70,7 @@ class DockerHelper
                     (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
                     ]))->setOutputIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
-                        ->execMultiInWorkDir(true)->printOutput();
+                        ->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
                 }
                 //
                 // case: other images
@@ -190,7 +190,7 @@ class DockerHelper
                 (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                     sprintf("docker rmi -f %s", $image->getId())
                 ]))->setOutputIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
-                    ->execMultiInWorkDir(true)->printOutput();
+                    ->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
             }
         }
         //

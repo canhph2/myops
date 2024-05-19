@@ -162,7 +162,7 @@ class Release
         //        push
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNews'", GitHubEnum::PUSH_COMMAND,
-        ]))->execMultiInWorkDir()->printOutput();
+        ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
         //
         self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::getAppVersionStr($newVersion));

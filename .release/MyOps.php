@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.12 ===
+// === MyOps v3.7.13 ===
 
 // === Generated libraries classes ===
 
@@ -353,7 +353,7 @@ class Release
         //        push
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNews'", GitHubEnum::PUSH_COMMAND,
-        ]))->execMultiInWorkDir()->printOutput();
+        ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
         //
         self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::getAppVersionStr($newVersion));
@@ -1568,7 +1568,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.12';
+    const APP_VERSION = '3.7.13';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2360,7 +2360,7 @@ class OPSHelper
         // show open new session to show right version
         (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
             'myops version'
-        ]))->execMultiInWorkDir(true)->printOutput();
+        ]))->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
         //
         self::LineNew()->printSeparatorLine();
     }
@@ -2467,7 +2467,7 @@ class OPSHelper
             if (is_file(DirHelper::getWorkingDir('.env'))) {
                 (new Process("Remove .env", DirHelper::getWorkingDir(), [
                     sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.env'))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
+                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput(IndentLevelEnum::ITEM_LINE);
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DirHelper::getWorkingDir()));
                 self::LineNew()->printCondition(!$checkTmpDir,
@@ -2479,7 +2479,7 @@ class OPSHelper
             if (is_file(DirHelper::getWorkingDir('.conf-ryt'))) {
                 (new Process("Remove .conf-ryt", DirHelper::getWorkingDir(), [
                     sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.conf-ryt'))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
+                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput(IndentLevelEnum::ITEM_LINE);
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.conf-ryt'", DirHelper::getWorkingDir()));
                 self::LineNew()->printCondition(!$checkTmpDir,
@@ -2498,7 +2498,7 @@ class OPSHelper
         if (is_dir(DirHelper::getWorkingDir('dist'))) {
             (new Process("Remove dist dir", DirHelper::getWorkingDir(), [
                 sprintf("rm -rf '%s'", DirHelper::getWorkingDir('dist'))
-            ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
+            ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput(IndentLevelEnum::ITEM_LINE);
             // validate result
             $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DirHelper::getWorkingDir()));
             self::LineNew()->printCondition(!$checkTmpDir,
@@ -2512,7 +2512,7 @@ class OPSHelper
             if (StrHelper::contains($authJsonContent, "github-oauth") && StrHelper::contains($authJsonContent, "github.com")) {
                 (new Process("Remove composer config file", DirHelper::getWorkingDir(), [
                     sprintf("rm -f '%s'", DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
+                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput(IndentLevelEnum::ITEM_LINE);
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DirHelper::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
                 self::LineNew()->printCondition(
@@ -2546,7 +2546,7 @@ class OPSHelper
         self::LineNew()->printTitle("Clear _ops directory");
         (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
             ShellFactory::generateRemoveDirCommand(DirHelper::getWorkingDir('_ops'))
-        ]))->execMultiInWorkDir(true)->printOutput();
+        ]))->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
         // validate result
         DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
         $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
@@ -2768,11 +2768,11 @@ class GitHubHelper
             GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout -f %s", $BRANCH_TO_FORCE_CHECKOUT),
             GitHubEnum::PULL_COMMAND,
-        ])))->execMultiInWorkDir(true)->printOutput();
+        ])))->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
         // === validate result ===
         (new Process("Validate branch", DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
-        ]))->execMultiInWorkDir()->printOutput();
+        ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
     }
 
     /**
@@ -2872,6 +2872,7 @@ class GitHubHelper
 // [REMOVED] namespace App\Helpers;
 
 // [REMOVED] use App\Classes\Process;
+// [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\MyOps;
 // [REMOVED] use App\Traits\ConsoleUITrait;
@@ -2983,7 +2984,7 @@ class AWSHelper
             }
             $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
             (new Process("handle ELB version directory", DirHelper::getWorkingDir(), $commands))
-                ->execMultiInWorkDir()->printOutput();
+                ->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
             //   handle SSM and get image tag values
             //        SSM tag names
             $SSM_ENV_TAG_API_NAME = "/$ENV/TAG_API_NAME";
@@ -3082,7 +3083,7 @@ class AWSHelper
                     getenv('EB_ENVIRONMENT_NAME'),
                     $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
-            ]))->execMultiInWorkDir()->printOutput();
+            ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
             //    Check new service healthy every X seconds | timeout = 20 minutes
             //        08/28/2023: Elastic Beanstalk environment update about 4 - 7 minutes
             for ($minute = 3; $minute >= 1; $minute--) {
@@ -3266,7 +3267,7 @@ class DockerHelper
                     (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
                     ]))->setOutputIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
-                        ->execMultiInWorkDir(true)->printOutput();
+                        ->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
                 }
                 //
                 // case: other images
@@ -3386,7 +3387,7 @@ class DockerHelper
                 (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                     sprintf("docker rmi -f %s", $image->getId())
                 ]))->setOutputIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
-                    ->execMultiInWorkDir(true)->printOutput();
+                    ->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
             }
         }
         //
