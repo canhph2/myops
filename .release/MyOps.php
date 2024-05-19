@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.21 ===
+// === MyOps v3.7.22 ===
 
 // === Generated libraries classes ===
 
@@ -472,9 +472,9 @@ class Process
      * @param CustomCollection|array|null $commands
      */
     public function __construct(
-        string           $workName = null,
-        string           $workDir = null,
-        $commands = null
+        string $workName = null,
+        string $workDir = null,
+               $commands = null
     )
     {
         $this->workName = $workName;
@@ -684,9 +684,8 @@ class Process
         return $this->execMultiInWorkDir(true)->getOutputStrAll();
     }
 
-    public function printOutput(int $outputIndentLevel = IndentLevelEnum::MAIN_LINE): Process
+    public function printOutput(): Process
     {
-        $this->setOutputIndentLevel($outputIndentLevel);
         self::LineIndent($this->getOutputIndentLevel())->printSeparatorLine()
             ->setTag(TagEnum::WORK)->print($this->workName);
         self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Commands:");
@@ -1581,7 +1580,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.21';
+    const APP_VERSION = '3.7.22';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2648,7 +2647,7 @@ class GitHubHelper
             array_merge([
                 sprintf("git remote set-url origin %s", $remoteOriginUrl)
             ], $commandsToCheckResult)
-        ))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
+        ))->execMultiInWorkDir()->printOutput();
     }
 
     /**
@@ -2720,21 +2719,20 @@ class GitHubHelper
         // === handle ===
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
-            self::lineIndent(IndentLevelEnum::ITEM_LINE)->print("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
+            self::LineNew()->print("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
             //
             // case clone
         } else {
-            self::lineIndent(IndentLevelEnum::ITEM_LINE)
-                ->setTag(TagEnum::ERROR)->print("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
+            self::LineTag(TagEnum::ERROR)->print("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
             //
             (new Process("Remove old directory", null, [
                 sprintf("rm -rf \"%s\"", $EngagePlusCachesRepositoryDir),
                 sprintf("mkdir -p \"%s\"", $EngagePlusCachesRepositoryDir),
-            ]))->execMulti()->printOutput(IndentLevelEnum::ITEM_LINE);
+            ]))->execMulti()->printOutput();
             //
             (new Process("CLONE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
                 sprintf("git clone -b %s %s .", $branch, self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
-            ]))->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
+            ]))->execMultiInWorkDir(true)->printOutput();
         }
         // === update new code ===
         (new Process("UPDATE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
@@ -2742,7 +2740,7 @@ class GitHubHelper
             GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout %s", $branch),
             GitHubEnum::PULL_COMMAND
-        ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
+        ]))->execMultiInWorkDir()->printOutput();
         // === remove token ===
         self::setRemoteOriginUrl(self::getRemoteOriginUrl_Custom($repository), $EngagePlusCachesRepositoryDir, true);
     }
@@ -2781,11 +2779,11 @@ class GitHubHelper
             GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout -f %s", $BRANCH_TO_FORCE_CHECKOUT),
             GitHubEnum::PULL_COMMAND,
-        ])))->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
+        ])))->execMultiInWorkDir(true)->printOutput();
         // === validate result ===
         (new Process("Validate branch", DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
-        ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
+        ]))->execMultiInWorkDir()->printOutput();
     }
 
     /**
@@ -2997,7 +2995,7 @@ class AWSHelper
             }
             $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
             (new Process("handle ELB version directory", DirHelper::getWorkingDir(), $commands))
-                ->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
+                ->execMultiInWorkDir()->printOutput();
             //   handle SSM and get image tag values
             //        SSM tag names
             $SSM_ENV_TAG_API_NAME = "/$ENV/TAG_API_NAME";
@@ -3096,7 +3094,7 @@ class AWSHelper
                     getenv('EB_ENVIRONMENT_NAME'),
                     $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
-            ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
+            ]))->execMultiInWorkDir()->printOutput();
             //    Check new service healthy every X seconds | timeout = 20 minutes
             //        08/28/2023: Elastic Beanstalk environment update about 4 - 7 minutes
             for ($minute = 3; $minute >= 1; $minute--) {
@@ -3280,7 +3278,7 @@ class DockerHelper
                     (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
                     ]))->setOutputIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
-                        ->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
+                        ->execMultiInWorkDir(true)->printOutput();
                 }
                 //
                 // case: other images
@@ -3400,7 +3398,7 @@ class DockerHelper
                 (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                     sprintf("docker rmi -f %s", $image->getId())
                 ]))->setOutputIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
-                    ->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
+                    ->execMultiInWorkDir(true)->printOutput();
             }
         }
         //

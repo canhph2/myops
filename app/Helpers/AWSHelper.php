@@ -115,7 +115,7 @@ class AWSHelper
             }
             $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
             (new Process("handle ELB version directory", DirHelper::getWorkingDir(), $commands))
-                ->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
+                ->execMultiInWorkDir()->printOutput();
             //   handle SSM and get image tag values
             //        SSM tag names
             $SSM_ENV_TAG_API_NAME = "/$ENV/TAG_API_NAME";
@@ -214,7 +214,7 @@ class AWSHelper
                     getenv('EB_ENVIRONMENT_NAME'),
                     $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
-            ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
+            ]))->execMultiInWorkDir()->printOutput();
             //    Check new service healthy every X seconds | timeout = 20 minutes
             //        08/28/2023: Elastic Beanstalk environment update about 4 - 7 minutes
             for ($minute = 3; $minute >= 1; $minute--) {

@@ -40,9 +40,9 @@ class Process
      * @param CustomCollection|array|null $commands
      */
     public function __construct(
-        string           $workName = null,
-        string           $workDir = null,
-        $commands = null
+        string $workName = null,
+        string $workDir = null,
+               $commands = null
     )
     {
         $this->workName = $workName;
@@ -252,9 +252,8 @@ class Process
         return $this->execMultiInWorkDir(true)->getOutputStrAll();
     }
 
-    public function printOutput(int $outputIndentLevel = IndentLevelEnum::MAIN_LINE): Process
+    public function printOutput(): Process
     {
-        $this->setOutputIndentLevel($outputIndentLevel);
         self::LineIndent($this->getOutputIndentLevel())->printSeparatorLine()
             ->setTag(TagEnum::WORK)->print($this->workName);
         self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Commands:");
