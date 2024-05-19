@@ -267,17 +267,4 @@ class OPSHelper
         }
         self::LineNew()->printSeparatorLine();
     }
-
-    public
-    static function clearOpsDir(): void
-    {
-        self::LineNew()->printTitle("Clear _ops directory");
-        (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
-            ShellFactory::generateRemoveFileOrDirCommand(DirHelper::getWorkingDir('_ops'))
-        ]))->execMultiInWorkDir(true)->printOutput();
-        // validate result
-        DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
-        $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
-        self::LineNew()->printCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
-    }
 }

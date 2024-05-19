@@ -17,6 +17,7 @@ use App\Classes\Release;
 use App\Classes\Version;
 use App\Enum\AppInfoEnum;
 use App\Enum\CommandEnum;
+use App\Enum\DevelopmentEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
@@ -165,7 +166,7 @@ class MyOps
                 OPSHelper::postWork();
                 break;
             case CommandEnum::CLEAR_OPS_DIR:
-                OPSHelper::clearOpsDir();
+                DirHelper::removeFileOrDirInDir(DevelopmentEnum::OPS_DIR);
                 break;
             case CommandEnum::TIME:
                 TimeHelper::handleTimeInConsole();

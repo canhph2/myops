@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.8.17 ===
+// === MyOps v3.8.19 ===
 
 // === Generated libraries classes ===
 
@@ -1600,7 +1600,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.8.17';
+    const APP_VERSION = '3.8.19';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1744,7 +1744,7 @@ class CommandEnum
                 "[Optional] add param '--process-id=<PROCESS_ID>' to get process build time",
                 '[NORMAL] slack notify to finish, will support Slack options above',
             ],
-            self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
+            self::CLEAR_OPS_DIR => ["clear .ops directory, usually use in Docker image"],
             self::TIME => [
                 'is used to measure project build time',
                 "use the sub-command 'begin' to mark a beginning time, will return an id of process object",
@@ -1998,11 +1998,14 @@ class ConsoleEnum
 
 class DevelopmentEnum
 {
+    // files
     const DOT_ENV = '.env';
     const DOT_CONFIG_RYT = '.conf-ryt'; // 'ryt' are random chars
-    const TMP = 'tmp';
-    const DIST ='dist';
     const COMPOSER_CONFIG_GITHUB_AUTH_FILE = 'auth.json';
+    // dirs
+    const TMP = 'tmp';
+    const DIST = 'dist';
+    const OPS_DIR = '.ops';
 }
 
 // [REMOVED] namespace App\Factories;
@@ -2620,19 +2623,6 @@ class OPSHelper
             self::LineNew()->print("do nothing");
         }
         self::LineNew()->printSeparatorLine();
-    }
-
-    public
-    static function clearOpsDir(): void
-    {
-        self::LineNew()->printTitle("Clear _ops directory");
-        (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
-            ShellFactory::generateRemoveFileOrDirCommand(DirHelper::getWorkingDir('_ops'))
-        ]))->execMultiInWorkDir(true)->printOutput();
-        // validate result
-        DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
-        $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
-        self::LineNew()->printCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
     }
 }
 
@@ -4557,7 +4547,7 @@ class MyOps
                 OPSHelper::postWork();
                 break;
             case CommandEnum::CLEAR_OPS_DIR:
-                OPSHelper::clearOpsDir();
+                DirHelper::removeFileOrDirInDir(DevelopmentEnum::OPS_DIR);
                 break;
             case CommandEnum::TIME:
                 TimeHelper::handleTimeInConsole();
