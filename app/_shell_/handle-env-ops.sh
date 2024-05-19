@@ -96,7 +96,3 @@ export ENGAGEPLUS_CACHES_REPOSITORY_DIR="${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 # === get DEVICE from param 1 ===
 export DEVICE="$1"
 # === END ===
-
-
-# === show version ===
-myops version

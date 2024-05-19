@@ -199,6 +199,8 @@ class OPSHelper
     {
        return (new CustomCollection([
            AWSHelper::loadOpsEnvAndHandleMore(), // bash content
+           '# === show version ===',
+          sprintf("echo %s", AppInfoHelper::getVersionStr(false, false))
        ]))->join(PHP_EOL);
     }
 
