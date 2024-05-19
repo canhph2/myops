@@ -152,6 +152,15 @@ class Process
     }
 
     /**
+     * @return Process
+     */
+    public function increaseOutputIndentLevel(): Process
+    {
+        $this->outputIndentLevel = $this->outputIndentLevel + IndentLevelEnum::INCREASE;
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function isExitOnError(): bool
@@ -261,6 +270,10 @@ class Process
             foreach ($this->commands as $command) {
                 self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)
                     ->setIcon(IconEnum::CHEVRON_RIGHT)->print(StrHelper::hideSensitiveInformation($command));
+                // check cd command
+                if(StrHelper::startsWith($command, 'cd ')) {
+                    $this->increaseOutputIndentLevel();
+                }
             }
         }
         self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Output:");

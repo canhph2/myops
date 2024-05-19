@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.23 ===
+// === MyOps v3.7.24 ===
 
 // === Generated libraries classes ===
 
@@ -584,6 +584,15 @@ class Process
     }
 
     /**
+     * @return Process
+     */
+    public function increaseOutputIndentLevel(): Process
+    {
+        $this->outputIndentLevel = $this->outputIndentLevel + IndentLevelEnum::INCREASE;
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function isExitOnError(): bool
@@ -693,6 +702,10 @@ class Process
             foreach ($this->commands as $command) {
                 self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)
                     ->setIcon(IconEnum::CHEVRON_RIGHT)->print(StrHelper::hideSensitiveInformation($command));
+                // check cd command
+                if(StrHelper::startsWith($command, 'cd ')) {
+                    $this->increaseOutputIndentLevel();
+                }
             }
         }
         self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Output:");
@@ -1580,7 +1593,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.23';
+    const APP_VERSION = '3.7.24';
 }
 
 // [REMOVED] namespace App\Enum;
