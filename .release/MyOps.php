@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.8.19 ===
+// === MyOps v3.8.20 ===
 
 // === Generated libraries classes ===
 
@@ -1600,7 +1600,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.8.19';
+    const APP_VERSION = '3.8.20';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2178,7 +2178,7 @@ class DirHelper
                 }
                 //    execute
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
-                    ->execMultiInWorkDir()->printOutput();
+                    ->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
                 // validate the result
                 self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), DevelopmentEnum::TMP);
                 foreach ($subDirs as $subDir) {
@@ -2195,7 +2195,7 @@ class DirHelper
                 }
                 //    execute
                 (new Process("Remove tmp dir", self::getWorkingDir(), $commands))
-                    ->execMultiInWorkDir()->printOutput();
+                    ->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
                 // validate the result
                 DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), DevelopmentEnum::TMP);
                 foreach ($subDirs as $subDir) {

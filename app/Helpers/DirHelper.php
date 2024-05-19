@@ -113,7 +113,7 @@ class DirHelper
                 }
                 //    execute
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
-                    ->execMultiInWorkDir()->printOutput();
+                    ->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
                 // validate the result
                 self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), DevelopmentEnum::TMP);
                 foreach ($subDirs as $subDir) {
@@ -130,7 +130,7 @@ class DirHelper
                 }
                 //    execute
                 (new Process("Remove tmp dir", self::getWorkingDir(), $commands))
-                    ->execMultiInWorkDir()->printOutput();
+                    ->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
                 // validate the result
                 DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), DevelopmentEnum::TMP);
                 foreach ($subDirs as $subDir) {
