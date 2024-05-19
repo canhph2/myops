@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.16 ===
+// === MyOps v3.7.17 ===
 
 // === Generated libraries classes ===
 
@@ -332,19 +332,19 @@ class Release
         //    validate version part
         $part = self::arg(1) ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
-            self::lineIndent(IndentLevelEnum::ITEM_LINE)->setTag(TagEnum::ERROR)->print("invalid part of version, should be: %s", join(', ', Version::PARTS));
+            self::LineTag(TagEnum::ERROR)->print("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END
         }
         // handle
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
         //    combine files
-        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
+        self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
         file_put_contents(AppInfoEnum::RELEASE_PATH, sprintf("\n// === %s ===\n", MyOps::getAppVersionStr($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
         //
-        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
+        self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
         //        ask what news
         $whatNewsDefault = sprintf("Release %s on %s UTC", MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
@@ -353,9 +353,9 @@ class Release
         //        push
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNews'", GitHubEnum::PUSH_COMMAND,
-        ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
+        ]))->execMultiInWorkDir()->printOutput();
         //
-        self::lineIndent(IndentLevelEnum::ITEM_LINE)->printSeparatorLine()
+        self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::getAppVersionStr($newVersion));
     }
 
@@ -1055,6 +1055,7 @@ class DockerImage
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Enum\UIEnum;
+// [REMOVED] use App\Helpers\ConsoleHelper;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
 class TextLine
@@ -1240,7 +1241,7 @@ class TextLine
     {
         return sprintf(
             "%s%s%s%s",
-            str_repeat(" ", $this->indentLevel * IndentLevelEnum::AMOUNT_SPACES),
+            str_repeat(" ", (ConsoleHelper::$currentIndentLevel + $this->indentLevel) * IndentLevelEnum::AMOUNT_SPACES),
             $this->icon ? $this->icon . ' ' : '',
             $this->tag ? sprintf("[%s] ", $this->tag) : '',
             $this->text
@@ -1263,7 +1264,7 @@ class TextLine
             //
             // case 3: no set both color and format
         } else {
-            echo $finalText.PHP_EOL;
+            echo $finalText . PHP_EOL;
         }
         //
         return $this;
@@ -1271,6 +1272,8 @@ class TextLine
 
     public function printTitle(string $format, ...$values): TextLine
     {
+        // set current indent level
+        self::setCurrentIndentLevel(IndentLevelEnum::ITEM_LINE);
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
@@ -1569,7 +1572,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.16';
+    const APP_VERSION = '3.7.17';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2355,7 +2358,7 @@ class OPSHelper
         $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
         self::createAlias($EngagePlusCachesRepositoryOpsAppReleasePath);
         //
-        self::LineNew()->printSeparatorLine()
+        self::lineIndent(IndentLevelEnum::ITEM_LINE)->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("sync done");
         self::LineNew()->printSeparatorLine();
         // show open new session to show right version
@@ -3970,9 +3973,16 @@ class ValidationHelper
 // [REMOVED] namespace App\Helpers;
 
 // [REMOVED] use App\Enum\ConsoleEnum;
+// [REMOVED] use App\Enum\IndentLevelEnum;
 
 class ConsoleHelper
 {
+    /**
+     * to store current indent level in this the command session
+     * @var int
+     */
+    public static $currentIndentLevel = IndentLevelEnum::MAIN_LINE;
+
     public static function generateFullField(string $field): string
     {
         return sprintf("%s%s=", ConsoleEnum::FIELD_PREFIX, $field);
@@ -4247,9 +4257,20 @@ trait ConsoleBaseTrait
 
 // [REMOVED] use App\Classes\TextLine;
 // [REMOVED] use App\Enum\IndentLevelEnum;
+// [REMOVED] use App\Helpers\ConsoleHelper;
 
 trait ConsoleUITrait
 {
+
+    /**
+     * @param int $indentLevel
+     * @return void
+     */
+    private static function setCurrentIndentLevel(int $indentLevel): void
+    {
+        ConsoleHelper::$currentIndentLevel = $indentLevel;
+    }
+
     /**
      * get new instance of Text Line
      * @return TextLine

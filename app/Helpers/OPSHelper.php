@@ -97,7 +97,7 @@ class OPSHelper
         $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
         self::createAlias($EngagePlusCachesRepositoryOpsAppReleasePath);
         //
-        self::LineNew()->printSeparatorLine()
+        self::lineIndent(IndentLevelEnum::ITEM_LINE)->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("sync done");
         self::LineNew()->printSeparatorLine();
         // show open new session to show right version

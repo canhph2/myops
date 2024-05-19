@@ -141,19 +141,19 @@ class Release
         //    validate version part
         $part = self::arg(1) ?? Version::PATCH; // default, empty = patch
         if (!in_array($part, Version::PARTS)) {
-            self::lineIndent(IndentLevelEnum::ITEM_LINE)->setTag(TagEnum::ERROR)->print("invalid part of version, should be: %s", join(', ', Version::PARTS));
+            self::LineTag(TagEnum::ERROR)->print("invalid part of version, should be: %s", join(', ', Version::PARTS));
             return; // END
         }
         // handle
         //    increase app version
         $newVersion = AppHelper::increaseVersion($part);
         //    combine files
-        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
+        self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("combine files");
         file_put_contents(AppInfoEnum::RELEASE_PATH, sprintf("<?php\n// === %s ===\n", MyOps::getAppVersionStr($newVersion)));
         $this->handleLibrariesClass();
         $this->handleAppClass();
         //
-        self::lineIndent(IndentLevelEnum::ITEM_LINE)->setTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
+        self::LineTagMultiple([__CLASS__, __FUNCTION__])->print("DONE");
         //    push new release to GitHub
         //        ask what news
         $whatNewsDefault = sprintf("Release %s on %s UTC", MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
@@ -162,9 +162,9 @@ class Release
         //        push
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNews'", GitHubEnum::PUSH_COMMAND,
-        ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
+        ]))->execMultiInWorkDir()->printOutput();
         //
-        self::lineIndent(IndentLevelEnum::ITEM_LINE)->printSeparatorLine()
+        self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::getAppVersionStr($newVersion));
     }
 

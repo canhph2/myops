@@ -4,9 +4,20 @@ namespace App\Traits;
 
 use App\Classes\TextLine;
 use App\Enum\IndentLevelEnum;
+use App\Helpers\ConsoleHelper;
 
 trait ConsoleUITrait
 {
+
+    /**
+     * @param int $indentLevel
+     * @return void
+     */
+    private static function setCurrentIndentLevel(int $indentLevel): void
+    {
+        ConsoleHelper::$currentIndentLevel = $indentLevel;
+    }
+
     /**
      * get new instance of Text Line
      * @return TextLine

@@ -5,6 +5,7 @@ namespace App\Classes;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
 use App\Enum\UIEnum;
+use App\Helpers\ConsoleHelper;
 use App\Traits\ConsoleUITrait;
 
 class TextLine
@@ -190,7 +191,7 @@ class TextLine
     {
         return sprintf(
             "%s%s%s%s",
-            str_repeat(" ", $this->indentLevel * IndentLevelEnum::AMOUNT_SPACES),
+            str_repeat(" ", (ConsoleHelper::$currentIndentLevel + $this->indentLevel) * IndentLevelEnum::AMOUNT_SPACES),
             $this->icon ? $this->icon . ' ' : '',
             $this->tag ? sprintf("[%s] ", $this->tag) : '',
             $this->text
@@ -213,7 +214,7 @@ class TextLine
             //
             // case 3: no set both color and format
         } else {
-            echo $finalText.PHP_EOL;
+            echo $finalText . PHP_EOL;
         }
         //
         return $this;
@@ -221,6 +222,8 @@ class TextLine
 
     public function printTitle(string $format, ...$values): TextLine
     {
+        // set current indent level
+        self::setCurrentIndentLevel(IndentLevelEnum::ITEM_LINE);
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
