@@ -99,4 +99,4 @@ export DEVICE="$1"
 
 
 # === show version ===
-myops version no-format-color
+myops version
