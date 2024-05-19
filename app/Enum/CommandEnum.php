@@ -37,6 +37,7 @@ class CommandEnum
     const SLACK = 'slack';
     const SLACK_PROCESS = 'slack-process';
     const TMP = 'tmp';
+    const PRE_WORK = 'pre-work';
     const POST_WORK = 'post-work';
     const CLEAR_OPS_DIR = 'clear-ops-dir';
     const TIME = 'time';
@@ -84,7 +85,8 @@ class CommandEnum
             "AWS Related" => [],
             self::LOAD_ENV_OPS => [
                 '[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:',
-                sprintf('            eval "$(%s load-env-ops)"    ', AppInfoEnum::APP_MAIN_COMMAND)
+                sprintf('    eval "$(%s load-env-ops)"    ', AppInfoEnum::APP_MAIN_COMMAND),
+                "[MOVED] to " . self::PRE_WORK
             ],
             self::GET_SECRET_ENV => ["[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName"],
             self::ELB_UPDATE_VERSION => ["[AWS Elastic Beanstalk] create a new version and update an environment"],
@@ -126,7 +128,20 @@ class CommandEnum
                 "use the sub-command 'remove' to remove tmp dir",
                 "user the option --sub-dir=<sub-dir 1> --sub-dir=<sub-dir 2> to handle temp dir in the sub-dir"
             ],
-            self::POST_WORK => ["do post works. Optional: add param 'skip-check-dir' to skip check dir"],
+            self::PRE_WORK => [
+                '[AWS Secret Manager] [CREDENTIAL REQUIRED] to load env ops, usage in Shell:',
+                sprintf('    eval "$(%s pre-work)"    ', AppInfoEnum::APP_MAIN_COMMAND),
+                "Handle:",
+                '  - show version',
+                '  - load env ops',
+                '  - create a MyOps process, will export PROCESS_ID to the env',
+                '  - slack notify start, will support --custom-message=<custom message>',
+            ],
+            self::POST_WORK => [
+                "do post works",
+                "[Optional] add param '--skip-check-dir=any' to skip check dir",
+                "[Optional] add param '--process-id=<PROCESS_ID>' to get process build time",
+            ],
             self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
             self::TIME => [
                 'is used to measure project build time',

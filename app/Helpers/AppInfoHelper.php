@@ -21,4 +21,14 @@ class AppInfoHelper
             self::lineColorFormat(UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD)->print(MyOps::getAppVersionStr());
         }
     }
+
+    /** to use in raw shell (command) */
+    public static function getVersionStr($isNoFormat = false, $isEndLine = true): string
+    {
+        if ($isNoFormat) {
+            return MyOps::getAppVersionStr();
+        } else {
+            return self::colorFormat(MyOps::getAppVersionStr(), UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD, $isEndLine);
+        }
+    }
 }

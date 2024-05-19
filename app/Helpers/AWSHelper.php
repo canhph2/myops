@@ -50,6 +50,7 @@ class AWSHelper
     }
 
     /**
+     * also show version first
      * should run with command in shell:
      *      val "$(myops load-env-ops)"
      *

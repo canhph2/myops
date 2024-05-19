@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Classes\Base\CustomCollection;
 use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Process;
 use App\Enum\AppInfoEnum;
@@ -183,6 +184,22 @@ class OPSHelper
         }
         //
         putenv(sprintf("ENGAGEPLUS_CACHES_DIR=%s/%s", DirHelper::getHomeDir(), getenv('ENGAGEPLUS_CACHES_FOLDER')));
+    }
+
+    /**
+     * do some pre-works:
+     *    - support eval "$(%s pre-work)"
+     *    - show version
+     *    - load env ops
+     *    - create a MyOps process, will export PROCESS_ID to the env
+     *    - slack notify start, will support --custom-message=<custom message>
+     * @return void
+     */
+    public static function preWork(): string
+    {
+       return (new CustomCollection([
+           AWSHelper::loadOpsEnvAndHandleMore(), // bash content
+       ]))->join(PHP_EOL);
     }
 
     /**

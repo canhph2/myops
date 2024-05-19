@@ -157,6 +157,9 @@ class MyOps
             case CommandEnum::TMP:
                 DirHelper::tmp();
                 break;
+            case CommandEnum::PRE_WORK:
+                echo OPSHelper::preWork();
+                break;
             case CommandEnum::POST_WORK:
                 OPSHelper::postWork();
                 break;
