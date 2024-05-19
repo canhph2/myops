@@ -118,8 +118,6 @@ class ValidationHelper
         foreach (self::inputArr('type') as $inputType) {
             self::validateByType($inputType);
         }
-        // old (todo remove soon)
-        self::validateByType(self::arg(1));
     }
 
     /**

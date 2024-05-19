@@ -151,14 +151,11 @@ class MyOps
             case CommandEnum::SLACK:
                 SlackService::sendMessageConsole();
                 break;
-            case CommandEnum::SLACK_PROCESS:
-                SlackService::sendMessageProcessConsole();
-                break;
             case CommandEnum::TMP:
                 DirHelper::tmp();
                 break;
             case CommandEnum::PRE_WORK:
-                echo OPSHelper::preWork();
+                echo OPSHelper::preWorkBashContent();
                 break;
             case CommandEnum::POST_WORK:
                 OPSHelper::postWork();

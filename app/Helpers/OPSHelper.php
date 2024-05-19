@@ -192,15 +192,15 @@ class OPSHelper
      *    - show version ( handle at end of handle-env-ops.sh file)
      *    - load env ops
      *    - create a MyOps process, will export PROCESS_ID to the env
-     *    - slack notify start, will support --custom-message=<custom message>
      * @return void
      */
-    public static function preWork(): string
+    public static function preWorkBashContent(): string
     {
         return (new CustomCollection([
             AWSHelper::loadOpsEnvAndHandleMore(), // bash content
+            '# == MyOps Process, create a new process ==',
             sprintf("export PROCESS_ID=%s", ProcessHelper::handleProcessStart()),
-            sprintf('echo "    PROCESS_ID=${PROCESS_ID}"', ProcessHelper::handleProcessStart()),
+            'echo "  PROCESS_ID=${PROCESS_ID}"',
         ]))->join(PHP_EOL);
     }
 

@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.8.7 ===
+// === MyOps v3.8.8 ===
 
 // === Generated libraries classes ===
 
@@ -1598,7 +1598,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.8.7';
+    const APP_VERSION = '3.8.8';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1636,7 +1636,6 @@ class CommandEnum
     const WORKING_DIR = 'working-dir';
     const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
     const SLACK = 'slack';
-    const SLACK_PROCESS = 'slack-process';
     const TMP = 'tmp';
     const PRE_WORK = 'pre-work';
     const POST_WORK = 'post-work';
@@ -1716,12 +1715,11 @@ class CommandEnum
             self::SCRIPT_DIR => ['return directory of script'],
             self::WORKING_DIR => ['get root project directory / current working directory'],
             self::REPLACE_TEXT_IN_FILE => [sprintf('php %s replace-text-in-file "search text" "replace text" "file path"', AppInfoEnum::APP_MAIN_COMMAND)],
-            self::SLACK => ["notify a message to Slack"],
-            self::SLACK_PROCESS => [
-                "notify a message of CICD process to Slack",
-                "use sub-command 'start' to send a message of process starting",
-                "use sub-command 'finish' to send a message of process finishing",
-                "can add <process id> after the sub-command to handle something",
+            self::SLACK => [
+                "notify a message to Slack",
+                "use --message=<custom message> to send a custom message",
+                "use --type=start or --type=finish to send a message of process",
+                "use --process-id=<PROCESS_ID> to handle process time",
             ],
             self::TMP => [
                 'handle temporary directory (tmp)',
@@ -2495,15 +2493,15 @@ class OPSHelper
      *    - show version ( handle at end of handle-env-ops.sh file)
      *    - load env ops
      *    - create a MyOps process, will export PROCESS_ID to the env
-     *    - slack notify start, will support --custom-message=<custom message>
      * @return void
      */
-    public static function preWork(): string
+    public static function preWorkBashContent(): string
     {
         return (new CustomCollection([
             AWSHelper::loadOpsEnvAndHandleMore(), // bash content
+            '# == MyOps Process, create a new process ==',
             sprintf("export PROCESS_ID=%s", ProcessHelper::handleProcessStart()),
-            sprintf('echo "    PROCESS_ID=${PROCESS_ID}"', ProcessHelper::handleProcessStart()),
+            'echo "  PROCESS_ID=${PROCESS_ID}"',
         ]))->join(PHP_EOL);
     }
 
@@ -3950,8 +3948,6 @@ class ValidationHelper
         foreach (self::inputArr('type') as $inputType) {
             self::validateByType($inputType);
         }
-        // old (todo remove soon)
-        self::validateByType(self::arg(1));
     }
 
     /**
@@ -4056,8 +4052,6 @@ class ConsoleHelper
 // [REMOVED] use App\Helpers\AWSHelper;
 // [REMOVED] use App\Helpers\GitHubHelper;
 // [REMOVED] use App\Helpers\TimeHelper;
-// [REMOVED] use App\Helpers\UuidHelper;
-// [REMOVED] use App\Helpers\ValidationHelper;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
@@ -4093,47 +4087,33 @@ class SlackService
     }
 
     /**
+     * @return string|null
+     */
+    private static function handleInputMessage(): ?string
+    {
+        $message = null;
+        $buildTime = self::input('process-id') ? sprintf("in %s", TimeHelper::handleTimeEnd(self::input('process-id'))) : '';
+        //
+        if (self::input('type') === ProcessEnum::START) {
+            $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
+                GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName()));
+        } else if (self::input('type') === ProcessEnum::FINISH) {
+            $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
+                GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime));
+        } else if (self::input('message')) {
+            $message = trim(sprintf("%s %s", self::input('message'), $buildTime));
+        }
+        return $message;
+    }
+
+    /**
      * Mode 1: command line
      * @return void
      */
     public static function sendMessageConsole(): void
     {
-        self::sendMessage(self::arg(1), getenv('REPOSITORY'), getenv('BRANCH'),
+        self::sendMessage(self::handleInputMessage(), getenv('REPOSITORY'), getenv('BRANCH'),
             getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
-    }
-
-    /**
-     * required these envs:  DEVICE, REPOSITORY
-     * format: <app> slack-progress sub-command <MyOps process id>
-     * @return void
-     */
-    public static function sendMessageProcessConsole(): void
-    {
-        // validate
-        ValidationHelper::validateSubCommandOrParam1('sub-command-of-process', ProcessEnum::SUPPORT_SUB_COMMANDS);
-        //    process id
-        if (self::arg(2) && !UuidHelper::isValid(self::arg(2))) {
-            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("id of time progress is invalid format");
-            exitApp(ERROR_END);
-        }
-        // handle
-        switch (self::arg(1)) {
-            case ProcessEnum::START:
-                $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
-                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName()));
-                self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
-                    getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
-                break;
-            case ProcessEnum::FINISH:
-                $buildTime = self::arg(2) ? sprintf("in %s", TimeHelper::handleTimeEnd(self::arg(2))) : '';
-                $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
-                    GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime));
-                self::sendMessage($message, getenv('REPOSITORY'), getenv('BRANCH'),
-                    getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
-                break;
-            default:
-                break;
-        }
     }
 
     /**
@@ -4542,14 +4522,11 @@ class MyOps
             case CommandEnum::SLACK:
                 SlackService::sendMessageConsole();
                 break;
-            case CommandEnum::SLACK_PROCESS:
-                SlackService::sendMessageProcessConsole();
-                break;
             case CommandEnum::TMP:
                 DirHelper::tmp();
                 break;
             case CommandEnum::PRE_WORK:
-                echo OPSHelper::preWork();
+                echo OPSHelper::preWorkBashContent();
                 break;
             case CommandEnum::POST_WORK:
                 OPSHelper::postWork();
