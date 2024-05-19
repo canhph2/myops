@@ -21,14 +21,14 @@ class ShellFactory
     }
 
     /**
-     * @param string $dirFullPath
+     * @param string $fileOrDirFullPath
      * @return CustomCollection
      */
-    public static function generateRemoveDirCommand(string $dirFullPath): CustomCollection
+    public static function generateRemoveFileOrDirCommand(string $fileOrDirFullPath): CustomCollection
     {
         $commands = new CustomCollection();
-        if (is_dir($dirFullPath)) {
-            $commands->addStr("rm -rf '%s'", $dirFullPath);
+        if (is_file($fileOrDirFullPath) || is_dir($fileOrDirFullPath)) {
+            $commands->addStr("rm -rf '%s'", $fileOrDirFullPath);
         }
         return $commands;
     }

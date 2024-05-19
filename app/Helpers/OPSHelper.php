@@ -6,13 +6,15 @@ use App\Classes\Base\CustomCollection;
 use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Process;
 use App\Enum\AppInfoEnum;
+use App\Enum\DevelopmentEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
-use App\Enum\PostWorkEnum;
 use App\Enum\TagEnum;
+use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\Factories\ShellFactory;
+use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
@@ -22,8 +24,6 @@ use App\Traits\ConsoleUITrait;
 class OPSHelper
 {
     use ConsoleBaseTrait, ConsoleUITrait;
-
-    const COMPOSER_CONFIG_GITHUB_AUTH_FILE = 'auth.json';
 
     public static function getS3WhiteListIpsDevelopment(): string
     {
@@ -187,126 +187,92 @@ class OPSHelper
     }
 
     /**
-     * do some pre-works:
-     *    - support    eval "$(<app> pre-work)"
-     *    - show version ( handle at end of handle-env-ops.sh file)
-     *    - load env ops
-     *    - create a MyOps process, will export PROCESS_ID to the env
-     * @return void
+     * please read help to see more details
+     * @return string
      */
-    public static function preWorkBashContent(): string
+    public static function preWorkBashContentForEval(): string
     {
         return (new CustomCollection([
             AWSHelper::loadOpsEnvAndHandleMore(), // bash content
             '# == MyOps Process, create a new process ==',
             sprintf("export PROCESS_ID=%s", ProcessHelper::handleProcessStart()),
-            'echo "  PROCESS_ID=${PROCESS_ID}"',
         ]))->join(PHP_EOL);
     }
 
     /**
-     * do some post works:
-     * - cleanup
+     * please read help to see more details
      * @return void
      */
-    public static function postWork(): void
+    public static function preWorkNormal(): void
+    {
+        // version
+        AppInfoHelper::printVersion();
+        // pre-work
+        self::lineNew()->printTitle("Prepare Work (pre-work)");
+        //    process id
+        self::lineIcon(IconEnum::CHECK)->setColor(UIEnum::COLOR_GREEN)
+            ->print("I have added a new process with PROCESS_ID = %s", getenv('PROCESS_ID'));
+        //   send starting message to Slack
+        if (SlackService::handleInputMessage()) {
+            SlackService::sendMessageConsole();
+        }
+
+    }
+
+    /**
+     * please read help to see more details
+     * @return void
+     */
+    public
+    static function postWork(): void
     {
         // === param ===
-        $isSkipCheckDir = self::arg(1) === PostWorkEnum::SKIP_CHECK_DIR;
+        $isSkipCheckDir = (bool)self::input('skip-check-dir');
         //
         self::LineNew()->printTitle("Post works");
         if ($isSkipCheckDir) {
             self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)
                 ->print("skip check execution directory");
         }
-        $isDoNothing = true;
         // === cleanup ===
-        //    clear .env, .conf-ryt
-        if (getenv('ENGAGEPLUS_CACHES_FOLDER')
-            && StrHelper::contains(DirHelper::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))) {
-            //        .env
-            if (is_file(DirHelper::getWorkingDir('.env'))) {
-                (new Process("Remove .env", DirHelper::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.env'))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-                // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DirHelper::getWorkingDir()));
-                self::LineNew()->printCondition(!$checkTmpDir,
-                    "remove '.env' file successfully", "remove '.env' file failed");
-                //
-                $isDoNothing = false;
-            }
-            //        .conf-ryt
-            if (is_file(DirHelper::getWorkingDir('.conf-ryt'))) {
-                (new Process("Remove .conf-ryt", DirHelper::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.conf-ryt'))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-                // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.conf-ryt'", DirHelper::getWorkingDir()));
-                self::LineNew()->printCondition(!$checkTmpDir,
-                    "remove a '.conf-ryt' file successfully", "remove a '.conf-ryt' file failed");
-                //
-                $isDoNothing = false;
-            }
-        }
+        $isDoSomeThing = DirHelper::removeFileOrDirInCachesDir(DevelopmentEnum::DOT_ENV);
+        $isDoSomeThing = DirHelper::removeFileOrDirInCachesDir(DevelopmentEnum::DOT_CONFIG_RYT) || $isDoSomeThing;
+        $isDoSomeThing = DirHelper::removeFileOrDirInDir(DEvelopmentEnum::DIST) || $isDoSomeThing; // Angular
+        $isDoSomeThing = DirHelper::removeFileOrDirInDir(DEvelopmentEnum::COMPOSER_CONFIG_GITHUB_AUTH_FILE) || $isDoSomeThing; // composer config file: auth.json
         //    tmp dir (PHP project)
-        if (is_dir(DirHelper::getWorkingDir('tmp')) || self::inputArr('sub-dir')->count()) {
+        if (is_dir(DirHelper::getWorkingDir(DevelopmentEnum::TMP)) || self::inputArr('sub-dir')->count()) {
             DirHelper::tmp('remove', ...self::inputArr('sub-dir'));
             //
-            $isDoNothing = false;
-        }
-        //    dist dir (Angular project)
-        if (is_dir(DirHelper::getWorkingDir('dist'))) {
-            (new Process("Remove dist dir", DirHelper::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('dist'))
-            ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-            // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DirHelper::getWorkingDir()));
-            self::LineNew()->printCondition(!$checkTmpDir,
-                'remove a dist dir successfully', 'remove a dist dir failure');
-            //
-            $isDoNothing = false;
-        }
-        //    composer config file: auth.json
-        if (is_file(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))) {
-            $authJsonContent = file_get_contents(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
-            if (StrHelper::contains($authJsonContent, "github-oauth") && StrHelper::contains($authJsonContent, "github.com")) {
-                (new Process("Remove composer config file", DirHelper::getWorkingDir(), [
-                    sprintf("rm -f '%s'", DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-                // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DirHelper::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
-                self::LineNew()->printCondition(
-                    !$checkTmpDir,
-                    sprintf("remove file '%s' successfully", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE),
-                    sprintf("remove file '%s' failed", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE)
-                );
-                //
-                $isDoNothing = false;
-            }
+            $isDoSomeThing = true;
         }
         //    dangling Docker images / <none> Docker images
         if (DockerHelper::isDockerInstalled()) {
             if (DockerHelper::isDanglingImages()) {
                 DockerHelper::removeDanglingImages();
                 //
-                $isDoNothing = false;
+                $isDoSomeThing = true;
             }
         }
-
         // === end cleanup ===
-        //
-        if ($isDoNothing) {
+        // === Slack ===
+        if (SlackService::handleInputMessage()) {
+            SlackService::sendMessageConsole();
+            //
+            $isDoSomeThing = true;
+        }
+        // ===
+        if (!$isDoSomeThing) {
             self::LineNew()->print("do nothing");
         }
         self::LineNew()->printSeparatorLine();
     }
 
-    public static function clearOpsDir(): void
+    public
+    static function clearOpsDir(): void
     {
         self::LineNew()->printTitle("Clear _ops directory");
         (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
-            ShellFactory::generateRemoveDirCommand(DirHelper::getWorkingDir('_ops'))
+            ShellFactory::generateRemoveFileOrDirCommand(DirHelper::getWorkingDir('_ops'))
         ]))->execMultiInWorkDir(true)->printOutput();
         // validate result
         DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);

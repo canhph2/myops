@@ -45,7 +45,7 @@ class SlackService
     /**
      * @return string|null
      */
-    private static function handleInputMessage(): ?string
+    public static function handleInputMessage(): ?string
     {
         $message = null;
         $buildTime = self::input('process-id') ? sprintf("in %s", TimeHelper::handleTimeEnd(self::input('process-id'))) : '';

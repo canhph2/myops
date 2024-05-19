@@ -114,6 +114,7 @@ class ValidationHelper
      */
     public static function handleValidateInConsole(): void
     {
+        self::lineNew()->printTitle("Validate");
         // new
         foreach (self::inputArr('type') as $inputType) {
             self::validateByType($inputType);

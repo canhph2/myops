@@ -155,7 +155,11 @@ class MyOps
                 DirHelper::tmp();
                 break;
             case CommandEnum::PRE_WORK:
-                echo OPSHelper::preWorkBashContent();
+                if(self::input('response-type') === 'eval') {
+                    echo OPSHelper::preWorkBashContentForEval();
+                }else{
+                    OPSHelper::preWorkNormal();
+                }
                 break;
             case CommandEnum::POST_WORK:
                 OPSHelper::postWork();
