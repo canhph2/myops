@@ -141,7 +141,7 @@ class CommandEnum
                 "[Optional] add param '--process-id=<PROCESS_ID>' to get process build time",
                 '[NORMAL] slack notify to finish, will support Slack options above',
             ],
-            self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
+            self::CLEAR_OPS_DIR => ["clear .ops directory, usually use in Docker image"],
             self::TIME => [
                 'is used to measure project build time',
                 "use the sub-command 'begin' to mark a beginning time, will return an id of process object",
