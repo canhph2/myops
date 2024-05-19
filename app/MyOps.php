@@ -12,6 +12,7 @@ require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
 use App\Classes\Base\CustomCollection;
+use App\Classes\Process;
 use App\Classes\Release;
 use App\Classes\Version;
 use App\Enum\AppInfoEnum;

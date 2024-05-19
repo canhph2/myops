@@ -99,7 +99,6 @@ class OPSHelper
         //
         self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("sync done");
-        self::LineNew()->printSeparatorLine();
         // show open new session to show right version
         (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
             'myops version'

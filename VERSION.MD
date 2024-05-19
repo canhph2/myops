@@ -2,6 +2,7 @@
 
 ---
 ## === v3 ===
+- 3.8.0 | TODO ADD SOME CHANGE LOGS
 - 3.7.0 | Support field value arguments `--field1=value1`
 - 3.6.0 | Add 'process' command
 - 3.5.0 | Add 'slack-progress' command

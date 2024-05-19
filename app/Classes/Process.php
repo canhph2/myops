@@ -269,7 +269,7 @@ class Process
             ->setTag(TagEnum::SHELL)->print($this->workName);
         if ($this->commands) {
             foreach ($this->commands as $command) {
-                self::LineIndent($this->getOutputIndentLevel())
+                self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)
                     ->setIcon(IconEnum::CHEVRON_RIGHT)->print(StrHelper::hideSensitiveInformation($command));
                 // check cd command
                 if (StrHelper::startsWith($command, 'cd ')) {
