@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.11 ===
+// === MyOps v3.7.12 ===
 
 // === Generated libraries classes ===
 
@@ -461,7 +461,7 @@ class Process
     private $output;
 
     /** @var int */
-    private $outputParentIndentLevel = IndentLevelEnum::MAIN_LINE;
+    private $outputIndentLevel = IndentLevelEnum::MAIN_LINE;
 
     /** @var bool */
     private $isExitOnError;
@@ -568,18 +568,18 @@ class Process
     /**
      * @return int
      */
-    public function getOutputParentIndentLevel(): int
+    public function getOutputIndentLevel(): int
     {
-        return $this->outputParentIndentLevel;
+        return $this->outputIndentLevel;
     }
 
     /**
-     * @param int $outputParentIndentLevel
+     * @param int $outputIndentLevel
      * @return Process
      */
-    public function setOutputParentIndentLevel(int $outputParentIndentLevel): Process
+    public function setOutputIndentLevel(int $outputIndentLevel): Process
     {
-        $this->outputParentIndentLevel = $outputParentIndentLevel;
+        $this->outputIndentLevel = $outputIndentLevel;
         return $this;
     }
 
@@ -684,19 +684,20 @@ class Process
         return $this->execMultiInWorkDir(true)->getOutputStrAll();
     }
 
-    public function printOutput(): Process
+    public function printOutput(int $outputIndentLevel = IndentLevelEnum::MAIN_LINE): Process
     {
-        self::LineIndent($this->getOutputParentIndentLevel())->setTag(TagEnum::WORK)->print($this->workName);
-        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Commands:");
+        $this->setOutputIndentLevel($outputIndentLevel);
+        self::LineIndent($this->getOutputIndentLevel())->setTag(TagEnum::WORK)->print($this->workName);
+        self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Commands:");
         if ($this->commands) {
             foreach ($this->commands as $command) {
-                self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)
+                self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)
                     ->setIcon(IconEnum::CHEVRON_RIGHT)->print(StrHelper::hideSensitiveInformation($command));
             }
         }
-        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Output:");
+        self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Output:");
         foreach ($this->output as $outputLine) {
-            self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->print(StrHelper::hideSensitiveInformation($outputLine));
+            self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)->print(StrHelper::hideSensitiveInformation($outputLine));
         }
         //
         return $this;
@@ -1567,7 +1568,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.11';
+    const APP_VERSION = '3.7.12';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1819,6 +1820,9 @@ class GitHubEnum
 class IndentLevelEnum
 {
     const AMOUNT_SPACES = 2; // per indent
+
+    const INCREASE = 1;
+    const DECREASE = -1;
 
     const MAIN_LINE = 0; // no indent
     const ITEM_LINE = 1; // indent with 4 spaces
@@ -2631,7 +2635,7 @@ class GitHubHelper
             array_merge([
                 sprintf("git remote set-url origin %s", $remoteOriginUrl)
             ], $commandsToCheckResult)
-        ))->execMultiInWorkDir()->printOutput();
+        ))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
     }
 
     /**
@@ -2703,20 +2707,21 @@ class GitHubHelper
         // === handle ===
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
-            self::LineNew()->print("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
+            self::lineIndent(IndentLevelEnum::ITEM_LINE)->print("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
             //
             // case clone
         } else {
-            self::LineTag(TagEnum::ERROR)->print("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
+            self::lineIndent(IndentLevelEnum::ITEM_LINE)
+                ->setTag(TagEnum::ERROR)->print("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
             //
             (new Process("Remove old directory", null, [
                 sprintf("rm -rf \"%s\"", $EngagePlusCachesRepositoryDir),
                 sprintf("mkdir -p \"%s\"", $EngagePlusCachesRepositoryDir),
-            ]))->execMulti()->printOutput();
+            ]))->execMulti()->printOutput(IndentLevelEnum::ITEM_LINE);
             //
             (new Process("CLONE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
                 sprintf("git clone -b %s %s .", $branch, self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
-            ]))->execMultiInWorkDir(true)->printOutput();
+            ]))->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
         }
         // === update new code ===
         (new Process("UPDATE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
@@ -2724,7 +2729,7 @@ class GitHubHelper
             GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout %s", $branch),
             GitHubEnum::PULL_COMMAND
-        ]))->execMultiInWorkDir()->printOutput();
+        ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
         // === remove token ===
         self::setRemoteOriginUrl(self::getRemoteOriginUrl_Custom($repository), $EngagePlusCachesRepositoryDir, true);
     }
@@ -3260,7 +3265,7 @@ class DockerHelper
                         ->print("(%s | %s)", $image->getCreatedSince(), $image->getSize());
                     (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
-                    ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
+                    ]))->setOutputIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
                         ->execMultiInWorkDir(true)->printOutput();
                 }
                 //
@@ -3380,7 +3385,7 @@ class DockerHelper
                     ->print("Delete dangling image '%s:%s'", $image->getRepository(), $image->getTag());
                 (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                     sprintf("docker rmi -f %s", $image->getId())
-                ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
+                ]))->setOutputIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
                     ->execMultiInWorkDir(true)->printOutput();
             }
         }

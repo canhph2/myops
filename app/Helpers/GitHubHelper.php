@@ -81,7 +81,7 @@ class GitHubHelper
             array_merge([
                 sprintf("git remote set-url origin %s", $remoteOriginUrl)
             ], $commandsToCheckResult)
-        ))->execMultiInWorkDir()->printOutput();
+        ))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
     }
 
     /**
@@ -153,20 +153,21 @@ class GitHubHelper
         // === handle ===
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
-            self::LineNew()->print("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
+            self::lineIndent(IndentLevelEnum::ITEM_LINE)->print("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
             //
             // case clone
         } else {
-            self::LineTag(TagEnum::ERROR)->print("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
+            self::lineIndent(IndentLevelEnum::ITEM_LINE)
+                ->setTag(TagEnum::ERROR)->print("The directory '$EngagePlusCachesRepositoryDir' does not exist, clone new repository");
             //
             (new Process("Remove old directory", null, [
                 sprintf("rm -rf \"%s\"", $EngagePlusCachesRepositoryDir),
                 sprintf("mkdir -p \"%s\"", $EngagePlusCachesRepositoryDir),
-            ]))->execMulti()->printOutput();
+            ]))->execMulti()->printOutput(IndentLevelEnum::ITEM_LINE);
             //
             (new Process("CLONE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
                 sprintf("git clone -b %s %s .", $branch, self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
-            ]))->execMultiInWorkDir(true)->printOutput();
+            ]))->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
         }
         // === update new code ===
         (new Process("UPDATE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
@@ -174,7 +175,7 @@ class GitHubHelper
             GitHubEnum::RESET_BRANCH_COMMAND,
             sprintf("git checkout %s", $branch),
             GitHubEnum::PULL_COMMAND
-        ]))->execMultiInWorkDir()->printOutput();
+        ]))->execMultiInWorkDir()->printOutput(IndentLevelEnum::ITEM_LINE);
         // === remove token ===
         self::setRemoteOriginUrl(self::getRemoteOriginUrl_Custom($repository), $EngagePlusCachesRepositoryDir, true);
     }

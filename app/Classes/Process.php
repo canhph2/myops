@@ -29,7 +29,7 @@ class Process
     private $output;
 
     /** @var int */
-    private $outputParentIndentLevel = IndentLevelEnum::MAIN_LINE;
+    private $outputIndentLevel = IndentLevelEnum::MAIN_LINE;
 
     /** @var bool */
     private $isExitOnError;
@@ -136,18 +136,18 @@ class Process
     /**
      * @return int
      */
-    public function getOutputParentIndentLevel(): int
+    public function getOutputIndentLevel(): int
     {
-        return $this->outputParentIndentLevel;
+        return $this->outputIndentLevel;
     }
 
     /**
-     * @param int $outputParentIndentLevel
+     * @param int $outputIndentLevel
      * @return Process
      */
-    public function setOutputParentIndentLevel(int $outputParentIndentLevel): Process
+    public function setOutputIndentLevel(int $outputIndentLevel): Process
     {
-        $this->outputParentIndentLevel = $outputParentIndentLevel;
+        $this->outputIndentLevel = $outputIndentLevel;
         return $this;
     }
 
@@ -252,19 +252,20 @@ class Process
         return $this->execMultiInWorkDir(true)->getOutputStrAll();
     }
 
-    public function printOutput(): Process
+    public function printOutput(int $outputIndentLevel = IndentLevelEnum::MAIN_LINE): Process
     {
-        self::LineIndent($this->getOutputParentIndentLevel())->setTag(TagEnum::WORK)->print($this->workName);
-        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Commands:");
+        $this->setOutputIndentLevel($outputIndentLevel);
+        self::LineIndent($this->getOutputIndentLevel())->setTag(TagEnum::WORK)->print($this->workName);
+        self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Commands:");
         if ($this->commands) {
             foreach ($this->commands as $command) {
-                self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)
+                self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)
                     ->setIcon(IconEnum::CHEVRON_RIGHT)->print(StrHelper::hideSensitiveInformation($command));
             }
         }
-        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Output:");
+        self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Output:");
         foreach ($this->output as $outputLine) {
-            self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->print(StrHelper::hideSensitiveInformation($outputLine));
+            self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)->print(StrHelper::hideSensitiveInformation($outputLine));
         }
         //
         return $this;
