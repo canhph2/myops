@@ -11,8 +11,6 @@ require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
-use App\Classes\Base\CustomCollection;
-use App\Classes\Process;
 use App\Classes\Release;
 use App\Classes\Version;
 use App\Enum\AppInfoEnum;
@@ -22,6 +20,7 @@ use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
+use App\Enum\UIEnum;
 use App\Helpers\AppHelper;
 use App\Helpers\AppInfoHelper;
 use App\Helpers\AWSHelper;
@@ -156,9 +155,9 @@ class MyOps
                 DirHelper::tmp();
                 break;
             case CommandEnum::PRE_WORK:
-                if(self::input('response-type') === 'eval') {
+                if (self::input('response-type') === 'eval') {
                     echo OPSHelper::preWorkBashContentForEval();
-                }else{
+                } else {
                     OPSHelper::preWorkNormal();
                 }
                 break;
@@ -226,16 +225,17 @@ class MyOps
          * @var  $descriptionArr array
          */
         foreach (CommandEnum::SUPPORT_COMMANDS() as $command => $descriptionArr) {
+            $commandColor = self::arg(1) && StrHelper::contains($command, self::arg(1)) ? UIEnum::COLOR_RED : UIEnum::COLOR_BLUE;
             switch (count($descriptionArr)) {
                 case 0: // group command's title
                     self::LineNew()->printSubTitle($command);
                     break;
                 case 1: // group command's items - single line description
                     self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)
-                        ->print("%s     : %s", $command, $descriptionArr[0]);
+                        ->print("%s     : %s", self::color($command, $commandColor), $descriptionArr[0]);
                     break;
                 default: // group command's items - multiple line description
-                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->print($command);
+                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->print(self::color($command, $commandColor));
                     foreach ($descriptionArr as $descriptionLine) {
                         self::LineIndent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->print($descriptionLine);
                     }

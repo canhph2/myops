@@ -231,8 +231,7 @@ class OPSHelper
         //
         self::LineNew()->printTitle("Post works");
         if ($isSkipCheckDir) {
-            self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)
-                ->print("skip check execution directory");
+            self::lineIcon(IconEnum::DOT)->print("skip check execution directory");
         }
         // === cleanup ===
         $isDoSomeThing = DirHelper::removeFileOrDirInCachesDir(DevelopmentEnum::DOT_ENV);
