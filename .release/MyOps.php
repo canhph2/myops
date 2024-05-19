@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.8.20 ===
+// === MyOps v3.8.21 ===
 
 // === Generated libraries classes ===
 
@@ -1600,7 +1600,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.8.20';
+    const APP_VERSION = '3.8.21';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1674,7 +1674,10 @@ class CommandEnum
                 "        [[ -f ~/.zshrc ]] && source ~/.zshrc # MAC",
                 "        [[ -f ~/.bashrc ]] && source ~/.bashrc # Ubuntu",
             ],
-            self::HELP => ['show list support command and usage'],
+            self::HELP => [
+                'show list support command and usage',
+                sprintf("add arg1 is your <search command> to highlight red the command .e.g % help searchA", AppInfoEnum::APP_MAIN_COMMAND),
+            ],
             self::RELEASE => [
                 sprintf("combine all PHP files into '.release/MyOps.php' and install a alias '%s'", AppInfoEnum::APP_MAIN_COMMAND),
                 "default version increasing is 'patch'",
@@ -2588,8 +2591,7 @@ class OPSHelper
         //
         self::LineNew()->printTitle("Post works");
         if ($isSkipCheckDir) {
-            self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)
-                ->print("skip check execution directory");
+            self::lineIcon(IconEnum::DOT)->print("skip check execution directory");
         }
         // === cleanup ===
         $isDoSomeThing = DirHelper::removeFileOrDirInCachesDir(DevelopmentEnum::DOT_ENV);
@@ -4537,9 +4539,9 @@ class MyOps
                 DirHelper::tmp();
                 break;
             case CommandEnum::PRE_WORK:
-                if(self::input('response-type') === 'eval') {
+                if (self::input('response-type') === 'eval') {
                     echo OPSHelper::preWorkBashContentForEval();
-                }else{
+                } else {
                     OPSHelper::preWorkNormal();
                 }
                 break;
@@ -4607,16 +4609,17 @@ class MyOps
          * @var  $descriptionArr array
          */
         foreach (CommandEnum::SUPPORT_COMMANDS() as $command => $descriptionArr) {
+            $commandColor = self::arg(1) && StrHelper::contains($command, self::arg(1)) ? UIEnum::COLOR_RED : UIEnum::COLOR_BLUE;
             switch (count($descriptionArr)) {
                 case 0: // group command's title
                     self::LineNew()->printSubTitle($command);
                     break;
                 case 1: // group command's items - single line description
                     self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)
-                        ->print("%s     : %s", $command, $descriptionArr[0]);
+                        ->print("%s     : %s", self::color($command, $commandColor), $descriptionArr[0]);
                     break;
                 default: // group command's items - multiple line description
-                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->print($command);
+                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->print(self::color($command, $commandColor));
                     foreach ($descriptionArr as $descriptionLine) {
                         self::LineIndent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->print($descriptionLine);
                     }
