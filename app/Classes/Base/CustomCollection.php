@@ -99,12 +99,13 @@ class CustomCollection implements IteratorAggregate
 
     /**
      * @param array|CustomCollection $arrOrCustomCollection
+     * @param bool $isMergeToHead
      * @return CustomCollection
      */
-    public function merge($arrOrCustomCollection): CustomCollection
+    public function merge($arrOrCustomCollection, bool $isMergeToHead = false): CustomCollection
     {
-        $this->items = array_merge($this->items,
-            $arrOrCustomCollection instanceof self ? $arrOrCustomCollection->toArr() : $arrOrCustomCollection);
+        $newItems = $arrOrCustomCollection instanceof self ? $arrOrCustomCollection->toArr() : $arrOrCustomCollection;
+        $this->items = $isMergeToHead ? array_merge($newItems, $this->items) : array_merge($this->items, $newItems);
         return $this;
     }
 

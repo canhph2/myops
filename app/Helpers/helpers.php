@@ -2,6 +2,18 @@
 
 // === helpers functions ===
 
+define('ERROR_END', 1);
+define('SUCCESS_END', 0);
+if (!function_exists('exitApp')) {
+    /**
+     * @param int $code
+     * @return void
+     */
+    function exitApp(int $code = SUCCESS_END): void
+    {
+        exit($code);
+    }
+}
 
 if (!function_exists('d')) {
     /**

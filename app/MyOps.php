@@ -12,6 +12,7 @@ require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
 use App\Classes\Base\CustomCollection;
+use App\Classes\Process;
 use App\Classes\Release;
 use App\Classes\Version;
 use App\Enum\AppInfoEnum;
@@ -117,8 +118,8 @@ class MyOps
             case CommandEnum::HEAD_COMMIT_ID:
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
                 break;
-            case CommandEnum::HANDLE_CACHES_AND_GIT:
-                GitHubHelper::handleCachesAndGit();
+            case CommandEnum::CHECKOUT_CACHES:
+                GitHubHelper::checkoutCaches();
                 break;
             case CommandEnum::FORCE_CHECKOUT:
                 GitHubHelper::forceCheckout();
@@ -150,11 +151,15 @@ class MyOps
             case CommandEnum::SLACK:
                 SlackService::sendMessageConsole();
                 break;
-            case CommandEnum::SLACK_PROCESS:
-                SlackService::sendMessageProcessConsole();
-                break;
             case CommandEnum::TMP:
                 DirHelper::tmp();
+                break;
+            case CommandEnum::PRE_WORK:
+                if(self::input('response-type') === 'eval') {
+                    echo OPSHelper::preWorkBashContentForEval();
+                }else{
+                    OPSHelper::preWorkNormal();
+                }
                 break;
             case CommandEnum::POST_WORK:
                 OPSHelper::postWork();
@@ -177,7 +182,7 @@ class MyOps
                 break;
             // === validation ===
             case CommandEnum::VALIDATE:
-                OPSHelper::validate();
+                ValidationHelper::handleValidateInConsole();
                 break;
             // === UI/Text ===
             case CommandEnum::TITLE:

@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Classes\Base\CustomCollection;
 use App\Classes\Process;
+use App\Enum\DevelopmentEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
@@ -88,47 +89,52 @@ class DirHelper
     }
 
     /**
-     * handle tmp directory
-     * - tmp add : create a tmp directory
-     * - tmp remove : remove the tmp directory
+     * - Parameter priority: custom > console
+     * - handle tmp directory
+     *    - tmp add : create a tmp directory
+     *    - tmp remove : remove the tmp directory
      *
+     * @param string|null $customSubCommand
+     * @param mixed ...$customSubDirs
      * @return void
      */
-    public static function tmp(): void
+    public static function tmp(string $customSubCommand = null, ...$customSubDirs): void
     {
-        switch (self::arg(1)) {
+        $subCommand = $customSubCommand ?? self::arg(1);
+        $subDirs = count($customSubDirs) ? new CustomCollection($customSubDirs) : self::inputArr('sub-dir');
+        switch ($subCommand) {
             case 'add':
                 // handle
                 //    single dir
-                $commands = ShellFactory::generateMakeDirCommand(self::getWorkingDir('tmp'));
+                $commands = ShellFactory::generateMakeDirCommand(self::getWorkingDir(DevelopmentEnum::TMP));
                 //    multiple sub-dir
-                foreach (self::inputArr('sub-dir') as $subDir) {
-                    $commands->merge(ShellFactory::generateMakeDirCommand(self::getWorkingDir($subDir, 'tmp')));
+                foreach ($subDirs as $subDir) {
+                    $commands->merge(ShellFactory::generateMakeDirCommand(self::getWorkingDir($subDir, DevelopmentEnum::TMP)));
                 }
                 //    execute
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
                     ->execMultiInWorkDir()->printOutput();
                 // validate the result
-                self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), 'tmp');
-                foreach (self::inputArr('sub-dir') as $subDir) {
-                    self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir($subDir), 'tmp');
+                self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), DevelopmentEnum::TMP);
+                foreach ($subDirs as $subDir) {
+                    self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir($subDir), DevelopmentEnum::TMP);
                 }
                 break;
             case 'remove':
                 // handle
                 //    single dir
-                $commands = ShellFactory::generateRemoveDirCommand(self::getWorkingDir('tmp'));
+                $commands = ShellFactory::generateRemoveFileOrDirCommand(self::getWorkingDir(DevelopmentEnum::TMP));
                 //    multiple sub-dir
-                foreach (self::inputArr('sub-dir') as $subDir) {
-                    $commands->merge(ShellFactory::generateRemoveDirCommand(self::getWorkingDir($subDir, 'tmp')));
+                foreach ($subDirs as $subDir) {
+                    $commands->merge(ShellFactory::generateRemoveFileOrDirCommand(self::getWorkingDir($subDir, DevelopmentEnum::TMP)));
                 }
                 //    execute
                 (new Process("Remove tmp dir", self::getWorkingDir(), $commands))
                     ->execMultiInWorkDir()->printOutput();
                 // validate the result
-                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), 'tmp');
-                foreach (self::inputArr('sub-dir') as $subDir) {
-                    self::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir($subDir), 'tmp');
+                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), DevelopmentEnum::TMP);
+                foreach ($subDirs as $subDir) {
+                    self::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir($subDir), DevelopmentEnum::TMP);
                 }
                 break;
             default:
@@ -162,11 +168,11 @@ class DirHelper
         $fileOrDirToValidate1 = count($customFileOrDirToValidate1) ? new CustomCollection($customFileOrDirToValidate1) : self::args(2);
         if (!$dirToCheck1 || $fileOrDirToValidate1->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing 'dirToCheck' or 'fileOrDirToValidate' (can path multiple fileOrDir1 fileOrDir2)");
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         if (!is_dir($dirToCheck1)) {
             self::LineTag(TagEnum::ERROR)->print(" dir '%s' does not exist", $dirToCheck1);
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         // handle
         $dirToCheck1FilesAndDirs = scandir($dirToCheck1);
@@ -184,7 +190,7 @@ class DirHelper
                 }
             }
             if ($invalid) {
-                exit(1); // END
+                exitApp(ERROR_END);
             }
         }
         //    case: don't exist
@@ -201,7 +207,7 @@ class DirHelper
                 }
             }
             if ($invalid) {
-                exit(1); // END
+                exitApp(ERROR_END);
             }
         }
     }
@@ -213,11 +219,11 @@ class DirHelper
         $searchTexts = count($customSearchTexts) ? new CustomCollection($customSearchTexts) : self::args(2);
         if (!$filePath || $searchTexts->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         if (!is_file($filePath)) {
             self::LineTag(TagEnum::ERROR)->print("'%s' does not exist", $filePath);
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         // handle
         $fileContent = file_get_contents($filePath);
@@ -241,8 +247,46 @@ class DirHelper
                     ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
                     ->print($result['searchText']);
             }
-            exit(1); // END
+            exitApp(ERROR_END);
         }
+    }
+
+    /**
+     * @param string $fileOrDirName
+     * @return bool TRUE if remove successful, otherwise FALSE
+     */
+    public static function removeFileOrDirInCachesDir(string $fileOrDirName): bool
+    {
+        if (getenv('ENGAGEPLUS_CACHES_FOLDER')
+            && StrHelper::contains(DirHelper::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))
+            && (is_file(DirHelper::getWorkingDir($fileOrDirName)) || is_dir(DirHelper::getWorkingDir($fileOrDirName)))) {
+            (new Process("Remove " . $fileOrDirName, DirHelper::getWorkingDir(),
+                ShellFactory::generateRemoveFileOrDirCommand(DirHelper::getWorkingDir($fileOrDirName))
+            ))->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
+            // validate result
+            DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, DirHelper::getWorkingDir(), $fileOrDirName);
+            //
+            return true; // END
+        }
+        return false; // END
+    }
+
+    /**
+     * @param string $fileOrDirName
+     * @return bool TRUE if remove successful, otherwise FALSE
+     */
+    public static function removeFileOrDirInDir(string $fileOrDirName): bool
+    {
+        if (is_file(DirHelper::getWorkingDir($fileOrDirName)) || is_dir(DirHelper::getWorkingDir($fileOrDirName))) {
+            (new Process("Remove " . $fileOrDirName, DirHelper::getWorkingDir(),
+                ShellFactory::generateRemoveFileOrDirCommand(DirHelper::getWorkingDir($fileOrDirName))
+            ))->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
+            // validate result
+            DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, DirHelper::getWorkingDir(), $fileOrDirName);
+            //
+            return true; // END
+        }
+        return false; // END
     }
 
 

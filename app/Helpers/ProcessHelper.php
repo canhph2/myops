@@ -31,7 +31,7 @@ class ProcessHelper
     /**
      * @return string a 'MyOps process' id
      */
-    private static function handleProcessStart(): string
+    public static function handleProcessStart(): string
     {
         return TimeHelper::handleTimeBegin();
     }

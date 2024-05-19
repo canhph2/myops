@@ -2,10 +2,10 @@
 
 namespace App\Helpers;
 
-use App\MyOps;
 use App\Classes\Process;
+use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
-use App\Services\SlackService;
+use App\MyOps;
 use App\Traits\ConsoleUITrait;
 use DateTime;
 use Exception;
@@ -50,6 +50,7 @@ class AWSHelper
     }
 
     /**
+     * also show version first
      * should run with command in shell:
      *      val "$(myops load-env-ops)"
      *
@@ -94,14 +95,14 @@ class AWSHelper
     {
         try {
             // === validate ===
-            if (!OPSHelper::validateEnvVars([
+            if (!ValidationHelper::validateEnvVars([
                 'BRANCH', "REPOSITORY",
                 'ENV', 'ECR_REPO_API', 'S3_EB_APP_VERSION_BUCKET_NAME',
                 'EB_APP_VERSION_FOLDER_NAME', 'EB_ENVIRONMENT_NAME',
                 'EB_2ND_DISK_SIZE',
                 'EB_MAIL_CATCHER_PORT', // maybe remove after email-serivce
             ])) {
-                exit(1); // END
+                exitApp(ERROR_END);
             }
             // === handle ===
             self::LineNew()->printSeparatorLine()
@@ -172,7 +173,7 @@ class AWSHelper
             self::LineNew()->print(".ebextensions/blockdevice-xvdcz.config")->print($blockdeviceConfigContent);
             if (!StrHelper::contains($blockdeviceConfigContent, getenv('EB_2ND_DISK_SIZE'))) {
                 self::LineTag(TagEnum::ERROR)->print(".ebextensions/blockdevice-xvdcz.config got an error");
-                exit(1); // END
+                exitApp(ERROR_END);
             }
             //        Dockerrun.aws.json
             $DockerrunContentToCheckAgain = file_get_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME));
@@ -187,7 +188,7 @@ class AWSHelper
                 || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_INTEGRATION_API_NAME)
             ) {
                 self::LineTag(TagEnum::ERROR)->print("Dockerrun.aws.json got an error");
-                exit(1); // END
+                exitApp(ERROR_END);
             }
             //    create ELB version and update
             $EB_APP_VERSION_LABEL = sprintf("$ENV-$TAG_API_NAME-$TAG_INVOICE_SERVICE_NAME-$TAG_PAYMENT_SERVICE_NAME-$TAG_INTEGRATION_API_NAME-%sZ", (new DateTime())->format('Ymd-His'));
@@ -235,7 +236,7 @@ class AWSHelper
                     exit(0); // END | successful
                 } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
                     self::LineTag(TagEnum::ERROR)->print(self::ELB_LOG_UPDATE_FAILED);
-                    exit(1); // END | failed
+                    exitApp(ERROR_END);
                 } else {
                     self::LineNew()->print("Environment is still not healthy");
                     // check again after X seconds
@@ -244,10 +245,10 @@ class AWSHelper
             }
             //             case timeout
             self::LineTag(TagEnum::ERROR)->print("Deployment got a timeout result");
-            exit(1); // END | failed
+            exitApp(ERROR_END);
         } catch (Exception $ex) {
             self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
-            exit(1); // END | exception error
+            exitApp(ERROR_END);
         }
     }
 }

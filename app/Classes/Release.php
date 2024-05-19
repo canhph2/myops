@@ -6,6 +6,7 @@ use App\Classes\Base\CustomCollection;
 use App\Enum\AppInfoEnum;
 use App\Enum\CommandEnum;
 use App\Enum\ConsoleEnum;
+use App\Enum\DevelopmentEnum;
 use App\Enum\DockerEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
@@ -78,6 +79,7 @@ class Release
             DirHelper::getClassPathAndFileName(TimeEnum::class),
             DirHelper::getClassPathAndFileName(ProcessEnum::class),
             DirHelper::getClassPathAndFileName(ConsoleEnum::class),
+            DirHelper::getClassPathAndFileName(DevelopmentEnum::class),
             // === Factories ===
             DirHelper::getClassPathAndFileName(ShellFactory::class),
             // === Helpers ===
@@ -157,7 +159,7 @@ class Release
         //    push new release to GitHub
         //        ask what news
         $whatNewsDefault = sprintf("Release %s on %s UTC", MyOps::getAppVersionStr($newVersion), (new DateTime())->format('Y-m-d H:i:s'));
-        $whatNewsInput = ucfirst(readline("What are news in this release?  (default = '$whatNewsDefault')  :"));
+        $whatNewsInput = ucfirst(readline("  What are news in this release?  (default = '$whatNewsDefault')  :"));
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [

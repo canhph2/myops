@@ -6,13 +6,15 @@ use App\Classes\Base\CustomCollection;
 use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Process;
 use App\Enum\AppInfoEnum;
+use App\Enum\DevelopmentEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
-use App\Enum\PostWorkEnum;
 use App\Enum\TagEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
+use App\Factories\ShellFactory;
+use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
@@ -22,8 +24,6 @@ use App\Traits\ConsoleUITrait;
 class OPSHelper
 {
     use ConsoleBaseTrait, ConsoleUITrait;
-
-    const COMPOSER_CONFIG_GITHUB_AUTH_FILE = 'auth.json';
 
     public static function getS3WhiteListIpsDevelopment(): string
     {
@@ -93,14 +93,13 @@ class OPSHelper
         // load env into PHP
         self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
         // load caches of this source code
-        GitHubHelper::handleCachesAndGit(GitHubEnum::MYOPS, GitHubHelper::getCurrentBranch());
+        GitHubHelper::checkoutCaches(GitHubEnum::MYOPS, GitHubHelper::getCurrentBranch());
         // create an alias 'myops'
         $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
         self::createAlias($EngagePlusCachesRepositoryOpsAppReleasePath);
         //
         self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("sync done");
-        self::LineNew()->printSeparatorLine();
         // show open new session to show right version
         (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
             'myops version'
@@ -142,7 +141,7 @@ class OPSHelper
                     }
                 }
                 // validate alias
-                self::validateFileContainsText($shellConfigurationFile, $alias);
+                DirHelper::validateFileContainsText($shellConfigurationFile, $alias);
             }
         }
     }
@@ -188,223 +187,96 @@ class OPSHelper
     }
 
     /**
-     * do some post works:
-     * - cleanup
+     * please read help to see more details
+     * @return string
+     */
+    public static function preWorkBashContentForEval(): string
+    {
+        return (new CustomCollection([
+            AWSHelper::loadOpsEnvAndHandleMore(), // bash content
+            '# == MyOps Process, create a new process ==',
+            sprintf("export PROCESS_ID=%s", ProcessHelper::handleProcessStart()),
+        ]))->join(PHP_EOL);
+    }
+
+    /**
+     * please read help to see more details
      * @return void
      */
-    public static function postWork(): void
+    public static function preWorkNormal(): void
+    {
+        // version
+        AppInfoHelper::printVersion();
+        // pre-work
+        self::lineNew()->printTitle("Prepare Work (pre-work)");
+        //    process id
+        self::lineIcon(IconEnum::CHECK)->setColor(UIEnum::COLOR_GREEN)
+            ->print("I have added a new process with PROCESS_ID = %s", getenv('PROCESS_ID'));
+        //   send starting message to Slack
+        if (SlackService::handleInputMessage()) {
+            SlackService::sendMessageConsole();
+        }
+
+    }
+
+    /**
+     * please read help to see more details
+     * @return void
+     */
+    public
+    static function postWork(): void
     {
         // === param ===
-        $isSkipCheckDir = self::arg(1) === PostWorkEnum::SKIP_CHECK_DIR;
+        $isSkipCheckDir = (bool)self::input('skip-check-dir');
         //
         self::LineNew()->printTitle("Post works");
         if ($isSkipCheckDir) {
             self::LineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)
                 ->print("skip check execution directory");
         }
-        $isDoNothing = true;
         // === cleanup ===
-        //    clear .env, .conf-ryt
-        if (getenv('ENGAGEPLUS_CACHES_FOLDER')
-            && StrHelper::contains(DirHelper::getWorkingDir(), getenv('ENGAGEPLUS_CACHES_FOLDER'))) {
-            //        .env
-            if (is_file(DirHelper::getWorkingDir('.env'))) {
-                (new Process("Remove .env", DirHelper::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.env'))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-                // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DirHelper::getWorkingDir()));
-                self::LineNew()->printCondition(!$checkTmpDir,
-                    "remove '.env' file successfully", "remove '.env' file failed");
-                //
-                $isDoNothing = false;
-            }
-            //        .conf-ryt
-            if (is_file(DirHelper::getWorkingDir('.conf-ryt'))) {
-                (new Process("Remove .conf-ryt", DirHelper::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.conf-ryt'))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-                // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.conf-ryt'", DirHelper::getWorkingDir()));
-                self::LineNew()->printCondition(!$checkTmpDir,
-                    "remove a '.conf-ryt' file successfully", "remove a '.conf-ryt' file failed");
-                //
-                $isDoNothing = false;
-            }
-            //        [payment-service] payment-credentials.json
-            if (is_file(DirHelper::getWorkingDir('payment-credentials.json'))) {
-                (new Process("Remove 'payment-credentials.json'", DirHelper::getWorkingDir(), [
-                    sprintf("rm -rf '%s'", DirHelper::getWorkingDir('payment-credentials.json'))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-                // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'payment-credentials.json'", DirHelper::getWorkingDir()));
-                self::LineNew()->printCondition(!$checkTmpDir,
-                    "remove a 'payment-credentials.json' file successfully", "remove a 'payment-credentials.json' file failed");
-                //
-                $isDoNothing = false;
-            }
-        }
+        $isDoSomeThing = DirHelper::removeFileOrDirInCachesDir(DevelopmentEnum::DOT_ENV);
+        $isDoSomeThing = DirHelper::removeFileOrDirInCachesDir(DevelopmentEnum::DOT_CONFIG_RYT) || $isDoSomeThing;
+        $isDoSomeThing = DirHelper::removeFileOrDirInDir(DEvelopmentEnum::DIST) || $isDoSomeThing; // Angular
+        $isDoSomeThing = DirHelper::removeFileOrDirInDir(DEvelopmentEnum::COMPOSER_CONFIG_GITHUB_AUTH_FILE) || $isDoSomeThing; // composer config file: auth.json
         //    tmp dir (PHP project)
-        if (is_dir(DirHelper::getWorkingDir('tmp'))) {
-            (new Process("Remove tmp dir", DirHelper::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('tmp'))
-            ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-            // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'tmp'", DirHelper::getWorkingDir()));
-            self::LineNew()->printCondition(!$checkTmpDir,
-                'remove a tmp dir successfully', 'remove a tmp dir failure');
+        if (is_dir(DirHelper::getWorkingDir(DevelopmentEnum::TMP)) || self::inputArr('sub-dir')->count()) {
+            DirHelper::tmp('remove', ...self::inputArr('sub-dir'));
             //
-            $isDoNothing = false;
-        }
-        //    dist dir (Angular project)
-        if (is_dir(DirHelper::getWorkingDir('dist'))) {
-            (new Process("Remove dist dir", DirHelper::getWorkingDir(), [
-                sprintf("rm -rf '%s'", DirHelper::getWorkingDir('dist'))
-            ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-            // validate result
-            $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DirHelper::getWorkingDir()));
-            self::LineNew()->printCondition(!$checkTmpDir,
-                'remove a dist dir successfully', 'remove a dist dir failure');
-            //
-            $isDoNothing = false;
-        }
-        //    composer config file: auth.json
-        if (is_file(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))) {
-            $authJsonContent = file_get_contents(DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
-            if (StrHelper::contains($authJsonContent, "github-oauth") && StrHelper::contains($authJsonContent, "github.com")) {
-                (new Process("Remove composer config file", DirHelper::getWorkingDir(), [
-                    sprintf("rm -f '%s'", DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
-                // validate result
-                $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DirHelper::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
-                self::LineNew()->printCondition(
-                    !$checkTmpDir,
-                    sprintf("remove file '%s' successfully", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE),
-                    sprintf("remove file '%s' failed", self::COMPOSER_CONFIG_GITHUB_AUTH_FILE)
-                );
-                //
-                $isDoNothing = false;
-            }
+            $isDoSomeThing = true;
         }
         //    dangling Docker images / <none> Docker images
         if (DockerHelper::isDockerInstalled()) {
             if (DockerHelper::isDanglingImages()) {
                 DockerHelper::removeDanglingImages();
                 //
-                $isDoNothing = false;
+                $isDoSomeThing = true;
             }
         }
-
         // === end cleanup ===
-        //
-        if ($isDoNothing) {
+        // === Slack ===
+        if (SlackService::handleInputMessage()) {
+            SlackService::sendMessageConsole();
+            //
+            $isDoSomeThing = true;
+        }
+        // ===
+        if (!$isDoSomeThing) {
             self::LineNew()->print("do nothing");
         }
         self::LineNew()->printSeparatorLine();
     }
 
-    public static function clearOpsDir(): void
+    public
+    static function clearOpsDir(): void
     {
-        self::LineNew()->printTitle("Clear .ops directory");
-        (new Process("Clear .ops directory", DirHelper::getWorkingDir(), [
-            sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.ops'))
+        self::LineNew()->printTitle("Clear _ops directory");
+        (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
+            ShellFactory::generateRemoveFileOrDirCommand(DirHelper::getWorkingDir('_ops'))
         ]))->execMultiInWorkDir(true)->printOutput();
         // validate result
-        $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.ops'", DirHelper::getWorkingDir()));
-        self::LineNew()->printCondition(!$checkTmpDir, "clear .ops dir successfully", "clear .ops dir failed");
-    }
-
-    /**
-     * also notify an error message,
-     * eg: ['VAR1', 'VAR2']
-     * @param array $envVars
-     * @return bool
-     */
-    public static function validateEnvVars(array $envVars): bool
-    {
-        $envVarsMissing = [];
-        foreach ($envVars as $envVar) {
-            if (!getenv($envVar)) $envVarsMissing[] = $envVar;
-        }
-        if (count($envVarsMissing) > 0) {
-            self::LineTagMultiple([TagEnum::ERROR, TagEnum::ENV])->print("missing %s", join(" or ", $envVarsMissing));
-            return false; // END | case error
-        }
-        return true; // END | case OK
-    }
-
-    public static function validate()
-    {
-        switch (self::arg(1)) {
-            case ValidationTypeEnum::BRANCH:
-                self::validateBranch();
-                break;
-            case ValidationTypeEnum::DOCKER:
-                self::validateDocker();
-                break;
-            case ValidationTypeEnum::DEVICE:
-                self::validateDevice();
-                break;
-            case ValidationTypeEnum::FILE_CONTAINS_TEXT:
-                DirHelper::validateFileContainsText();
-                break;
-            case ValidationTypeEnum::EXISTS:
-                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::EXISTS);
-                break;
-            case ValidationTypeEnum::DONT_EXISTS:
-                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
-                break;
-            default:
-                self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
-                    ->print("should be like eg:   '%s validate branch'", AppInfoEnum::APP_MAIN_COMMAND);
-                break;
-        }
-    }
-
-    /**
-     * allow branches: develop, staging, master
-     * should combine with exit 1 in shell:
-     *     myops validate branch || exit 1
-     * @return void
-     */
-    private static function validateBranch()
-    {
-        if (in_array(getenv('BRANCH'), GitHubEnum::SUPPORT_BRANCHES)) {
-            self::LineTag(TagEnum::SUCCESS)->print("validation branch got OK result: %s", getenv('BRANCH'));
-        } else {
-            self::LineTag(TagEnum::ERROR)->print("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
-            exit(1); // END app
-        }
-    }
-
-    /**
-     * Docker should is running
-     * should combine with exit 1 in shell:
-     *      myops validate docker || exit 1
-     */
-    private static function validateDocker()
-    {
-        $dockerServer = exec("docker version | grep 'Server:'");
-        if (trim($dockerServer)) {
-            self::LineTag(TagEnum::SUCCESS)->print("Docker is running: $dockerServer");
-        } else {
-            self::LineTag(TagEnum::ERROR)->print("Docker isn't running. Please start Docker app.");
-            exit(1); // END app
-        }
-    }
-
-    /**
-     * should have env var: BRANCH
-     *     myops validate device || exit 1
-     * @return void
-     */
-    private static function validateDevice()
-    {
-        if (getenv('DEVICE')) {
-            self::LineTag(TagEnum::SUCCESS)->print("validation device got OK result: %s", getenv('DEVICE'));
-        } else {
-            self::LineTag(TagEnum::ERROR)->print("Invalid device | should pass in your command");
-            exit(1); // END app
-        }
+        DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
+        $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
+        self::LineNew()->printCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
     }
 }

@@ -5,6 +5,7 @@ namespace App\Classes;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
 use App\Enum\UIEnum;
+use App\Helpers\ConsoleHelper;
 use App\Traits\ConsoleUITrait;
 
 class TextLine
@@ -72,6 +73,14 @@ class TextLine
     public function getIndentLevel(): int
     {
         return $this->indentLevel;
+    }
+
+    /**
+     * @return int
+     */
+    public function getIndentLevelTotal(): int
+    {
+        return $this->indentLevel + ConsoleHelper::$currentIndentLevel;
     }
 
     /**
@@ -186,11 +195,12 @@ class TextLine
 
 
     // === functions ===
-    private function toString(): string
+    private function toString(bool $excludeIndent = false): string
     {
         return sprintf(
             "%s%s%s%s",
-            str_repeat(" ", $this->indentLevel * IndentLevelEnum::AMOUNT_SPACES),
+            $excludeIndent ? ''
+                : str_repeat(" ", $this->getIndentLevelTotal() * IndentLevelEnum::AMOUNT_SPACES),
             $this->icon ? $this->icon . ' ' : '',
             $this->tag ? sprintf("[%s] ", $this->tag) : '',
             $this->text
@@ -213,7 +223,7 @@ class TextLine
             //
             // case 3: no set both color and format
         } else {
-            echo $finalText.PHP_EOL;
+            echo $finalText . PHP_EOL;
         }
         //
         return $this;
@@ -221,10 +231,12 @@ class TextLine
 
     public function printTitle(string $format, ...$values): TextLine
     {
+        // set current indent level
+        self::setCurrentIndentLevel(IndentLevelEnum::ITEM_LINE);
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
-        echo self::colorFormat(sprintf("=== %s ===\n", $this->toString()),
+        echo self::colorFormat(sprintf("=== %s ===\n", $this->toString(true)),
             UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD);
         //
         return $this;
@@ -235,14 +247,14 @@ class TextLine
         // set message text
         $this->text = count($values) ? vsprintf($format, $values) : $format;
         // print
-        echo self::color(sprintf("-- %s --\n", $this->toString()), UIEnum::COLOR_BLUE);
+        echo self::color(sprintf("-- %s --\n", $this->toString(true)), UIEnum::COLOR_BLUE);
         //
         return $this;
     }
 
     public function printSeparatorLine(): TextLine
     {
-        $this->print($this->indentLevel === IndentLevelEnum::MAIN_LINE
+        $this->print($this->getIndentLevelTotal() === IndentLevelEnum::MAIN_LINE
             ? str_repeat("=", 3) : str_repeat("-", 3));
         //
         return $this;

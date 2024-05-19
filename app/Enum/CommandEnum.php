@@ -20,7 +20,7 @@ class CommandEnum
     const BRANCH = 'branch';
     const REPOSITORY = 'repository';
     const HEAD_COMMIT_ID = 'head-commit-id';
-    const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
+    const CHECKOUT_CACHES = 'checkout-caches';
     const FORCE_CHECKOUT = 'force-checkout';
     //        GitHub Actions
     const BUILD_ALL_PROJECTS = 'build-all-projects';
@@ -35,8 +35,8 @@ class CommandEnum
     const WORKING_DIR = 'working-dir';
     const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
     const SLACK = 'slack';
-    const SLACK_PROCESS = 'slack-process';
     const TMP = 'tmp';
+    const PRE_WORK = 'pre-work';
     const POST_WORK = 'post-work';
     const CLEAR_OPS_DIR = 'clear-ops-dir';
     const TIME = 'time';
@@ -84,7 +84,8 @@ class CommandEnum
             "AWS Related" => [],
             self::LOAD_ENV_OPS => [
                 '[AWS Secret Manager] [CREDENTIAL REQUIRED] load env ops, usage in Shell:',
-                sprintf('            eval "$(%s load-env-ops)"    ', AppInfoEnum::APP_MAIN_COMMAND)
+                sprintf('    eval "$(%s load-env-ops)"    ', AppInfoEnum::APP_MAIN_COMMAND),
+                "[MOVED] to " . self::PRE_WORK
             ],
             self::GET_SECRET_ENV => ["[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName"],
             self::ELB_UPDATE_VERSION => ["[AWS Elastic Beanstalk] create a new version and update an environment"],
@@ -93,7 +94,7 @@ class CommandEnum
             self::BRANCH => ['get git branch / GitHub branch'],
             self::REPOSITORY => ['get GitHub repository name'],
             self::HEAD_COMMIT_ID => ['get head commit id of branch'],
-            self::HANDLE_CACHES_AND_GIT => ['handle GitHub repository in caches directory'],
+            self::CHECKOUT_CACHES => ['checkout GitHub repository in caches directory'],
             self::FORCE_CHECKOUT => [
                 'force checkout a GitHub repository with specific branch',
                 '.e.g to test source code in the server'
@@ -113,12 +114,11 @@ class CommandEnum
             self::SCRIPT_DIR => ['return directory of script'],
             self::WORKING_DIR => ['get root project directory / current working directory'],
             self::REPLACE_TEXT_IN_FILE => [sprintf('php %s replace-text-in-file "search text" "replace text" "file path"', AppInfoEnum::APP_MAIN_COMMAND)],
-            self::SLACK => ["notify a message to Slack"],
-            self::SLACK_PROCESS => [
-                "notify a message of CICD process to Slack",
-                "use sub-command 'start' to send a message of process starting",
-                "use sub-command 'finish' to send a message of process finishing",
-                "can add <process id> after the sub-command to handle something",
+            self::SLACK => [
+                "notify a message to Slack",
+                "use --message=<custom message> to send a custom message",
+                "use --type=start or --type=finish to send a message of process",
+                "use --process-id=<PROCESS_ID> to handle process time",
             ],
             self::TMP => [
                 'handle temporary directory (tmp)',
@@ -126,8 +126,22 @@ class CommandEnum
                 "use the sub-command 'remove' to remove tmp dir",
                 "user the option --sub-dir=<sub-dir 1> --sub-dir=<sub-dir 2> to handle temp dir in the sub-dir"
             ],
-            self::POST_WORK => ["do post works. Optional: add param 'skip-check-dir' to skip check dir"],
-            self::CLEAR_OPS_DIR => ["clear .ops directory, usually use in Docker image"],
+            self::PRE_WORK => [
+                '[AWS Secret Manager] [CREDENTIAL REQUIRED] to load env ops, usage in Shell:',
+                sprintf('    eval "$(%s pre-work --response-type=eval)"    ', AppInfoEnum::APP_MAIN_COMMAND),
+                "Handle:",
+                '  - [EVAL] load env ops',
+                '  - [EVAL] create a MyOps process, will export PROCESS_ID to the env',
+                '  - [NORMAL] show version',
+                '  - [NORMAL] slack notify to start, will support Slack options above',
+            ],
+            self::POST_WORK => [
+                "do post works",
+                "[Optional] add param '--skip-check-dir=1' to skip check dir",
+                "[Optional] add param '--process-id=<PROCESS_ID>' to get process build time",
+                '[NORMAL] slack notify to finish, will support Slack options above',
+            ],
+            self::CLEAR_OPS_DIR => ["clear _ops directory, usually use in Docker image"],
             self::TIME => [
                 'is used to measure project build time',
                 "use the sub-command 'begin' to mark a beginning time, will return an id of process object",
@@ -145,6 +159,7 @@ class CommandEnum
             "VALIDATION" => [],
             self::VALIDATE => [ // set -e # tells the shell to exit if a command returns a non-zero exit status
                 "required: 'set -e' in bash file",
+                '  [NEW] batch validation: --type=<type1> --type=<type2>...',
                 '  support TYPEs:',
                 '    branch  : to only allow develop, staging, master',
                 '    docker  : docker should is running',

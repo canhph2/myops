@@ -116,8 +116,9 @@ class GitHubHelper
      * @param string|null $customBranch
      * @return void
      */
-    public static function handleCachesAndGit(string $customRepository = null, string $customBranch = null): void
+    public static function checkoutCaches(string $customRepository = null, string $customBranch = null): void
     {
+        self::LineTag(TagEnum::GIT)->printTitle("Checkout The Repository In Caches Dir");
         // === validate ===
         //        env vars
         $repository = $customRepository ?: self::arg(1) ?: getenv('REPOSITORY');
@@ -144,12 +145,11 @@ class GitHubHelper
         elseif(self::arg(2)) $branchFrom = "CONSOLE";
         elseif(getenv('BRANCH')) $branchFrom = "ENV";
 
-        self::LineTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
+        self::lineTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
             ->setTag($branchFrom)->print("BRANCH = %s", $branch)
-            ->print("DIR = '$EngagePlusCachesRepositoryDir'");
+            ->setTag(null)->print("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
-        self::LineTag(TagEnum::GIT)->printTitle("Handle Caches and Git");
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
             self::LineNew()->print("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");

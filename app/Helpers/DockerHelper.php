@@ -69,7 +69,7 @@ class DockerHelper
                         ->print("(%s | %s)", $image->getCreatedSince(), $image->getSize());
                     (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                         sprintf("docker rmi -f %s", $image->getId())
-                    ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
+                    ]))->setOutputIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
                         ->execMultiInWorkDir(true)->printOutput();
                 }
                 //
@@ -189,7 +189,7 @@ class DockerHelper
                     ->print("Delete dangling image '%s:%s'", $image->getRepository(), $image->getTag());
                 (new Process("Delete Docker Image", DirHelper::getWorkingDir(), [
                     sprintf("docker rmi -f %s", $image->getId())
-                ]))->setOutputParentIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
+                ]))->setOutputIndentLevel(IndentLevelEnum::SUB_ITEM_LINE)
                     ->execMultiInWorkDir(true)->printOutput();
             }
         }

@@ -29,7 +29,7 @@ class Process
     private $output;
 
     /** @var int */
-    private $outputParentIndentLevel = IndentLevelEnum::MAIN_LINE;
+    private $outputIndentLevel = IndentLevelEnum::MAIN_LINE;
 
     /** @var bool */
     private $isExitOnError;
@@ -40,9 +40,9 @@ class Process
      * @param CustomCollection|array|null $commands
      */
     public function __construct(
-        string           $workName = null,
-        string           $workDir = null,
-        $commands = null
+        string $workName = null,
+        string $workDir = null,
+               $commands = null
     )
     {
         $this->workName = $workName;
@@ -136,18 +136,28 @@ class Process
     /**
      * @return int
      */
-    public function getOutputParentIndentLevel(): int
+    public function getOutputIndentLevel(): int
     {
-        return $this->outputParentIndentLevel;
+        return $this->outputIndentLevel;
     }
 
     /**
-     * @param int $outputParentIndentLevel
+     * @param int $outputIndentLevel
      * @return Process
      */
-    public function setOutputParentIndentLevel(int $outputParentIndentLevel): Process
+    public function setOutputIndentLevel(int $outputIndentLevel): Process
     {
-        $this->outputParentIndentLevel = $outputParentIndentLevel;
+        $this->outputIndentLevel = $outputIndentLevel;
+        return $this;
+    }
+
+    /**
+     * @param int $indentLevelToAdjust
+     * @return Process
+     */
+    public function adjustOutputIndentLevel(int $indentLevelToAdjust): Process
+    {
+        $this->outputIndentLevel = $this->outputIndentLevel + $indentLevelToAdjust;
         return $this;
     }
 
@@ -195,7 +205,7 @@ class Process
                 sprintf("rm -rf \"%s/\"", DirHelper::getHomeDir()),
             ])) {
                 self::LineTag(TagEnum::ERROR)->print("detect dangerous command: $command  , exit app");
-                exit(1); // END
+                exitApp(ERROR_END);
             }
         }
         // === handle ===
@@ -237,7 +247,7 @@ class Process
         if (!$skipCheckDir) {
             $dirCommands->add(GitHubEnum::GET_REPOSITORY_DIR_COMMAND); // check dir
         }
-        $this->commands->merge($dirCommands);
+        $this->commands->merge($dirCommands, true);
         $this->execMulti();
         //
         return $this;
@@ -254,17 +264,26 @@ class Process
 
     public function printOutput(): Process
     {
-        self::LineIndent($this->getOutputParentIndentLevel())->setTag(TagEnum::WORK)->print($this->workName);
-        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Commands:");
+        $indentCdCommandToAdjust = 0;
+        self::LineIndent($this->getOutputIndentLevel())->printSeparatorLine()
+            ->setTag(TagEnum::SHELL)->print($this->workName);
         if ($this->commands) {
             foreach ($this->commands as $command) {
-                self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)
+                self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)
                     ->setIcon(IconEnum::CHEVRON_RIGHT)->print(StrHelper::hideSensitiveInformation($command));
+                // check cd command
+                if (StrHelper::startsWith($command, 'cd ')) {
+                    $indentCdCommandToAdjust += IndentLevelEnum::DECREASE;
+                    $this->adjustOutputIndentLevel(IndentLevelEnum::INCREASE);
+                }
             }
         }
-        self::LineIndent($this->getOutputParentIndentLevel())->setIcon(IconEnum::HYPHEN)->print("Output:");
+        if ($indentCdCommandToAdjust) {
+            $this->adjustOutputIndentLevel($indentCdCommandToAdjust);
+        }
+        self::LineIndent($this->getOutputIndentLevel())->print("Output:");
         foreach ($this->output as $outputLine) {
-            self::LineIndent($this->getOutputParentIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::PLUS)->print(StrHelper::hideSensitiveInformation($outputLine));
+            self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)->print(StrHelper::hideSensitiveInformation($outputLine));
         }
         //
         return $this;

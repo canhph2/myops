@@ -21,17 +21,17 @@ class TimeHelper
             //    id of time progress in handle ending
             if (!self::arg(2)) {
                 self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("missing a id of time progress");
-                exit(1); // END app
+                exitApp(ERROR_END);
             }
             //    id of time progress is uuid 4
             if (!UuidHelper::isValid(self::arg(2))) {
                 self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("id of time progress is invalid format");
-                exit(1); // END app
+                exitApp(ERROR_END);
             }
             //    file to store id of time progress does not exist
             if (!is_file(DirHelper::join(sys_get_temp_dir(), self::arg(2)))) {
                 self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("file to store id of time progress does not exist");
-                exit(1); // END app
+                exitApp(ERROR_END);
             }
         }
         // handle

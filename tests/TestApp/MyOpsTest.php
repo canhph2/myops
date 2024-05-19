@@ -14,6 +14,7 @@ require_once 'app/Enum/TagEnum.php';
 require_once 'app/Enum/UIEnum.php';
 require_once 'app/Enum/IconEnum.php';
 require_once 'app/Enum/GitHubEnum.php';
+require_once 'app/Enum/DevelopmentEnum.php';
 require_once 'app/Helpers/DirHelper.php';
 require_once 'app/Helpers/StrHelper.php';
 require_once 'app/Helpers/UuidHelper.php';
@@ -83,14 +84,14 @@ class MyOpsTest extends BaseTestCase
         // test the result
         $this->customAssertIsStringAndContainsString(join(' | ', TagEnum::VALIDATION_SUCCESS),
             (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-                sprintf("myops validate exists '%s' tmp", DirHelper::getWorkingDir()),
-                sprintf("myops validate exists '%s' tmp", DirHelper::getWorkingDir('vendor')),
+                sprintf("myops validate --type=exists '%s' tmp", DirHelper::getWorkingDir()),
+                sprintf("myops validate --type=exists '%s' tmp", DirHelper::getWorkingDir('vendor')),
             ]))->execMultiInWorkDirAndGetOutputStrAll()
         );
         // test the result
         $this->customAssertIsStringAndContainsString(join(' | ', TagEnum::VALIDATION_SUCCESS),
             (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-                sprintf("myops validate dont-exists '%s' tmp1", DirHelper::getWorkingDir())
+                sprintf("myops validate --type=dont-exists '%s' tmp1", DirHelper::getWorkingDir())
             ]))->execMultiInWorkDirAndGetOutputStrAll()
         );
     }
@@ -110,7 +111,7 @@ class MyOpsTest extends BaseTestCase
         // test the result
         $this->customAssertIsStringAndContainsString(join(' | ', TagEnum::VALIDATION_SUCCESS),
             (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-                "myops validate file-contains-text tmp/test.txt NEW TEST OK"
+                "myops validate --type=file-contains-text tmp/test.txt NEW TEST OK"
             ]))->execMultiInWorkDirAndGetOutputStrAll()
         );
     }
