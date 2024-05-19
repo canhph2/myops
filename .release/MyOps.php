@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.20 ===
+// === MyOps v3.7.21 ===
 
 // === Generated libraries classes ===
 
@@ -1581,7 +1581,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.20';
+    const APP_VERSION = '3.7.21';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2367,13 +2367,13 @@ class OPSHelper
         $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
         self::createAlias($EngagePlusCachesRepositoryOpsAppReleasePath);
         //
-        self::lineIndent(IndentLevelEnum::ITEM_LINE)->printSeparatorLine()
+        self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("sync done");
         self::LineNew()->printSeparatorLine();
         // show open new session to show right version
         (new Process("CHECK A NEW VERSION", DirHelper::getWorkingDir(), [
             'myops version'
-        ]))->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
+        ]))->execMultiInWorkDir(true)->printOutput();
         //
         self::LineNew()->printSeparatorLine();
     }
@@ -2480,7 +2480,7 @@ class OPSHelper
             if (is_file(DirHelper::getWorkingDir('.env'))) {
                 (new Process("Remove .env", DirHelper::getWorkingDir(), [
                     sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.env'))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput(IndentLevelEnum::ITEM_LINE);
+                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.env'", DirHelper::getWorkingDir()));
                 self::LineNew()->printCondition(!$checkTmpDir,
@@ -2492,7 +2492,7 @@ class OPSHelper
             if (is_file(DirHelper::getWorkingDir('.conf-ryt'))) {
                 (new Process("Remove .conf-ryt", DirHelper::getWorkingDir(), [
                     sprintf("rm -rf '%s'", DirHelper::getWorkingDir('.conf-ryt'))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput(IndentLevelEnum::ITEM_LINE);
+                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '.conf-ryt'", DirHelper::getWorkingDir()));
                 self::LineNew()->printCondition(!$checkTmpDir,
@@ -2511,7 +2511,7 @@ class OPSHelper
         if (is_dir(DirHelper::getWorkingDir('dist'))) {
             (new Process("Remove dist dir", DirHelper::getWorkingDir(), [
                 sprintf("rm -rf '%s'", DirHelper::getWorkingDir('dist'))
-            ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput(IndentLevelEnum::ITEM_LINE);
+            ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
             // validate result
             $checkTmpDir = exec(sprintf("cd '%s' && ls | grep 'dist'", DirHelper::getWorkingDir()));
             self::LineNew()->printCondition(!$checkTmpDir,
@@ -2525,7 +2525,7 @@ class OPSHelper
             if (StrHelper::contains($authJsonContent, "github-oauth") && StrHelper::contains($authJsonContent, "github.com")) {
                 (new Process("Remove composer config file", DirHelper::getWorkingDir(), [
                     sprintf("rm -f '%s'", DirHelper::getWorkingDir(self::COMPOSER_CONFIG_GITHUB_AUTH_FILE))
-                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput(IndentLevelEnum::ITEM_LINE);
+                ]))->execMultiInWorkDir($isSkipCheckDir)->printOutput();
                 // validate result
                 $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '%s'", DirHelper::getWorkingDir(), self::COMPOSER_CONFIG_GITHUB_AUTH_FILE));
                 self::LineNew()->printCondition(
@@ -2559,7 +2559,7 @@ class OPSHelper
         self::LineNew()->printTitle("Clear _ops directory");
         (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
             ShellFactory::generateRemoveDirCommand(DirHelper::getWorkingDir('_ops'))
-        ]))->execMultiInWorkDir(true)->printOutput(IndentLevelEnum::ITEM_LINE);
+        ]))->execMultiInWorkDir(true)->printOutput();
         // validate result
         DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
         $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
