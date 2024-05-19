@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.9 ===
+// === MyOps v3.7.10 ===
 
 // === Generated libraries classes ===
 
@@ -7,6 +7,18 @@
 
 // === helpers functions ===
 
+define('ERROR_END', 1);
+define('SUCCESS_END', 0);
+if (!function_exists('exitApp')) {
+    /**
+     * @param int $code
+     * @return void
+     */
+    function exitApp(int $code = SUCCESS_END): void
+    {
+        exit($code);
+    }
+}
 
 if (!function_exists('d')) {
     /**
@@ -615,7 +627,7 @@ class Process
                 sprintf("rm -rf \"%s/\"", DirHelper::getHomeDir()),
             ])) {
                 self::LineTag(TagEnum::ERROR)->print("detect dangerous command: $command  , exit app");
-                exit(1); // END
+                exitApp(ERROR_END);
             }
         }
         // === handle ===
@@ -1555,7 +1567,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.9';
+    const APP_VERSION = '3.7.10';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1703,6 +1715,7 @@ class CommandEnum
             "VALIDATION" => [],
             self::VALIDATE => [ // set -e # tells the shell to exit if a command returns a non-zero exit status
                 "required: 'set -e' in bash file",
+                '  [NEW] batch validation: --type=<type1> --type=<type2>...',
                 '  support TYPEs:',
                 '    branch  : to only allow develop, staging, master',
                 '    docker  : docker should is running',
@@ -1925,6 +1938,9 @@ class ProcessEnum
 class ConsoleEnum
 {
     const FIELD_PREFIX = '--';
+    //
+    const EXIT_SUCCESS = 0;
+    const EXIT_ERROR = 1;
 }
 
 // [REMOVED] namespace App\Factories;
@@ -2151,11 +2167,11 @@ class DirHelper
         $fileOrDirToValidate1 = count($customFileOrDirToValidate1) ? new CustomCollection($customFileOrDirToValidate1) : self::args(2);
         if (!$dirToCheck1 || $fileOrDirToValidate1->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing 'dirToCheck' or 'fileOrDirToValidate' (can path multiple fileOrDir1 fileOrDir2)");
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         if (!is_dir($dirToCheck1)) {
             self::LineTag(TagEnum::ERROR)->print(" dir '%s' does not exist", $dirToCheck1);
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         // handle
         $dirToCheck1FilesAndDirs = scandir($dirToCheck1);
@@ -2173,7 +2189,7 @@ class DirHelper
                 }
             }
             if ($invalid) {
-                exit(1); // END
+                exitApp(ERROR_END);
             }
         }
         //    case: don't exist
@@ -2190,7 +2206,7 @@ class DirHelper
                 }
             }
             if ($invalid) {
-                exit(1); // END
+                exitApp(ERROR_END);
             }
         }
     }
@@ -2202,11 +2218,11 @@ class DirHelper
         $searchTexts = count($customSearchTexts) ? new CustomCollection($customSearchTexts) : self::args(2);
         if (!$filePath || $searchTexts->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         if (!is_file($filePath)) {
             self::LineTag(TagEnum::ERROR)->print("'%s' does not exist", $filePath);
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         // handle
         $fileContent = file_get_contents($filePath);
@@ -2230,7 +2246,7 @@ class DirHelper
                     ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
                     ->print($result['searchText']);
             }
-            exit(1); // END
+            exitApp(ERROR_END);
         }
     }
 
@@ -2239,7 +2255,6 @@ class DirHelper
 
 // [REMOVED] namespace App\Helpers;
 
-// [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Classes\GitHubRepositoryInfo;
 // [REMOVED] use App\Classes\Process;
 // [REMOVED] use App\Enum\AppInfoEnum;
@@ -2248,8 +2263,8 @@ class DirHelper
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\PostWorkEnum;
 // [REMOVED] use App\Enum\TagEnum;
-// [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
+// [REMOVED] use App\Factories\ShellFactory;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
@@ -2526,105 +2541,12 @@ class OPSHelper
     {
         self::LineNew()->printTitle("Clear _ops directory");
         (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
-            sprintf("rm -rf '%s'", DirHelper::getWorkingDir('_ops'))
+            ShellFactory::generateRemoveDirCommand(DirHelper::getWorkingDir('_ops'))
         ]))->execMultiInWorkDir(true)->printOutput();
         // validate result
+        DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
         $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
         self::LineNew()->printCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
-    }
-
-    /**
-     * also notify an error message,
-     * eg: ['VAR1', 'VAR2']
-     * @param array $envVars
-     * @return bool
-     */
-    public static function validateEnvVars(array $envVars): bool
-    {
-        $envVarsMissing = [];
-        foreach ($envVars as $envVar) {
-            if (!getenv($envVar)) $envVarsMissing[] = $envVar;
-        }
-        if (count($envVarsMissing) > 0) {
-            self::LineTagMultiple([TagEnum::ERROR, TagEnum::ENV])->print("missing %s", join(" or ", $envVarsMissing));
-            return false; // END | case error
-        }
-        return true; // END | case OK
-    }
-
-    public static function validate()
-    {
-        switch (self::arg(1)) {
-            case ValidationTypeEnum::BRANCH:
-                self::validateBranch();
-                break;
-            case ValidationTypeEnum::DOCKER:
-                self::validateDocker();
-                break;
-            case ValidationTypeEnum::DEVICE:
-                self::validateDevice();
-                break;
-            case ValidationTypeEnum::FILE_CONTAINS_TEXT:
-                DirHelper::validateFileContainsText();
-                break;
-            case ValidationTypeEnum::EXISTS:
-                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::EXISTS);
-                break;
-            case ValidationTypeEnum::DONT_EXISTS:
-                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
-                break;
-            default:
-                self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
-                    ->print("should be like eg:   '%s validate branch'", AppInfoEnum::APP_MAIN_COMMAND);
-                break;
-        }
-    }
-
-    /**
-     * allow branches: develop, staging, master
-     * should combine with exit 1 in shell:
-     *     myops validate branch || exit 1
-     * @return void
-     */
-    private static function validateBranch()
-    {
-        if (in_array(getenv('BRANCH'), GitHubEnum::SUPPORT_BRANCHES)) {
-            self::LineTag(TagEnum::SUCCESS)->print("validation branch got OK result: %s", getenv('BRANCH'));
-        } else {
-            self::LineTag(TagEnum::ERROR)->print("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
-            exit(1); // END app
-        }
-    }
-
-    /**
-     * Docker should is running
-     * should combine with exit 1 in shell:
-     *      myops validate docker || exit 1
-     */
-    private static function validateDocker()
-    {
-        $dockerServer = exec("docker version | grep 'Server:'");
-        if (trim($dockerServer)) {
-            self::LineTag(TagEnum::SUCCESS)->print("Docker is running: $dockerServer");
-        } else {
-            self::LineTag(TagEnum::ERROR)->print("Docker isn't running. Please start Docker app.");
-            exit(1); // END app
-        }
-    }
-
-    /**
-     * should have env var: BRANCH
-     *     myops validate device || exit 1
-     * @return void
-     */
-    private static function validateDevice()
-    {
-        if (getenv('DEVICE')) {
-            self::LineTag(TagEnum::SUCCESS)->print("validation device got OK result: %s", getenv('DEVICE'));
-        } else {
-            self::LineTag(TagEnum::ERROR)->print("Invalid device | should pass in your command");
-            exit(1); // END app
-        }
     }
 }
 
@@ -2943,10 +2865,9 @@ class GitHubHelper
 
 // [REMOVED] namespace App\Helpers;
 
-// [REMOVED] use App\MyOps;
 // [REMOVED] use App\Classes\Process;
 // [REMOVED] use App\Enum\TagEnum;
-// [REMOVED] use App\Services\SlackService;
+// [REMOVED] use App\MyOps;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 // [REMOVED] use DateTime;
 // [REMOVED] use Exception;
@@ -3035,14 +2956,14 @@ class AWSHelper
     {
         try {
             // === validate ===
-            if (!OPSHelper::validateEnvVars([
+            if (!ValidationHelper::validateEnvVars([
                 'BRANCH', "REPOSITORY",
                 'ENV', 'ECR_REPO_API', 'S3_EB_APP_VERSION_BUCKET_NAME',
                 'EB_APP_VERSION_FOLDER_NAME', 'EB_ENVIRONMENT_NAME',
                 'EB_2ND_DISK_SIZE',
                 'EB_MAIL_CATCHER_PORT', // maybe remove after email-serivce
             ])) {
-                exit(1); // END
+                exitApp(ERROR_END);
             }
             // === handle ===
             self::LineNew()->printSeparatorLine()
@@ -3113,7 +3034,7 @@ class AWSHelper
             self::LineNew()->print(".ebextensions/blockdevice-xvdcz.config")->print($blockdeviceConfigContent);
             if (!StrHelper::contains($blockdeviceConfigContent, getenv('EB_2ND_DISK_SIZE'))) {
                 self::LineTag(TagEnum::ERROR)->print(".ebextensions/blockdevice-xvdcz.config got an error");
-                exit(1); // END
+                exitApp(ERROR_END);
             }
             //        Dockerrun.aws.json
             $DockerrunContentToCheckAgain = file_get_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME));
@@ -3128,7 +3049,7 @@ class AWSHelper
                 || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_INTEGRATION_API_NAME)
             ) {
                 self::LineTag(TagEnum::ERROR)->print("Dockerrun.aws.json got an error");
-                exit(1); // END
+                exitApp(ERROR_END);
             }
             //    create ELB version and update
             $EB_APP_VERSION_LABEL = sprintf("$ENV-$TAG_API_NAME-$TAG_INVOICE_SERVICE_NAME-$TAG_PAYMENT_SERVICE_NAME-$TAG_INTEGRATION_API_NAME-%sZ", (new DateTime())->format('Ymd-His'));
@@ -3176,7 +3097,7 @@ class AWSHelper
                     exit(0); // END | successful
                 } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
                     self::LineTag(TagEnum::ERROR)->print(self::ELB_LOG_UPDATE_FAILED);
-                    exit(1); // END | failed
+                    exitApp(ERROR_END);
                 } else {
                     self::LineNew()->print("Environment is still not healthy");
                     // check again after X seconds
@@ -3185,10 +3106,10 @@ class AWSHelper
             }
             //             case timeout
             self::LineTag(TagEnum::ERROR)->print("Deployment got a timeout result");
-            exit(1); // END | failed
+            exitApp(ERROR_END);
         } catch (Exception $ex) {
             self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
-            exit(1); // END | exception error
+            exitApp(ERROR_END);
         }
     }
 }
@@ -3701,17 +3622,17 @@ class TimeHelper
             //    id of time progress in handle ending
             if (!self::arg(2)) {
                 self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("missing a id of time progress");
-                exit(1); // END app
+                exitApp(ERROR_END);
             }
             //    id of time progress is uuid 4
             if (!UuidHelper::isValid(self::arg(2))) {
                 self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("id of time progress is invalid format");
-                exit(1); // END app
+                exitApp(ERROR_END);
             }
             //    file to store id of time progress does not exist
             if (!is_file(DirHelper::join(sys_get_temp_dir(), self::arg(2)))) {
                 self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("file to store id of time progress does not exist");
-                exit(1); // END app
+                exitApp(ERROR_END);
             }
         }
         // handle
@@ -3846,7 +3767,9 @@ class UuidHelper
 // [REMOVED] use App\Classes\ValidationObj;
 // [REMOVED] use App\Enum\AppInfoEnum;
 // [REMOVED] use App\Enum\CommandEnum;
+// [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\TagEnum;
+// [REMOVED] use App\Enum\ValidationTypeEnum;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 
@@ -3896,14 +3819,14 @@ class ValidationHelper
                 ->print("Missing a command, should be '%s COMMAND', use the command '%s help' to see more details.",
                     AppInfoEnum::APP_MAIN_COMMAND, AppInfoEnum::APP_MAIN_COMMAND
                 );
-            exit(1); // END app
+            exitApp(ERROR_END);
         }
         if (!array_key_exists(self::command(), CommandEnum::SUPPORT_COMMANDS())) {
             self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
                 "Do not support the command '%s', use the command '%s help' to see more details.",
                 self::command(), AppInfoEnum::APP_MAIN_COMMAND
             );
-            exit(); // END
+            exitApp(ERROR_END);
         }
     }
 
@@ -3917,14 +3840,121 @@ class ValidationHelper
     {
         if (!self::arg(1)) {
             self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("missing a %s", $subCommandNameOrParam1Name);
-            exit(1); // END app
+            exitApp(ERROR_END);
         }
         if (!in_array(self::arg(1), $subCommandSupport)) {
             self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print(
                 "Do not support the sub-command '%s', use these sub-command: %s",
                 self::arg(1), join(', ', $subCommandSupport)
             );
-            exit(); // END
+            exitApp(ERROR_END);
+        }
+    }
+
+    /**
+     * also notify an error message,
+     * eg: ['VAR1', 'VAR2']
+     * @param array $envVars
+     * @return bool
+     */
+    public static function validateEnvVars(array $envVars): bool
+    {
+        $envVarsMissing = [];
+        foreach ($envVars as $envVar) {
+            if (!getenv($envVar)) $envVarsMissing[] = $envVar;
+        }
+        if (count($envVarsMissing) > 0) {
+            self::LineTagMultiple([TagEnum::ERROR, TagEnum::ENV])->print("missing %s", join(" or ", $envVarsMissing));
+            return false; // END | case error
+        }
+        return true; // END | case OK
+    }
+
+
+    /**
+     * @return void
+     */
+    public static function handleValidateInConsole(): void
+    {
+        // new
+        foreach (self::inputArr('type') as $inputType) {
+            self::validateByType($inputType);
+        }
+        // old (todo remove soon)
+        self::validateByType(self::arg(1));
+    }
+
+    /**
+     * @param string|null $type
+     * @return void
+     */
+    private static function validateByType(string $type = null)
+    {
+        switch ($type) {
+            case ValidationTypeEnum::BRANCH:
+                self::validateBranch();
+                break;
+            case ValidationTypeEnum::DOCKER:
+                self::validateDocker();
+                break;
+            case ValidationTypeEnum::DEVICE:
+                self::validateDevice();
+                break;
+            case ValidationTypeEnum::FILE_CONTAINS_TEXT:
+                DirHelper::validateFileContainsText();
+                break;
+            case ValidationTypeEnum::EXISTS:
+                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::EXISTS);
+                break;
+            case ValidationTypeEnum::DONT_EXISTS:
+                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
+                break;
+            default:
+                self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
+                    ->print("should be like eg:   '%s validate branch'", AppInfoEnum::APP_MAIN_COMMAND);
+                break;
+        }
+    }
+
+    /**
+     * allow branches: develop, staging, master
+     * @return void
+     */
+    private static function validateBranch()
+    {
+        if (in_array(getenv('BRANCH'), GitHubEnum::SUPPORT_BRANCHES)) {
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("validation branch got OK result: %s", getenv('BRANCH'));
+        } else {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
+            exitApp(ERROR_END);
+        }
+    }
+
+    /**
+     * Docker should is running
+     */
+    private static function validateDocker()
+    {
+        $dockerServer = exec("docker version | grep 'Server:'");
+        if (trim($dockerServer)) {
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("Docker is running: $dockerServer");
+        } else {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Docker isn't running. Please start Docker app.");
+            exitApp(ERROR_END);
+        }
+    }
+
+    /**
+     * should have env var: BRANCH
+     * @return void
+     */
+    private static function validateDevice()
+    {
+        if (getenv('DEVICE')) {
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("validation device got OK result: %s", getenv('DEVICE'));
+        } else {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid device | should pass in your command");
+            exitApp(ERROR_END);
         }
     }
 }
@@ -4007,7 +4037,7 @@ class SlackService
         //    process id
         if (self::arg(2) && !UuidHelper::isValid(self::arg(2))) {
             self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("id of time progress is invalid format");
-            exit(1); // END app
+            exitApp(ERROR_END);
         }
         // handle
         switch (self::arg(1)) {
@@ -4097,11 +4127,21 @@ class SlackService
 // [REMOVED] namespace App\Traits;
 
 // [REMOVED] use App\Classes\Base\CustomCollection;
+// [REMOVED] use App\Enum\ConsoleEnum;
 // [REMOVED] use App\Helpers\ConsoleHelper;
 // [REMOVED] use App\Helpers\StrHelper;
 
 trait ConsoleBaseTrait
 {
+    /**
+     * @param int $exitCode ConsoleEnum
+     * @return void
+     */
+    private static function exitApp(int $exitCode = ConsoleEnum::EXIT_SUCCESS): void
+    {
+        exit(1); // END app
+    }
+
     /**
      * indexes:
      * - 0 : script file
@@ -4441,7 +4481,7 @@ class MyOps
                 break;
             // === validation ===
             case CommandEnum::VALIDATE:
-                OPSHelper::validate();
+                ValidationHelper::handleValidateInConsole();
                 break;
             // === UI/Text ===
             case CommandEnum::TITLE:

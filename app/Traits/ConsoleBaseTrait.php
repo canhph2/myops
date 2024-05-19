@@ -3,11 +3,21 @@
 namespace App\Traits;
 
 use App\Classes\Base\CustomCollection;
+use App\Enum\ConsoleEnum;
 use App\Helpers\ConsoleHelper;
 use App\Helpers\StrHelper;
 
 trait ConsoleBaseTrait
 {
+    /**
+     * @param int $exitCode ConsoleEnum
+     * @return void
+     */
+    private static function exitApp(int $exitCode = ConsoleEnum::EXIT_SUCCESS): void
+    {
+        exit(1); // END app
+    }
+
     /**
      * indexes:
      * - 0 : script file

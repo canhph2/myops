@@ -2,7 +2,6 @@
 
 namespace App\Helpers;
 
-use App\Classes\Base\CustomCollection;
 use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Process;
 use App\Enum\AppInfoEnum;
@@ -11,8 +10,8 @@ use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\PostWorkEnum;
 use App\Enum\TagEnum;
-use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
+use App\Factories\ShellFactory;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
 
@@ -289,104 +288,11 @@ class OPSHelper
     {
         self::LineNew()->printTitle("Clear _ops directory");
         (new Process("Clear _ops directory", DirHelper::getWorkingDir(), [
-            sprintf("rm -rf '%s'", DirHelper::getWorkingDir('_ops'))
+            ShellFactory::generateRemoveDirCommand(DirHelper::getWorkingDir('_ops'))
         ]))->execMultiInWorkDir(true)->printOutput();
         // validate result
+        DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
         $checkTmpDir = exec(sprintf("cd '%s' && ls | grep '_ops'", DirHelper::getWorkingDir()));
         self::LineNew()->printCondition(!$checkTmpDir, "clear _ops dir successfully", "clear _ops dir failed");
-    }
-
-    /**
-     * also notify an error message,
-     * eg: ['VAR1', 'VAR2']
-     * @param array $envVars
-     * @return bool
-     */
-    public static function validateEnvVars(array $envVars): bool
-    {
-        $envVarsMissing = [];
-        foreach ($envVars as $envVar) {
-            if (!getenv($envVar)) $envVarsMissing[] = $envVar;
-        }
-        if (count($envVarsMissing) > 0) {
-            self::LineTagMultiple([TagEnum::ERROR, TagEnum::ENV])->print("missing %s", join(" or ", $envVarsMissing));
-            return false; // END | case error
-        }
-        return true; // END | case OK
-    }
-
-    public static function validate()
-    {
-        switch (self::arg(1)) {
-            case ValidationTypeEnum::BRANCH:
-                self::validateBranch();
-                break;
-            case ValidationTypeEnum::DOCKER:
-                self::validateDocker();
-                break;
-            case ValidationTypeEnum::DEVICE:
-                self::validateDevice();
-                break;
-            case ValidationTypeEnum::FILE_CONTAINS_TEXT:
-                DirHelper::validateFileContainsText();
-                break;
-            case ValidationTypeEnum::EXISTS:
-                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::EXISTS);
-                break;
-            case ValidationTypeEnum::DONT_EXISTS:
-                DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS);
-                break;
-            default:
-                self::LineTag(TagEnum::ERROR)->print("invalid action, current support:  %s", join(", ", ValidationTypeEnum::SUPPORT_LIST))
-                    ->print("should be like eg:   '%s validate branch'", AppInfoEnum::APP_MAIN_COMMAND);
-                break;
-        }
-    }
-
-    /**
-     * allow branches: develop, staging, master
-     * should combine with exit 1 in shell:
-     *     myops validate branch || exit 1
-     * @return void
-     */
-    private static function validateBranch()
-    {
-        if (in_array(getenv('BRANCH'), GitHubEnum::SUPPORT_BRANCHES)) {
-            self::LineTag(TagEnum::SUCCESS)->print("validation branch got OK result: %s", getenv('BRANCH'));
-        } else {
-            self::LineTag(TagEnum::ERROR)->print("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
-            exit(1); // END app
-        }
-    }
-
-    /**
-     * Docker should is running
-     * should combine with exit 1 in shell:
-     *      myops validate docker || exit 1
-     */
-    private static function validateDocker()
-    {
-        $dockerServer = exec("docker version | grep 'Server:'");
-        if (trim($dockerServer)) {
-            self::LineTag(TagEnum::SUCCESS)->print("Docker is running: $dockerServer");
-        } else {
-            self::LineTag(TagEnum::ERROR)->print("Docker isn't running. Please start Docker app.");
-            exit(1); // END app
-        }
-    }
-
-    /**
-     * should have env var: BRANCH
-     *     myops validate device || exit 1
-     * @return void
-     */
-    private static function validateDevice()
-    {
-        if (getenv('DEVICE')) {
-            self::LineTag(TagEnum::SUCCESS)->print("validation device got OK result: %s", getenv('DEVICE'));
-        } else {
-            self::LineTag(TagEnum::ERROR)->print("Invalid device | should pass in your command");
-            exit(1); // END app
-        }
     }
 }

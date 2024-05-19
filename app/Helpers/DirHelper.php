@@ -167,11 +167,11 @@ class DirHelper
         $fileOrDirToValidate1 = count($customFileOrDirToValidate1) ? new CustomCollection($customFileOrDirToValidate1) : self::args(2);
         if (!$dirToCheck1 || $fileOrDirToValidate1->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing 'dirToCheck' or 'fileOrDirToValidate' (can path multiple fileOrDir1 fileOrDir2)");
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         if (!is_dir($dirToCheck1)) {
             self::LineTag(TagEnum::ERROR)->print(" dir '%s' does not exist", $dirToCheck1);
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         // handle
         $dirToCheck1FilesAndDirs = scandir($dirToCheck1);
@@ -189,7 +189,7 @@ class DirHelper
                 }
             }
             if ($invalid) {
-                exit(1); // END
+                exitApp(ERROR_END);
             }
         }
         //    case: don't exist
@@ -206,7 +206,7 @@ class DirHelper
                 }
             }
             if ($invalid) {
-                exit(1); // END
+                exitApp(ERROR_END);
             }
         }
     }
@@ -218,11 +218,11 @@ class DirHelper
         $searchTexts = count($customSearchTexts) ? new CustomCollection($customSearchTexts) : self::args(2);
         if (!$filePath || $searchTexts->isEmpty()) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])->print("missing filePath or searchText (can path multiple searchText1 searchText2)");
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         if (!is_file($filePath)) {
             self::LineTag(TagEnum::ERROR)->print("'%s' does not exist", $filePath);
-            exit(1); // END
+            exitApp(ERROR_END);
         }
         // handle
         $fileContent = file_get_contents($filePath);
@@ -246,7 +246,7 @@ class DirHelper
                     ->setColor($result['isContains'] ? UIEnum::COLOR_GREEN : UIEnum::COLOR_RED)
                     ->print($result['searchText']);
             }
-            exit(1); // END
+            exitApp(ERROR_END);
         }
     }
 

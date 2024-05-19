@@ -66,7 +66,7 @@ class SlackService
         //    process id
         if (self::arg(2) && !UuidHelper::isValid(self::arg(2))) {
             self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print("id of time progress is invalid format");
-            exit(1); // END app
+            exitApp(ERROR_END);
         }
         // handle
         switch (self::arg(1)) {

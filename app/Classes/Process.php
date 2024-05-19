@@ -195,7 +195,7 @@ class Process
                 sprintf("rm -rf \"%s/\"", DirHelper::getHomeDir()),
             ])) {
                 self::LineTag(TagEnum::ERROR)->print("detect dangerous command: $command  , exit app");
-                exit(1); // END
+                exitApp(ERROR_END);
             }
         }
         // === handle ===

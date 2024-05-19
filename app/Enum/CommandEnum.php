@@ -145,6 +145,7 @@ class CommandEnum
             "VALIDATION" => [],
             self::VALIDATE => [ // set -e # tells the shell to exit if a command returns a non-zero exit status
                 "required: 'set -e' in bash file",
+                '  [NEW] batch validation: --type=<type1> --type=<type2>...',
                 '  support TYPEs:',
                 '    branch  : to only allow develop, staging, master',
                 '    docker  : docker should is running',

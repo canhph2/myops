@@ -177,7 +177,7 @@ class MyOps
                 break;
             // === validation ===
             case CommandEnum::VALIDATE:
-                OPSHelper::validate();
+                ValidationHelper::handleValidateInConsole();
                 break;
             // === UI/Text ===
             case CommandEnum::TITLE:
