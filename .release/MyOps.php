@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.8.6 ===
+// === MyOps v3.8.7 ===
 
 // === Generated libraries classes ===
 
@@ -1598,7 +1598,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.8.6';
+    const APP_VERSION = '3.8.7';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2500,10 +2500,10 @@ class OPSHelper
      */
     public static function preWork(): string
     {
-        AppInfoHelper::printVersion();
         return (new CustomCollection([
             AWSHelper::loadOpsEnvAndHandleMore(), // bash content
             sprintf("export PROCESS_ID=%s", ProcessHelper::handleProcessStart()),
+            sprintf('echo "    PROCESS_ID=${PROCESS_ID}"', ProcessHelper::handleProcessStart()),
         ]))->join(PHP_EOL);
     }
 
