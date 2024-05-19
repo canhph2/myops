@@ -281,7 +281,7 @@ class Process
         if ($indentCdCommandToAdjust) {
             $this->adjustOutputIndentLevel($indentCdCommandToAdjust);
         }
-        self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Output:");
+        self::LineIndent($this->getOutputIndentLevel())->print("Output:");
         foreach ($this->output as $outputLine) {
             self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)->print(StrHelper::hideSensitiveInformation($outputLine));
         }
