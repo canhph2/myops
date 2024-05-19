@@ -6,6 +6,7 @@ use App\Classes\Base\CustomCollection;
 use App\Enum\AppInfoEnum;
 use App\Enum\CommandEnum;
 use App\Enum\ConsoleEnum;
+use App\Enum\DevelopmentEnum;
 use App\Enum\DockerEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
@@ -78,6 +79,7 @@ class Release
             DirHelper::getClassPathAndFileName(TimeEnum::class),
             DirHelper::getClassPathAndFileName(ProcessEnum::class),
             DirHelper::getClassPathAndFileName(ConsoleEnum::class),
+            DirHelper::getClassPathAndFileName(DevelopmentEnum::class),
             // === Factories ===
             DirHelper::getClassPathAndFileName(ShellFactory::class),
             // === Helpers ===

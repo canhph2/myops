@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.8.10 ===
+// === MyOps v3.8.11 ===
 
 // === Generated libraries classes ===
 
@@ -197,6 +197,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Enum\AppInfoEnum;
 // [REMOVED] use App\Enum\CommandEnum;
 // [REMOVED] use App\Enum\ConsoleEnum;
+// [REMOVED] use App\Enum\DevelopmentEnum;
 // [REMOVED] use App\Enum\DockerEnum;
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\IconEnum;
@@ -269,6 +270,7 @@ class Release
             DirHelper::getClassPathAndFileName(TimeEnum::class),
             DirHelper::getClassPathAndFileName(ProcessEnum::class),
             DirHelper::getClassPathAndFileName(ConsoleEnum::class),
+            DirHelper::getClassPathAndFileName(DevelopmentEnum::class),
             // === Factories ===
             DirHelper::getClassPathAndFileName(ShellFactory::class),
             // === Helpers ===
@@ -1598,7 +1600,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.8.10';
+    const APP_VERSION = '3.8.11';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1990,6 +1992,17 @@ class ConsoleEnum
     //
     const EXIT_SUCCESS = 0;
     const EXIT_ERROR = 1;
+}
+
+// [REMOVED] namespace App\Enum;
+
+class DevelopmentEnum
+{
+    const DOT_ENV = '.env';
+    const DOT_CONFIG_RYT = '.conf-ryt'; // 'ryt' are random chars
+    const TMP = 'tmp';
+    const DIST ='dist';
+    const COMPOSER_CONFIG_GITHUB_AUTH_FILE = 'auth.json';
 }
 
 // [REMOVED] namespace App\Factories;
