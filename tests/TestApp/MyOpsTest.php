@@ -14,6 +14,7 @@ require_once 'app/Enum/TagEnum.php';
 require_once 'app/Enum/UIEnum.php';
 require_once 'app/Enum/IconEnum.php';
 require_once 'app/Enum/GitHubEnum.php';
+require_once 'app/Enum/DevelopmentEnum.php';
 require_once 'app/Helpers/DirHelper.php';
 require_once 'app/Helpers/StrHelper.php';
 require_once 'app/Helpers/UuidHelper.php';
