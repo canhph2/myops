@@ -6,12 +6,11 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 
 # usage:    sh .ops/sync-and-notify-Slack.sh 'DEVICE_NAME'
 
-myops version
-
-eval "$(myops load-env-ops)"
-
-myops validate device || exit 1
-myops validate branch || exit 1
-
+#
+eval "$(myops pre-work --response-type=eval)"
+myops pre-work
+# validate
+myops validate --type=device --type=branch
+# handle
 myops sync
-myops slack "${DEVICE} just synced $(myops version no-format-color) successfully"
+myops slack --message="${DEVICE} just synced $(myops version no-format-color) successfully" --process-id=${PROCESS_ID}
