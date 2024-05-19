@@ -20,7 +20,7 @@ class CommandEnum
     const BRANCH = 'branch';
     const REPOSITORY = 'repository';
     const HEAD_COMMIT_ID = 'head-commit-id';
-    const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
+    const CHECKOUT_CACHES = 'checkout-caches';
     const FORCE_CHECKOUT = 'force-checkout';
     //        GitHub Actions
     const BUILD_ALL_PROJECTS = 'build-all-projects';
@@ -93,7 +93,7 @@ class CommandEnum
             self::BRANCH => ['get git branch / GitHub branch'],
             self::REPOSITORY => ['get GitHub repository name'],
             self::HEAD_COMMIT_ID => ['get head commit id of branch'],
-            self::HANDLE_CACHES_AND_GIT => ['handle GitHub repository in caches directory'],
+            self::CHECKOUT_CACHES => ['checkout GitHub repository in caches directory'],
             self::FORCE_CHECKOUT => [
                 'force checkout a GitHub repository with specific branch',
                 '.e.g to test source code in the server'

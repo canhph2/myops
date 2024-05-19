@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.10 ===
+// === MyOps v3.7.11 ===
 
 // === Generated libraries classes ===
 
@@ -1567,7 +1567,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.10';
+    const APP_VERSION = '3.7.11';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1590,7 +1590,7 @@ class CommandEnum
     const BRANCH = 'branch';
     const REPOSITORY = 'repository';
     const HEAD_COMMIT_ID = 'head-commit-id';
-    const HANDLE_CACHES_AND_GIT = 'handle-caches-and-git';
+    const CHECKOUT_CACHES = 'checkout-caches';
     const FORCE_CHECKOUT = 'force-checkout';
     //        GitHub Actions
     const BUILD_ALL_PROJECTS = 'build-all-projects';
@@ -1663,7 +1663,7 @@ class CommandEnum
             self::BRANCH => ['get git branch / GitHub branch'],
             self::REPOSITORY => ['get GitHub repository name'],
             self::HEAD_COMMIT_ID => ['get head commit id of branch'],
-            self::HANDLE_CACHES_AND_GIT => ['handle GitHub repository in caches directory'],
+            self::CHECKOUT_CACHES => ['checkout GitHub repository in caches directory'],
             self::FORCE_CHECKOUT => [
                 'force checkout a GitHub repository with specific branch',
                 '.e.g to test source code in the server'
@@ -2345,7 +2345,7 @@ class OPSHelper
         // load env into PHP
         self::parseEnoughDataForSync(AWSHelper::loadOpsEnvAndHandleMore());
         // load caches of this source code
-        GitHubHelper::handleCachesAndGit(GitHubEnum::MYOPS, GitHubHelper::getCurrentBranch());
+        GitHubHelper::checkoutCaches(GitHubEnum::MYOPS, GitHubHelper::getCurrentBranch());
         // create an alias 'myops'
         $EngagePlusCachesRepositoryOpsAppReleasePath = sprintf("%s/myops/%s", getenv('ENGAGEPLUS_CACHES_DIR'), AppInfoEnum::RELEASE_PATH);
         self::createAlias($EngagePlusCachesRepositoryOpsAppReleasePath);
@@ -2666,8 +2666,9 @@ class GitHubHelper
      * @param string|null $customBranch
      * @return void
      */
-    public static function handleCachesAndGit(string $customRepository = null, string $customBranch = null): void
+    public static function checkoutCaches(string $customRepository = null, string $customBranch = null): void
     {
+        self::LineTag(TagEnum::GIT)->printTitle("Checkout The Repository In Caches Dir");
         // === validate ===
         //        env vars
         $repository = $customRepository ?: self::arg(1) ?: getenv('REPOSITORY');
@@ -2694,12 +2695,12 @@ class GitHubHelper
         elseif(self::arg(2)) $branchFrom = "CONSOLE";
         elseif(getenv('BRANCH')) $branchFrom = "ENV";
 
-        self::LineTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
+        self::lineIndent(IndentLevelEnum::ITEM_LINE)
+            ->setTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
             ->setTag($branchFrom)->print("BRANCH = %s", $branch)
-            ->print("DIR = '$EngagePlusCachesRepositoryDir'");
+            ->setTag(null)->print("DIR = '$EngagePlusCachesRepositoryDir'");
 
         // === handle ===
-        self::LineTag(TagEnum::GIT)->printTitle("Handle Caches and Git");
         //     case checkout
         if (is_dir(sprintf("%s/.git", $EngagePlusCachesRepositoryDir))) {
             self::LineNew()->print("The directory '$EngagePlusCachesRepositoryDir' exist, SKIP to handle git repository");
@@ -4421,8 +4422,8 @@ class MyOps
             case CommandEnum::HEAD_COMMIT_ID:
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
                 break;
-            case CommandEnum::HANDLE_CACHES_AND_GIT:
-                GitHubHelper::handleCachesAndGit();
+            case CommandEnum::CHECKOUT_CACHES:
+                GitHubHelper::checkoutCaches();
                 break;
             case CommandEnum::FORCE_CHECKOUT:
                 GitHubHelper::forceCheckout();
