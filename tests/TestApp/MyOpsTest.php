@@ -111,7 +111,7 @@ class MyOpsTest extends BaseTestCase
         // test the result
         $this->customAssertIsStringAndContainsString(join(' | ', TagEnum::VALIDATION_SUCCESS),
             (new Process(__FUNCTION__, DirHelper::getWorkingDir(), [
-                "myops validate file-contains-text tmp/test.txt NEW TEST OK"
+                "myops validate --type=file-contains-text tmp/test.txt NEW TEST OK"
             ]))->execMultiInWorkDirAndGetOutputStrAll()
         );
     }
