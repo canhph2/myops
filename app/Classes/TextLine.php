@@ -76,6 +76,14 @@ class TextLine
     }
 
     /**
+     * @return int
+     */
+    public function getIndentLevelTotal(): int
+    {
+        return $this->indentLevel + ConsoleHelper::$currentIndentLevel;
+    }
+
+    /**
      * @param int $indentLevel
      * @return TextLine
      */
@@ -192,7 +200,7 @@ class TextLine
         return sprintf(
             "%s%s%s%s",
             $excludeIndent ? ''
-                : str_repeat(" ", (ConsoleHelper::$currentIndentLevel + $this->indentLevel) * IndentLevelEnum::AMOUNT_SPACES),
+                : str_repeat(" ", $this->getIndentLevelTotal() * IndentLevelEnum::AMOUNT_SPACES),
             $this->icon ? $this->icon . ' ' : '',
             $this->tag ? sprintf("[%s] ", $this->tag) : '',
             $this->text
@@ -246,7 +254,7 @@ class TextLine
 
     public function printSeparatorLine(): TextLine
     {
-        $this->print($this->indentLevel === IndentLevelEnum::MAIN_LINE
+        $this->print($this->getIndentLevelTotal() === IndentLevelEnum::MAIN_LINE
             ? str_repeat("=", 3) : str_repeat("-", 3));
         //
         return $this;
