@@ -264,7 +264,7 @@ class Process
 
     public function printOutput(): Process
     {
-        $isCdCommand = false;
+        $indentCdCommandToAdjust = 0;
         self::LineIndent($this->getOutputIndentLevel())->printSeparatorLine()
             ->setTag(TagEnum::WORK)->print($this->workName);
         self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Commands:");
@@ -274,13 +274,13 @@ class Process
                     ->setIcon(IconEnum::CHEVRON_RIGHT)->print(StrHelper::hideSensitiveInformation($command));
                 // check cd command
                 if (StrHelper::startsWith($command, 'cd ')) {
-                    $isCdCommand = true;
+                    $indentCdCommandToAdjust += IndentLevelEnum::DECREASE;
                     $this->adjustOutputIndentLevel(IndentLevelEnum::INCREASE);
                 }
             }
         }
-        if ($isCdCommand) {
-            $this->adjustOutputIndentLevel(IndentLevelEnum::DECREASE);
+        if ($indentCdCommandToAdjust) {
+            $this->adjustOutputIndentLevel($indentCdCommandToAdjust);
         }
         self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Output:");
         foreach ($this->output as $outputLine) {
