@@ -256,6 +256,7 @@ class OPSHelper
         // === end cleanup ===
         // === Slack ===
         if (SlackService::handleInputMessage()) {
+            self::LineNew()->printSeparatorLine();
             SlackService::sendMessageConsole();
             //
             $isDoSomeThing = true;
