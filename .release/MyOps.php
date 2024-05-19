@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.7.24 ===
+// === MyOps v3.7.25 ===
 
 // === Generated libraries classes ===
 
@@ -584,11 +584,12 @@ class Process
     }
 
     /**
+     * @param int $indentLevelToAdjust
      * @return Process
      */
-    public function increaseOutputIndentLevel(): Process
+    public function adjustOutputIndentLevel(int $indentLevelToAdjust): Process
     {
-        $this->outputIndentLevel = $this->outputIndentLevel + IndentLevelEnum::INCREASE;
+        $this->outputIndentLevel = $this->outputIndentLevel + $indentLevelToAdjust;
         return $this;
     }
 
@@ -695,6 +696,7 @@ class Process
 
     public function printOutput(): Process
     {
+        $isCdCommand = false;
         self::LineIndent($this->getOutputIndentLevel())->printSeparatorLine()
             ->setTag(TagEnum::WORK)->print($this->workName);
         self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Commands:");
@@ -703,10 +705,14 @@ class Process
                 self::LineIndent($this->getOutputIndentLevel() + IndentLevelEnum::ITEM_LINE)
                     ->setIcon(IconEnum::CHEVRON_RIGHT)->print(StrHelper::hideSensitiveInformation($command));
                 // check cd command
-                if(StrHelper::startsWith($command, 'cd ')) {
-                    $this->increaseOutputIndentLevel();
+                if (StrHelper::startsWith($command, 'cd ')) {
+                    $isCdCommand = true;
+                    $this->adjustOutputIndentLevel(IndentLevelEnum::INCREASE);
                 }
             }
+        }
+        if ($isCdCommand) {
+            $this->adjustOutputIndentLevel(IndentLevelEnum::DECREASE);
         }
         self::LineIndent($this->getOutputIndentLevel())->setIcon(IconEnum::PLUS)->print("Output:");
         foreach ($this->output as $outputLine) {
@@ -1593,7 +1599,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.7.24';
+    const APP_VERSION = '3.7.25';
 }
 
 // [REMOVED] namespace App\Enum;
