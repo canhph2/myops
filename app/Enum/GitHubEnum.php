@@ -23,6 +23,7 @@ class GitHubEnum
     const STAGING = 'staging';
     const DEVELOP = 'develop';
     const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP];
+    const PRODUCTION_BRANCHES = [self::MAIN, self::MASTER];
 
     // === GitHub users ===
     const INFOHKENGAGE = 'infohkengage';
@@ -51,6 +52,8 @@ class GitHubEnum
 
     //
     const DEVELOPMENT_ONLY_REPOSITORIES = [self::MYOPS, self::DOCKER_BASE_IMAGES, self::ENGAGE_SELENIUM_TEST_1];
+    const PRODUCTION_REPOSITORIES = [self::ENGAGE_API, self::ENGAGE_BOOKING_API, self::INVOICE_SERVICE, self::PAYMENT_SERVICE,
+        self::INTEGRATION_API, self::EMAIL_SERVICE, self::ENGAGE_SPA, self::ENGAGE_BOOKING_SPA];
 
     /**
      * @return array

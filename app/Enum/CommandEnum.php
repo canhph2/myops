@@ -15,6 +15,7 @@ class CommandEnum
     const LOAD_ENV_OPS = 'load-env-ops';
     const GET_SECRET_ENV = 'get-secret-env';
     const ELB_UPDATE_VERSION = 'elb-update-version';
+    const AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD = 'automate-switching-aws-credential-for-cicd';
 
     // === Git/GitHub ===
     const BRANCH = 'branch';
@@ -92,6 +93,7 @@ class CommandEnum
             ],
             self::GET_SECRET_ENV => ["[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName"],
             self::ELB_UPDATE_VERSION => ["[AWS Elastic Beanstalk] create a new version and update an environment"],
+            self::AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD => ['Automate to switch AWS Credential Keys for deployments in GitHub Runner Server'],
             // group title
             "GIT / GITHUB" => [],
             self::BRANCH => ['get git branch / GitHub branch'],
@@ -136,6 +138,7 @@ class CommandEnum
                 '  - [EVAL] load env ops',
                 '  - [EVAL] create a MyOps process, will export PROCESS_ID to the env',
                 '  - [NORMAL] show version',
+                '  - [NORMAL] automate to switch AWS credential keys',
                 '  - [NORMAL] slack notify to start, will support Slack options above',
             ],
             self::POST_WORK => [

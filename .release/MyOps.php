@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.8.21 ===
+// === MyOps v3.9.1 ===
 
 // === Generated libraries classes ===
 
@@ -48,6 +48,21 @@ if (!function_exists('dd')) {
 }
 
 // === end helpers functions ===
+
+// === copy Laravel helpers ===
+if (!function_exists('collect')) {
+
+    /**
+     * Create a collection from the given value.
+     * @param array $arr
+     * @return \App\Classes\Base\CustomCollection
+     */
+    function collect(array $arr): \App\Classes\Base\CustomCollection
+    {
+        return new \App\Classes\Base\CustomCollection($arr);
+    }
+}
+// === end copy Laravel helpers ===
 
 // [REMOVED] namespace App\Classes\Base;
 
@@ -156,6 +171,17 @@ class CustomCollection implements IteratorAggregate
         $newItems = $arrOrCustomCollection instanceof self ? $arrOrCustomCollection->toArr() : $arrOrCustomCollection;
         $this->items = $isMergeToHead ? array_merge($newItems, $this->items) : array_merge($this->items, $newItems);
         return $this;
+    }
+
+    /**
+     * Support handling like in_array
+     * Determine if an item exists in the collection.
+     * @param $item
+     * @return bool
+     */
+    public function contains($item): bool
+    {
+        return in_array($item, $this->items);
     }
 
     /**
@@ -1600,7 +1626,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.8.21';
+    const APP_VERSION = '3.9.1';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1618,6 +1644,7 @@ class CommandEnum
     const LOAD_ENV_OPS = 'load-env-ops';
     const GET_SECRET_ENV = 'get-secret-env';
     const ELB_UPDATE_VERSION = 'elb-update-version';
+    const AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD = 'automate-switching-aws-credential-for-cicd';
 
     // === Git/GitHub ===
     const BRANCH = 'branch';
@@ -1695,6 +1722,7 @@ class CommandEnum
             ],
             self::GET_SECRET_ENV => ["[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName"],
             self::ELB_UPDATE_VERSION => ["[AWS Elastic Beanstalk] create a new version and update an environment"],
+            self::AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD => ['Automate to switch AWS Credential Keys for deployments in GitHub Runner Server'],
             // group title
             "GIT / GITHUB" => [],
             self::BRANCH => ['get git branch / GitHub branch'],
@@ -1739,6 +1767,7 @@ class CommandEnum
                 '  - [EVAL] load env ops',
                 '  - [EVAL] create a MyOps process, will export PROCESS_ID to the env',
                 '  - [NORMAL] show version',
+                '  - [NORMAL] automate to switch AWS credential keys',
                 '  - [NORMAL] slack notify to start, will support Slack options above',
             ],
             self::POST_WORK => [
@@ -1805,6 +1834,7 @@ class GitHubEnum
     const STAGING = 'staging';
     const DEVELOP = 'develop';
     const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP];
+    const PRODUCTION_BRANCHES = [self::MAIN, self::MASTER];
 
     // === GitHub users ===
     const INFOHKENGAGE = 'infohkengage';
@@ -1833,6 +1863,8 @@ class GitHubEnum
 
     //
     const DEVELOPMENT_ONLY_REPOSITORIES = [self::MYOPS, self::DOCKER_BASE_IMAGES, self::ENGAGE_SELENIUM_TEST_1];
+    const PRODUCTION_REPOSITORIES = [self::ENGAGE_API, self::ENGAGE_BOOKING_API, self::INVOICE_SERVICE, self::PAYMENT_SERVICE,
+        self::INTEGRATION_API, self::EMAIL_SERVICE, self::ENGAGE_SPA, self::ENGAGE_BOOKING_SPA];
 
     /**
      * @return array
@@ -2572,6 +2604,8 @@ class OPSHelper
         //    process id
         self::lineIcon(IconEnum::CHECK)->setColor(UIEnum::COLOR_GREEN)
             ->print("I have added a new process with PROCESS_ID = %s", getenv('PROCESS_ID'));
+        //    pre AWS
+        AWSHelper::automateToSwitchAWSCredentialForCICD();
         //   send starting message to Slack
         if (SlackService::handleInputMessage()) {
             SlackService::sendMessageConsole();
@@ -2944,8 +2978,9 @@ class GitHubHelper
 // [REMOVED] namespace App\Helpers;
 
 // [REMOVED] use App\Classes\Process;
-// [REMOVED] use App\Enum\IndentLevelEnum;
+// [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\TagEnum;
+// [REMOVED] use App\Enum\ValidationTypeEnum;
 // [REMOVED] use App\MyOps;
 // [REMOVED] use App\Traits\ConsoleUITrait;
 // [REMOVED] use DateTime;
@@ -2964,6 +2999,20 @@ class AWSHelper
     const ELB_DOCKERRUN_FILE_NAME = "Dockerrun.aws.json";
     const ELB_LOG_UPDATE_SUCCESSFULLY = "Environment update completed successfully.";
     const ELB_LOG_UPDATE_FAILED = "Failed to deploy application.";
+
+    const AWS_CONFIGURATION_DIR = '.aws';
+    const AWS_CONFIGURATION_CREDENTIALS_FILE = 'credentials';
+    const AWS_CONFIGURATION_CREDENTIALS_FILE_PROD = 'credentials_production';
+    const AWS_CONFIGURATION_CREDENTIALS_FILE_STG_DEV = 'credentials_staging_develop';
+
+    /**
+     * @param ...$awsDirOrConfigurationFile
+     * @return string
+     */
+    private static function getAWSConfigurationPath(...$awsDirOrConfigurationFile): string
+    {
+        return DirHelper::join(DirHelper::getHomeDir(), ...$awsDirOrConfigurationFile);
+    }
 
     /**
      * save to .env file or custom name
@@ -3191,6 +3240,33 @@ class AWSHelper
             self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
             exitApp(ERROR_END);
         }
+    }
+
+    /**
+     * require ENVs: BRANCH
+     * @return void
+     */
+    public static function automateToSwitchAWSCredentialForCICD()
+    {
+        // pre-handle
+        //    select credential key based on branch
+        $AWSCredentialFile = collect(GitHubEnum::PRODUCTION_REPOSITORIES)->contains(getenv('REPOSITORY'))
+        && collect(GitHubEnum::PRODUCTION_BRANCHES)->contains(getenv('BRANCH'))
+            ? self::AWS_CONFIGURATION_CREDENTIALS_FILE_PROD : self::AWS_CONFIGURATION_CREDENTIALS_FILE_STG_DEV;
+        // validate
+        DirHelper::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR), $AWSCredentialFile);
+        // handle
+        (new Process("Override AWS Credential Key", self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR), [
+            sprintf("cp -f %s %s",
+                self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, $AWSCredentialFile),
+                self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, self::AWS_CONFIGURATION_CREDENTIALS_FILE)
+            )
+        ]))->execMultiInWorkDir(true)->printOutput();
+        // validate the result
+        DirHelper::validateFileContainsText(
+            self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, self::AWS_CONFIGURATION_CREDENTIALS_FILE),
+            file_get_contents(self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, $AWSCredentialFile))
+        );
     }
 }
 
@@ -4491,6 +4567,9 @@ class MyOps
                 break;
             case CommandEnum::ELB_UPDATE_VERSION:
                 AWSHelper::ELBUpdateVersion();
+                break;
+            case CommandEnum::AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD:
+                AWSHelper::automateToSwitchAWSCredentialForCICD();
                 break;
             // === Git / GitHub ===
             case CommandEnum::BRANCH:

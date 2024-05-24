@@ -3,8 +3,9 @@
 namespace App\Helpers;
 
 use App\Classes\Process;
-use App\Enum\IndentLevelEnum;
+use App\Enum\GitHubEnum;
 use App\Enum\TagEnum;
+use App\Enum\ValidationTypeEnum;
 use App\MyOps;
 use App\Traits\ConsoleUITrait;
 use DateTime;
@@ -23,6 +24,20 @@ class AWSHelper
     const ELB_DOCKERRUN_FILE_NAME = "Dockerrun.aws.json";
     const ELB_LOG_UPDATE_SUCCESSFULLY = "Environment update completed successfully.";
     const ELB_LOG_UPDATE_FAILED = "Failed to deploy application.";
+
+    const AWS_CONFIGURATION_DIR = '.aws';
+    const AWS_CONFIGURATION_CREDENTIALS_FILE = 'credentials';
+    const AWS_CONFIGURATION_CREDENTIALS_FILE_PROD = 'credentials_production';
+    const AWS_CONFIGURATION_CREDENTIALS_FILE_STG_DEV = 'credentials_staging_develop';
+
+    /**
+     * @param ...$awsDirOrConfigurationFile
+     * @return string
+     */
+    private static function getAWSConfigurationPath(...$awsDirOrConfigurationFile): string
+    {
+        return DirHelper::join(DirHelper::getHomeDir(), ...$awsDirOrConfigurationFile);
+    }
 
     /**
      * save to .env file or custom name
@@ -250,5 +265,32 @@ class AWSHelper
             self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
             exitApp(ERROR_END);
         }
+    }
+
+    /**
+     * require ENVs: BRANCH
+     * @return void
+     */
+    public static function automateToSwitchAWSCredentialForCICD()
+    {
+        // pre-handle
+        //    select credential key based on branch
+        $AWSCredentialFile = collect(GitHubEnum::PRODUCTION_REPOSITORIES)->contains(getenv('REPOSITORY'))
+        && collect(GitHubEnum::PRODUCTION_BRANCHES)->contains(getenv('BRANCH'))
+            ? self::AWS_CONFIGURATION_CREDENTIALS_FILE_PROD : self::AWS_CONFIGURATION_CREDENTIALS_FILE_STG_DEV;
+        // validate
+        DirHelper::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR), $AWSCredentialFile);
+        // handle
+        (new Process("Override AWS Credential Key", self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR), [
+            sprintf("cp -f %s %s",
+                self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, $AWSCredentialFile),
+                self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, self::AWS_CONFIGURATION_CREDENTIALS_FILE)
+            )
+        ]))->execMultiInWorkDir(true)->printOutput();
+        // validate the result
+        DirHelper::validateFileContainsText(
+            self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, self::AWS_CONFIGURATION_CREDENTIALS_FILE),
+            file_get_contents(self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, $AWSCredentialFile))
+        );
     }
 }

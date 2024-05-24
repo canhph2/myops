@@ -212,6 +212,8 @@ class OPSHelper
         //    process id
         self::lineIcon(IconEnum::CHECK)->setColor(UIEnum::COLOR_GREEN)
             ->print("I have added a new process with PROCESS_ID = %s", getenv('PROCESS_ID'));
+        //    pre AWS
+        AWSHelper::automateToSwitchAWSCredentialForCICD();
         //   send starting message to Slack
         if (SlackService::handleInputMessage()) {
             SlackService::sendMessageConsole();
