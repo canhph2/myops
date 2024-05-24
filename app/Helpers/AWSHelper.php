@@ -5,7 +5,6 @@ namespace App\Helpers;
 use App\Classes\Process;
 use App\Enum\GitHubEnum;
 use App\Enum\TagEnum;
-use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\MyOps;
 use App\Traits\ConsoleUITrait;
@@ -242,9 +241,6 @@ class AWSHelper
                         getenv('EB_APP_NAME'), getenv('EB_ENVIRONMENT_NAME'), $environmentUpdateStartingTime->format('Y-m-d\TH:i:s\Z')
                     ),
                 ]))->execMulti()->getOutputStrAll();
-                // todo test
-                self::lineNew()->setColor(UIEnum::COLOR_RED)->printSeparatorLine()
-                    ->print("%s\n%s",collect(json_decode($lastELBLogs))->count(), $lastELBLogs);
 
                 if (collect(json_decode($lastELBLogs))->contains(self::ELB_LOG_UPDATE_SUCCESSFULLY)) {
                     self::LineTag(TagEnum::SUCCESS)->print(self::ELB_LOG_UPDATE_SUCCESSFULLY);
