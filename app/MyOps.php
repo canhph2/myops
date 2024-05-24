@@ -108,6 +108,9 @@ class MyOps
             case CommandEnum::ELB_UPDATE_VERSION:
                 AWSHelper::ELBUpdateVersion();
                 break;
+            case CommandEnum::AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD:
+                AWSHelper::automateToSwitchAWSCredentialForCICD();
+                break;
             // === Git / GitHub ===
             case CommandEnum::BRANCH:
                 echo exec(GitHubEnum::GET_BRANCH_COMMAND);

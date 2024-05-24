@@ -110,6 +110,17 @@ class CustomCollection implements IteratorAggregate
     }
 
     /**
+     * Support handling like in_array
+     * Determine if an item exists in the collection.
+     * @param $item
+     * @return bool
+     */
+    public function contains($item): bool
+    {
+        return in_array($item, $this->items);
+    }
+
+    /**
      * support array of strings
      * @param string $separator
      * @return string
