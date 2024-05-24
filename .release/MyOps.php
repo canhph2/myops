@@ -1,8 +1,10 @@
 <?php
-// === MyOps v3.9.11 ===
+// === MyOps v3.9.12 ===
 
 // === Generated libraries classes ===
 
+
+// [REMOVED] use App\Classes\Base\CustomCollection;
 
 /**
  * This base helper
@@ -1629,7 +1631,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.9.11';
+    const APP_VERSION = '3.9.12';
 }
 
 // [REMOVED] namespace App\Enum;
