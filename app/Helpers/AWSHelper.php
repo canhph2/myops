@@ -185,14 +185,14 @@ class AWSHelper
             //    validate configs files again
             //        .ebextensions/blockdevice-xvdcz.config
             $blockdeviceConfigContent = file_get_contents(sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME));
-            self::LineNew()->print(".ebextensions/blockdevice-xvdcz.config")->print($blockdeviceConfigContent);
+            self::LineNew()->printSubTitle(".ebextensions/blockdevice-xvdcz.config")->print($blockdeviceConfigContent);
             if (!StrHelper::contains($blockdeviceConfigContent, getenv('EB_2ND_DISK_SIZE'))) {
                 self::LineTag(TagEnum::ERROR)->print(".ebextensions/blockdevice-xvdcz.config got an error");
                 exitApp(ERROR_END);
             }
             //        Dockerrun.aws.json
             $DockerrunContentToCheckAgain = file_get_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME));
-            self::LineNew()->print("Dockerrun.aws.json")->print($DockerrunContentToCheckAgain);
+            self::LineNew()->printSubTitle("Dockerrun.aws.json")->print($DockerrunContentToCheckAgain);
             if (!StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_API'))
                 || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_API_NAME)
                 || !StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INVOICE_SERVICE'))
@@ -232,7 +232,8 @@ class AWSHelper
                 ), // > /dev/null : disabled output
             ]))->execMultiInWorkDir()->printOutput();
             //    Check new service healthy every X seconds | timeout = 20 minutes
-            //        08/28/2023: Elastic Beanstalk environment update about 4 - 7 minutes
+            //        on 08/28/2023: Elastic Beanstalk environment update about 4 - 7 minutes
+            $environmentUpdateStartingTime = new DateTime();
             for ($minute = 3; $minute >= 1; $minute--) {
                 self::LineNew()->print("Wait $minute minutes for the ELB environment does the update, and add some lines of logs...");
                 sleep(60);
@@ -241,15 +242,17 @@ class AWSHelper
             for ($i = 1; $i <= 40; $i++) {
                 self::LineNew()->print("Healthcheck the $i time");
                 $lastELBLogs = (new Process("get last ELB logs", DirHelper::getWorkingDir(), [
-                    sprintf("aws elasticbeanstalk describe-events --application-name %s --environment-name %s --query 'Events[].Message' --output json --max-items 5",
-                        getenv('EB_APP_NAME'),
-                        getenv('EB_ENVIRONMENT_NAME')
+                    sprintf("aws elasticbeanstalk describe-events --application-name %s --environment-name %s --query 'Events[].Message' --output json --max-items 100 --start-time %s",
+                        getenv('EB_APP_NAME'), getenv('EB_ENVIRONMENT_NAME'), $environmentUpdateStartingTime->format('Y-m-d\TH:i:s\Z')
                     ),
                 ]))->execMulti()->getOutputStrAll();
-                if (in_array(self::ELB_LOG_UPDATE_SUCCESSFULLY, json_decode($lastELBLogs))) {
+                // todo test
+                echo $lastELBLogs;
+
+                if (collect(json_decode($lastELBLogs))->contains(self::ELB_LOG_UPDATE_SUCCESSFULLY)) {
                     self::LineTag(TagEnum::SUCCESS)->print(self::ELB_LOG_UPDATE_SUCCESSFULLY);
-                    exit(0); // END | successful
-                } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
+                    exitApp(SUCCESS_END);
+                } else if (collect(json_decode($lastELBLogs))->contains(self::ELB_LOG_UPDATE_FAILED)) {
                     self::LineTag(TagEnum::ERROR)->print(self::ELB_LOG_UPDATE_FAILED);
                     exitApp(ERROR_END);
                 } else {
