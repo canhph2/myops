@@ -213,23 +213,18 @@ class AWSHelper
                 sprintf("zip -r %s.zip Dockerrun.aws.json .ebextensions", $EB_APP_VERSION_LABEL),
                 //    Copy to s3 and create eb application version | required to run in elb-version directory
                 sprintf("aws s3 cp %s.zip s3://%s/%s/%s.zip || exit 1",
-                    $EB_APP_VERSION_LABEL,
-                    getenv('S3_EB_APP_VERSION_BUCKET_NAME'),
-                    getenv('EB_APP_VERSION_FOLDER_NAME'),
-                    $EB_APP_VERSION_LABEL
+                    $EB_APP_VERSION_LABEL, getenv('S3_EB_APP_VERSION_BUCKET_NAME'),
+                    getenv('EB_APP_VERSION_FOLDER_NAME'), $EB_APP_VERSION_LABEL
                 ),
                 //    create ELB application version
                 sprintf("aws elasticbeanstalk create-application-version --application-name %s --version-label %s --source-bundle S3Bucket=%s,S3Key=%s/%s.zip > /dev/null || exit 1",
-                    getenv('EB_APP_NAME'),
-                    $EB_APP_VERSION_LABEL,
-                    getenv('S3_EB_APP_VERSION_BUCKET_NAME'),
-                    getenv('EB_APP_VERSION_FOLDER_NAME'),
+                    getenv('EB_APP_NAME'), $EB_APP_VERSION_LABEL,
+                    getenv('S3_EB_APP_VERSION_BUCKET_NAME'), getenv('EB_APP_VERSION_FOLDER_NAME'),
                     $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
                 //    update EB environment
                 sprintf("aws elasticbeanstalk update-environment --environment-name %s --version-label %s > /dev/null",
-                    getenv('EB_ENVIRONMENT_NAME'),
-                    $EB_APP_VERSION_LABEL
+                    getenv('EB_ENVIRONMENT_NAME'), $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
             ]))->execMultiInWorkDir()->printOutput();
             //    Check new service healthy every X seconds | timeout = 20 minutes
