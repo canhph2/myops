@@ -51,7 +51,7 @@ class SlackService
         $message = null;
         $buildTime = self::input('process-id') ? sprintf("in %s", TimeHelper::handleTimeEnd(self::input('process-id'))) : '';
         $result = is_null(self::input('exit-code')) ? '' // case no exist code
-            : (int)self::input('exit-code') ? SlackEnum::X_EMOJI : SlackEnum::CHECK_EMOJI;
+            : ((int)self::input('exit-code') ? SlackEnum::X_EMOJI : SlackEnum::CHECK_EMOJI);
         //
         if (self::input('type') === ProcessEnum::START) {
             $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
@@ -106,8 +106,6 @@ class SlackService
     private static function sendMessage(string $message = null, string $repository = null, string $branch = null,
                                         string $slackBotToken = null, string $slackChannel = null): void
     {
-        // TODO
-        $message = sprintf(" $message %s %s %sabcd%s", SlackEnum::CHECK_EMOJI, SlackEnum::X_EMOJI, SlackEnum::CODE_CHAR, SlackEnum::CODE_CHAR);
         // validate
         if (!$message || !$repository || !$branch || !$slackBotToken || !$slackChannel) {
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)

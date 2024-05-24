@@ -13,4 +13,6 @@ php app/MyOps.php pre-work
 php app/MyOps.php validate --type=device --type=branch
 # handle
 php app/MyOps.php sync
-php app/MyOps.php slack --message="${DEVICE} just synced $(myops version no-format-color) successfully" --process-id=${PROCESS_ID}
+php app/MyOps.php slack --message="${DEVICE} just synced $(myops version no-format-color) successfully" \
+                        --process-id=${PROCESS_ID} --exit-code=$?
+
