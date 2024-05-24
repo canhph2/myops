@@ -290,7 +290,7 @@ class AWSHelper
         // validate the result
         DirHelper::validateFileContainsText(
             self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, self::AWS_CONFIGURATION_CREDENTIALS_FILE),
-            file_get_contents(self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, $AWSCredentialFile))
+            substr(file_get_contents(self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, $AWSCredentialFile)), 10)
         );
     }
 }
