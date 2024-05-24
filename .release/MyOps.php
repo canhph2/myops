@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.9.9 ===
+// === MyOps v3.9.10 ===
 
 // === Generated libraries classes ===
 
@@ -51,6 +51,21 @@ if (!function_exists('dd')) {
 }
 
 // === end helpers functions ===
+
+// === copy Laravel helpers ===
+if (!function_exists('collect')) {
+
+    /**
+     * Create a collection from the given value.
+     * @param array $arr
+     * @return CustomCollection
+     */
+    function collect(array $arr): CustomCollection
+    {
+        return new CustomCollection($arr);
+    }
+}
+// === end copy Laravel helpers ===
 
 // [REMOVED] namespace App\Classes\Base;
 
@@ -308,8 +323,6 @@ class Release
             // === Traits ===
             DirHelper::getClassPathAndFileName(ConsoleBaseTrait::class),
             DirHelper::getClassPathAndFileName(ConsoleUITrait::class),
-            // === MyOpsHelper ===
-            'app/Helpers/MyOpsHelpers.php',
             // App file always on bottom
             DirHelper::getClassPathAndFileName(MyOps::class),
         ];
@@ -1616,7 +1629,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.9.9';
+    const APP_VERSION = '3.9.10';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -4480,25 +4493,6 @@ trait ConsoleUITrait
     private static function colorFormat(string $text, int $color, int $format, bool $isEndLine = false): string
     {
         return sprintf("\033[%d;%dm%s\033[0m%s", $color, $format, $text, $isEndLine ? PHP_EOL : '');
-    }
-}
-
-/**
- * This is MyOps helper
- * Should above class App and below all others in the combine file
- */
-
-// === copy Laravel helpers ===
-if (!function_exists('collect')) {
-
-    /**
-     * Create a collection from the given value.
-     * @param array $arr
-     * @return CustomCollection
-     */
-    function collect(array $arr): CustomCollection
-    {
-        return new CustomCollection($arr);
     }
 }
 
