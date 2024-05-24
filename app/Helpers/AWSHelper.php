@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Classes\Process;
 use App\Enum\GitHubEnum;
 use App\Enum\TagEnum;
+use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
 use App\MyOps;
 use App\Traits\ConsoleUITrait;
@@ -247,7 +248,8 @@ class AWSHelper
                     ),
                 ]))->execMulti()->getOutputStrAll();
                 // todo test
-                echo $lastELBLogs;
+                self::lineNew()->setColor(UIEnum::COLOR_RED)->printSeparatorLine()
+                    ->print("%s\n%s",collect(json_decode($lastELBLogs))->count(), $lastELBLogs);
 
                 if (collect(json_decode($lastELBLogs))->contains(self::ELB_LOG_UPDATE_SUCCESSFULLY)) {
                     self::LineTag(TagEnum::SUCCESS)->print(self::ELB_LOG_UPDATE_SUCCESSFULLY);

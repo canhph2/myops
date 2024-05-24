@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.9.14 ===
+// === MyOps v3.9.15 ===
 
 // === Generated libraries classes ===
 
@@ -1631,7 +1631,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.9.14';
+    const APP_VERSION = '3.9.15';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2985,6 +2985,7 @@ class GitHubHelper
 // [REMOVED] use App\Classes\Process;
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\TagEnum;
+// [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
 // [REMOVED] use App\MyOps;
 // [REMOVED] use App\Traits\ConsoleUITrait;
@@ -3227,7 +3228,8 @@ class AWSHelper
                     ),
                 ]))->execMulti()->getOutputStrAll();
                 // todo test
-                echo $lastELBLogs;
+                self::lineNew()->setColor(UIEnum::COLOR_RED)->printSeparatorLine()
+                    ->print("%s\n%s",collect(json_decode($lastELBLogs))->count(), $lastELBLogs);
 
                 if (collect(json_decode($lastELBLogs))->contains(self::ELB_LOG_UPDATE_SUCCESSFULLY)) {
                     self::LineTag(TagEnum::SUCCESS)->print(self::ELB_LOG_UPDATE_SUCCESSFULLY);
