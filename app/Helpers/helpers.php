@@ -1,7 +1,10 @@
 <?php
+/**
+ * This base helper
+ * Should on top in the combine file
+ */
 
 // === helpers functions ===
-
 define('ERROR_END', 1);
 define('SUCCESS_END', 0);
 if (!function_exists('exitApp')) {
@@ -43,18 +46,3 @@ if (!function_exists('dd')) {
 }
 
 // === end helpers functions ===
-
-// === copy Laravel helpers ===
-if (!function_exists('collect')) {
-
-    /**
-     * Create a collection from the given value.
-     * @param array $arr
-     * @return \App\Classes\Base\CustomCollection
-     */
-    function collect(array $arr): \App\Classes\Base\CustomCollection
-    {
-        return new \App\Classes\Base\CustomCollection($arr);
-    }
-}
-// === end copy Laravel helpers ===
