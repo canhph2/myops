@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.9.13 ===
+// === MyOps v3.9.16 ===
 
 // === Generated libraries classes ===
 
@@ -1631,7 +1631,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.9.13';
+    const APP_VERSION = '3.9.16';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2985,6 +2985,7 @@ class GitHubHelper
 // [REMOVED] use App\Classes\Process;
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\TagEnum;
+// [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
 // [REMOVED] use App\MyOps;
 // [REMOVED] use App\Traits\ConsoleUITrait;
@@ -3165,14 +3166,14 @@ class AWSHelper
             //    validate configs files again
             //        .ebextensions/blockdevice-xvdcz.config
             $blockdeviceConfigContent = file_get_contents(sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME));
-            self::LineNew()->print(".ebextensions/blockdevice-xvdcz.config")->print($blockdeviceConfigContent);
+            self::LineNew()->printSubTitle(".ebextensions/blockdevice-xvdcz.config")->print($blockdeviceConfigContent);
             if (!StrHelper::contains($blockdeviceConfigContent, getenv('EB_2ND_DISK_SIZE'))) {
                 self::LineTag(TagEnum::ERROR)->print(".ebextensions/blockdevice-xvdcz.config got an error");
                 exitApp(ERROR_END);
             }
             //        Dockerrun.aws.json
             $DockerrunContentToCheckAgain = file_get_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME));
-            self::LineNew()->print("Dockerrun.aws.json")->print($DockerrunContentToCheckAgain);
+            self::LineNew()->printSubTitle("Dockerrun.aws.json")->print($DockerrunContentToCheckAgain);
             if (!StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_API'))
                 || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_API_NAME)
                 || !StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INVOICE_SERVICE'))
@@ -3192,27 +3193,23 @@ class AWSHelper
                 sprintf("zip -r %s.zip Dockerrun.aws.json .ebextensions", $EB_APP_VERSION_LABEL),
                 //    Copy to s3 and create eb application version | required to run in elb-version directory
                 sprintf("aws s3 cp %s.zip s3://%s/%s/%s.zip || exit 1",
-                    $EB_APP_VERSION_LABEL,
-                    getenv('S3_EB_APP_VERSION_BUCKET_NAME'),
-                    getenv('EB_APP_VERSION_FOLDER_NAME'),
-                    $EB_APP_VERSION_LABEL
+                    $EB_APP_VERSION_LABEL, getenv('S3_EB_APP_VERSION_BUCKET_NAME'),
+                    getenv('EB_APP_VERSION_FOLDER_NAME'), $EB_APP_VERSION_LABEL
                 ),
                 //    create ELB application version
                 sprintf("aws elasticbeanstalk create-application-version --application-name %s --version-label %s --source-bundle S3Bucket=%s,S3Key=%s/%s.zip > /dev/null || exit 1",
-                    getenv('EB_APP_NAME'),
-                    $EB_APP_VERSION_LABEL,
-                    getenv('S3_EB_APP_VERSION_BUCKET_NAME'),
-                    getenv('EB_APP_VERSION_FOLDER_NAME'),
+                    getenv('EB_APP_NAME'), $EB_APP_VERSION_LABEL,
+                    getenv('S3_EB_APP_VERSION_BUCKET_NAME'), getenv('EB_APP_VERSION_FOLDER_NAME'),
                     $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
                 //    update EB environment
                 sprintf("aws elasticbeanstalk update-environment --environment-name %s --version-label %s > /dev/null",
-                    getenv('EB_ENVIRONMENT_NAME'),
-                    $EB_APP_VERSION_LABEL
+                    getenv('EB_ENVIRONMENT_NAME'), $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
             ]))->execMultiInWorkDir()->printOutput();
             //    Check new service healthy every X seconds | timeout = 20 minutes
-            //        08/28/2023: Elastic Beanstalk environment update about 4 - 7 minutes
+            //        on 08/28/2023: Elastic Beanstalk environment update about 4 - 7 minutes
+            $environmentUpdateStartingTime = new DateTime();
             for ($minute = 3; $minute >= 1; $minute--) {
                 self::LineNew()->print("Wait $minute minutes for the ELB environment does the update, and add some lines of logs...");
                 sleep(60);
@@ -3221,15 +3218,18 @@ class AWSHelper
             for ($i = 1; $i <= 40; $i++) {
                 self::LineNew()->print("Healthcheck the $i time");
                 $lastELBLogs = (new Process("get last ELB logs", DirHelper::getWorkingDir(), [
-                    sprintf("aws elasticbeanstalk describe-events --application-name %s --environment-name %s --query 'Events[].Message' --output json --max-items 5",
-                        getenv('EB_APP_NAME'),
-                        getenv('EB_ENVIRONMENT_NAME')
+                    sprintf("aws elasticbeanstalk describe-events --application-name %s --environment-name %s --query 'Events[].Message' --output json --max-items 100 --start-time %s",
+                        getenv('EB_APP_NAME'), getenv('EB_ENVIRONMENT_NAME'), $environmentUpdateStartingTime->format('Y-m-d\TH:i:s\Z')
                     ),
                 ]))->execMulti()->getOutputStrAll();
-                if (in_array(self::ELB_LOG_UPDATE_SUCCESSFULLY, json_decode($lastELBLogs))) {
+                // todo test
+                self::lineNew()->setColor(UIEnum::COLOR_RED)->printSeparatorLine()
+                    ->print("%s\n%s",collect(json_decode($lastELBLogs))->count(), $lastELBLogs);
+
+                if (collect(json_decode($lastELBLogs))->contains(self::ELB_LOG_UPDATE_SUCCESSFULLY)) {
                     self::LineTag(TagEnum::SUCCESS)->print(self::ELB_LOG_UPDATE_SUCCESSFULLY);
-                    exit(0); // END | successful
-                } else if (in_array(self::ELB_LOG_UPDATE_FAILED, json_decode($lastELBLogs))) {
+                    exitApp(SUCCESS_END);
+                } else if (collect(json_decode($lastELBLogs))->contains(self::ELB_LOG_UPDATE_FAILED)) {
                     self::LineTag(TagEnum::ERROR)->print(self::ELB_LOG_UPDATE_FAILED);
                     exitApp(ERROR_END);
                 } else {
