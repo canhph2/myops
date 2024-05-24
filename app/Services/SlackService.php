@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enum\GitHubEnum;
 use App\Enum\ProcessEnum;
+use App\Enum\SlackEnum;
 use App\Enum\TagEnum;
 use App\Helpers\AWSHelper;
 use App\Helpers\GitHubHelper;
@@ -49,15 +50,17 @@ class SlackService
     {
         $message = null;
         $buildTime = self::input('process-id') ? sprintf("in %s", TimeHelper::handleTimeEnd(self::input('process-id'))) : '';
+        $result = is_null(self::input('exit-code')) ? '' // case no exist code
+            : (int)self::input('exit-code') ? SlackEnum::X_EMOJI : SlackEnum::CHECK_EMOJI;
         //
         if (self::input('type') === ProcessEnum::START) {
             $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
                 GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName()));
         } else if (self::input('type') === ProcessEnum::FINISH) {
-            $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
-                GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime));
+            $message = trim(sprintf("%s just finished building and deploying the project %s %s %s", getenv('DEVICE'),
+                GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime, $result));
         } else if (self::input('message')) {
-            $message = trim(sprintf("%s %s", self::input('message'), $buildTime));
+            $message = trim(sprintf("%s %s %s", self::input('message'), $buildTime, $result));
         }
         return $message;
     }
@@ -103,6 +106,8 @@ class SlackService
     private static function sendMessage(string $message = null, string $repository = null, string $branch = null,
                                         string $slackBotToken = null, string $slackChannel = null): void
     {
+        // TODO
+        $message = sprintf(" $message %s %s %sabcd%s", SlackEnum::CHECK_EMOJI, SlackEnum::X_EMOJI, SlackEnum::CODE_CHAR, SlackEnum::CODE_CHAR);
         // validate
         if (!$message || !$repository || !$branch || !$slackBotToken || !$slackChannel) {
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)

@@ -13,6 +13,7 @@ use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\PostWorkEnum;
 use App\Enum\ProcessEnum;
+use App\Enum\SlackEnum;
 use App\Enum\TagEnum;
 use App\Enum\TimeEnum;
 use App\Enum\UIEnum;
@@ -80,6 +81,7 @@ class Release
             DirHelper::getClassPathAndFileName(ProcessEnum::class),
             DirHelper::getClassPathAndFileName(ConsoleEnum::class),
             DirHelper::getClassPathAndFileName(DevelopmentEnum::class),
+            DirHelper::getClassPathAndFileName(SlackEnum::class),
             // === Factories ===
             DirHelper::getClassPathAndFileName(ShellFactory::class),
             // === Helpers ===

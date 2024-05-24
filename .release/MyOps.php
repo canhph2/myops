@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.9.16 ===
+// === MyOps v3.9.17 ===
 
 // === Generated libraries classes ===
 
@@ -235,6 +235,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\PostWorkEnum;
 // [REMOVED] use App\Enum\ProcessEnum;
+// [REMOVED] use App\Enum\SlackEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Enum\TimeEnum;
 // [REMOVED] use App\Enum\UIEnum;
@@ -302,6 +303,7 @@ class Release
             DirHelper::getClassPathAndFileName(ProcessEnum::class),
             DirHelper::getClassPathAndFileName(ConsoleEnum::class),
             DirHelper::getClassPathAndFileName(DevelopmentEnum::class),
+            DirHelper::getClassPathAndFileName(SlackEnum::class),
             // === Factories ===
             DirHelper::getClassPathAndFileName(ShellFactory::class),
             // === Helpers ===
@@ -1631,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.9.16';
+    const APP_VERSION = '3.9.17';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2046,6 +2048,15 @@ class DevelopmentEnum
     const TMP = 'tmp';
     const DIST = 'dist';
     const OPS_DIR = '.ops';
+}
+
+// [REMOVED] namespace App\Enum;
+
+class SlackEnum
+{
+    const CHECK_EMOJI = ':white_check_mark:';
+    const X_EMOJI = ':x:';
+    const CODE_CHAR = '`';
 }
 
 // [REMOVED] namespace App\Factories;
@@ -2985,7 +2996,6 @@ class GitHubHelper
 // [REMOVED] use App\Classes\Process;
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\TagEnum;
-// [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
 // [REMOVED] use App\MyOps;
 // [REMOVED] use App\Traits\ConsoleUITrait;
@@ -3222,9 +3232,6 @@ class AWSHelper
                         getenv('EB_APP_NAME'), getenv('EB_ENVIRONMENT_NAME'), $environmentUpdateStartingTime->format('Y-m-d\TH:i:s\Z')
                     ),
                 ]))->execMulti()->getOutputStrAll();
-                // todo test
-                self::lineNew()->setColor(UIEnum::COLOR_RED)->printSeparatorLine()
-                    ->print("%s\n%s",collect(json_decode($lastELBLogs))->count(), $lastELBLogs);
 
                 if (collect(json_decode($lastELBLogs))->contains(self::ELB_LOG_UPDATE_SUCCESSFULLY)) {
                     self::LineTag(TagEnum::SUCCESS)->print(self::ELB_LOG_UPDATE_SUCCESSFULLY);
@@ -4142,6 +4149,7 @@ class ConsoleHelper
 
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\ProcessEnum;
+// [REMOVED] use App\Enum\SlackEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Helpers\AWSHelper;
 // [REMOVED] use App\Helpers\GitHubHelper;
@@ -4187,15 +4195,17 @@ class SlackService
     {
         $message = null;
         $buildTime = self::input('process-id') ? sprintf("in %s", TimeHelper::handleTimeEnd(self::input('process-id'))) : '';
+        $result = is_null(self::input('exit-code')) ? '' // case no exist code
+            : (int)self::input('exit-code') ? SlackEnum::X_EMOJI : SlackEnum::CHECK_EMOJI;
         //
         if (self::input('type') === ProcessEnum::START) {
             $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
                 GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName()));
         } else if (self::input('type') === ProcessEnum::FINISH) {
-            $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
-                GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime));
+            $message = trim(sprintf("%s just finished building and deploying the project %s %s %s", getenv('DEVICE'),
+                GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime, $result));
         } else if (self::input('message')) {
-            $message = trim(sprintf("%s %s", self::input('message'), $buildTime));
+            $message = trim(sprintf("%s %s %s", self::input('message'), $buildTime, $result));
         }
         return $message;
     }
@@ -4241,6 +4251,8 @@ class SlackService
     private static function sendMessage(string $message = null, string $repository = null, string $branch = null,
                                         string $slackBotToken = null, string $slackChannel = null): void
     {
+        // TODO
+        $message = sprintf(" $message %s %s %sabcd%s", SlackEnum::CHECK_EMOJI, SlackEnum::X_EMOJI, SlackEnum::CODE_CHAR, SlackEnum::CODE_CHAR);
         // validate
         if (!$message || !$repository || !$branch || !$slackBotToken || !$slackChannel) {
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
