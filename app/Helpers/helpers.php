@@ -1,4 +1,6 @@
 <?php
+use App\Classes\Base\CustomCollection;
+
 /**
  * This base helper
  * Should on top in the combine file
