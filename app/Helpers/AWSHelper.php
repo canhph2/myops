@@ -242,9 +242,6 @@ class AWSHelper
                         getenv('EB_APP_NAME'), getenv('EB_ENVIRONMENT_NAME'), $environmentUpdateStartingTime->format('Y-m-d\TH:i:s\Z')
                     ),
                 ]))->execMulti()->getOutputStrAll();
-                // todo test
-                self::lineNew()->setColor(UIEnum::COLOR_RED)->printSeparatorLine()
-                    ->print("%s\n%s",collect(json_decode($lastELBLogs))->count(), $lastELBLogs);
 
                 if (collect(json_decode($lastELBLogs))->contains(self::ELB_LOG_UPDATE_SUCCESSFULLY)) {
                     self::LineTag(TagEnum::SUCCESS)->print(self::ELB_LOG_UPDATE_SUCCESSFULLY);
