@@ -103,8 +103,6 @@ class Release
             // === Traits ===
             DirHelper::getClassPathAndFileName(ConsoleBaseTrait::class),
             DirHelper::getClassPathAndFileName(ConsoleUITrait::class),
-            // === MyOpsHelper ===
-            'app/Helpers/MyOpsHelpers.php',
             // App file always on bottom
             DirHelper::getClassPathAndFileName(MyOps::class),
         ];

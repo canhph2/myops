@@ -46,3 +46,18 @@ if (!function_exists('dd')) {
 }
 
 // === end helpers functions ===
+
+// === copy Laravel helpers ===
+if (!function_exists('collect')) {
+
+    /**
+     * Create a collection from the given value.
+     * @param array $arr
+     * @return CustomCollection
+     */
+    function collect(array $arr): CustomCollection
+    {
+        return new CustomCollection($arr);
+    }
+}
+// === end copy Laravel helpers ===
