@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.9.5 ===
+// === MyOps v3.9.6 ===
 
 // === Generated libraries classes ===
 
@@ -1616,7 +1616,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.9.5';
+    const APP_VERSION = '3.9.6';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3255,7 +3255,7 @@ class AWSHelper
         // validate the result
         DirHelper::validateFileContainsText(
             self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, self::AWS_CONFIGURATION_CREDENTIALS_FILE),
-            file_get_contents(self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, $AWSCredentialFile))
+            substr(file_get_contents(self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, $AWSCredentialFile)), 10)
         );
     }
 }
