@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This is MyOps helper
  * Should above class App and below all others in the combine file
@@ -10,11 +11,10 @@ if (!function_exists('collect')) {
     /**
      * Create a collection from the given value.
      * @param array $arr
-     * @return \App\Classes\Base\CustomCollection
+     * @return CustomCollection
      */
-    function collect(array $arr): \App\Classes\Base\CustomCollection
+    function collect(array $arr): CustomCollection
     {
-        return new \App\Classes\Base\CustomCollection($arr);
+        return new CustomCollection($arr);
     }
 }
-// === end copy Laravel helpers ===

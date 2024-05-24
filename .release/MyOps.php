@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.9.8 ===
+// === MyOps v3.9.9 ===
 
 // === Generated libraries classes ===
 
@@ -1616,7 +1616,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.9.8';
+    const APP_VERSION = '3.9.9';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -4482,6 +4482,7 @@ trait ConsoleUITrait
         return sprintf("\033[%d;%dm%s\033[0m%s", $color, $format, $text, $isEndLine ? PHP_EOL : '');
     }
 }
+
 /**
  * This is MyOps helper
  * Should above class App and below all others in the combine file
@@ -4493,14 +4494,13 @@ if (!function_exists('collect')) {
     /**
      * Create a collection from the given value.
      * @param array $arr
-     * @return \App\Classes\Base\CustomCollection
+     * @return CustomCollection
      */
-    function collect(array $arr): \App\Classes\Base\CustomCollection
+    function collect(array $arr): CustomCollection
     {
-        return new \App\Classes\Base\CustomCollection($arr);
+        return new CustomCollection($arr);
     }
 }
-// === end copy Laravel helpers ===
 
 // === end Generated libraries classes ===
 
