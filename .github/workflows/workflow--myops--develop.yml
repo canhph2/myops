@@ -10,11 +10,17 @@ defaults:
 on:
   # Triggers the workflow on push events
   # Disable automatically trigger on push a new code to this branch
-    push:
-      branches: [ "develop" ]
+  # push:
+  #   branches: [ "develop" ]
   # Triggers the workflow manually
-  #workflow_dispatch:
-
+  workflow_dispatch:
+    environment:
+      description: 'Environment to run tests against'
+      type: choice
+      options:
+        - staging
+        - develop
+      required: true
 jobs:
 
   build-and-deploy:
