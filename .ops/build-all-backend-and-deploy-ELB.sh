@@ -11,12 +11,11 @@ myops branch
 exit 0;
 
 # cleanup: in case success, in case failure and exit with code at any commands
-trap 'myops post-work --type=finish --process-id=${PROCESS_ID} --exit-code=$? ' EXIT
+POST_WORK_COMMAND="myops post-work --type=finish --process-id=${PROCESS_ID} --exit-code=$?"
+trap '${POST_WORK_COMMAND}' EXIT
 #
 eval "$(myops pre-work --response-type=eval)"
 myops pre-work --type=start
 # handle
-php app/MyOps.php sync
-php app/MyOps.php slack --message="${DEVICE} just synced $(myops version no-format-color) successfully" \
-                        --process-id=${PROCESS_ID} --exit-code=$?
+
 
