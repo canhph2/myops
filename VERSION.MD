@@ -2,7 +2,7 @@
 
 ---
 ## === v3 ===
-- 3.10.0 | TODO ADD SOME CHANGE LOGS
+- 3.10.0 | Add `build all backend projects` workflow, organize branches
 - 3.9.0 | Add a command `automate-switching-aws-credential-for-cicd`
 - 3.8.0 | Add a command `pre-work`, optimize the app (cont)
 - 3.7.0 | Support field value arguments `--field1=value1`

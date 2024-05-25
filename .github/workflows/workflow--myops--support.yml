@@ -1,0 +1,45 @@
+# abcd environment todo
+name: workflow--myops--support
+
+# load shell configuration (Ubuntu | .bashrc)
+defaults:
+  run:
+    shell: bash -ileo pipefail {0}
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events
+  # Disable automatically trigger on push a new code to this branch
+  # push:
+  #   branches: [ "support" ]
+  # Triggers the workflow manually
+  workflow_dispatch:
+    inputs:
+      selectedBranch:
+        description: 'Select branch to build all backend projects'
+        required: true
+        default: 'develop'
+        type: choice
+        options:
+          - develop
+          - staging
+          - moretodo_master
+jobs:
+
+  build-and-deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check Selected Branch
+        run: git checkout ${{ inputs.selectedBranch }} && git pull
+#        env:
+#          SELECTED_BRANCH: ${{ inputs.selectedBranch }}
+
+      - name: Build And Deploy
+        run: |
+          myops version
+          myops branch
+          chmod u+x ".ops/sync-and-notify-Slack.sh"
+          . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'
+          # todo build all backend
