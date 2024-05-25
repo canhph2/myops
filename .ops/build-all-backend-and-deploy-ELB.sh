@@ -23,7 +23,7 @@ export REPOSITORY=engage-api # to switch repository
 myops checkout-caches engage-api-deploy ${API_DEPLOY_BRANCH}
 cd "${ENGAGEPLUS_CACHES_DIR}/engage-api-deploy"
 chmod u+x ".ops/build-api-docker-image-and-push-to-ECR.sh" && . ".ops/build-api-docker-image-and-push-to-ECR.sh"
-myops slack --message="-> just finished building Docker image of Admin API and Booking API :heavy_check_mark:"
+myops slack --indent=1 --message="-> just finished building Docker image of Admin API and Booking API :heavy_check_mark:"
 #        Invoice service
 export REPOSITORY=invoice-service # to switch repository
 myops checkout-caches ${REPOSITORY} ${BRANCH}
