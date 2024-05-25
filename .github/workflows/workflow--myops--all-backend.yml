@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Check Selected Branch
+      - name: Checkout Selected Branch
         run: git checkout ${{ inputs.selectedBranch }} && git pull
 
       - name: Build And Deploy
