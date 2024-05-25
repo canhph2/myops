@@ -1,5 +1,5 @@
-# abcd environment todo
-name: workflow--myops--support
+# All backend projects by environment
+name: workflow--myops--all-backend
 
 # load shell configuration (Ubuntu | .bashrc)
 defaults:
@@ -8,15 +8,11 @@ defaults:
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push events
-  # Disable automatically trigger on push a new code to this branch
-  # push:
-  #   branches: [ "support" ]
   # Triggers the workflow manually
   workflow_dispatch:
     inputs:
       selectedBranch:
-        description: 'Select branch to build all backend projects'
+        description: 'Select the branch to build all backend projects and deploy ELB'
         required: true
         default: 'develop'
         type: choice
@@ -33,13 +29,7 @@ jobs:
 
       - name: Check Selected Branch
         run: git checkout ${{ inputs.selectedBranch }} && git pull
-#        env:
-#          SELECTED_BRANCH: ${{ inputs.selectedBranch }}
 
       - name: Build And Deploy
         run: |
-          myops version
-          myops branch
-          chmod u+x ".ops/sync-and-notify-Slack.sh"
-          . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'
-          # todo build all backend
+          chmod u+x ".ops/build-all-backend-and-deploy-ELB.sh" && . ".ops/build-all-backend-and-deploy-ELB.sh" 'GitHub Actions'
