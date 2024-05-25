@@ -1,5 +1,5 @@
 # Development environment
-name: workflow--myops--develop
+name: workflow--myops--ship
 
 # load shell configuration (Ubuntu | .bashrc)
 defaults:
@@ -10,7 +10,7 @@ defaults:
 on:
   # Triggers the workflow on push events
   push:
-    branches: [ "develop" ]
+    branches: [ "ship" ]
   # Triggers the workflow manually
   workflow_dispatch:
 
