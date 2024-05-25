@@ -16,26 +16,31 @@ myops validate --type=device --type=branch --type=docker
 # handle
 #    Build Docker images
 #        API module
+export REPOSITORY=engage-api # to switch repository
 myops checkout-caches engage-api-deploy ${API_DEPLOY_BRANCH}
 cd "${ENGAGEPLUS_CACHES_DIR}/engage-api-deploy"
 chmod u+x ".ops/build-api-docker-image-and-push-to-ECR.sh" && . ".ops/build-api-docker-image-and-push-to-ECR.sh"
 myops slack --message="-> just finished building Docker image of Admin API and Booking API :heavy_check_mark:"
 #        Invoice service
-myops checkout-caches invoice-service ${BRANCH}
-cd "${ENGAGEPLUS_CACHES_DIR}/invoice-service"
+export REPOSITORY=invoice-service # to switch repository
+myops checkout-caches ${REPOSITORY} ${BRANCH}
+cd "${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 chmod u+x ".ops/build-docker-image-and-push-to-ECR.sh" && . ".ops/build-docker-image-and-push-to-ECR.sh"
 myops slack --message="-> just finished building Docker image of Invoice Service :heavy_check_mark:"
 #        Payment service
-myops checkout-caches payment-service ${BRANCH}
-cd "${ENGAGEPLUS_CACHES_DIR}/payment-service"
+export REPOSITORY=payment-service # to switch repository
+myops checkout-caches ${REPOSITORY} ${BRANCH}
+cd "${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 chmod u+x ".ops/build-docker-image-and-push-to-ECR.sh" && . ".ops/build-docker-image-and-push-to-ECR.sh"
 myops slack --message="-> just finished building Docker image of Payment Service :heavy_check_mark:"
 #        Integration API
-myops checkout-caches integration-api ${BRANCH}
-cd "${ENGAGEPLUS_CACHES_DIR}/integration-api"
+export REPOSITORY=integration-api # to switch repository
+myops checkout-caches ${REPOSITORY} ${BRANCH}
+cd "${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 chmod u+x ".ops/build-docker-image-and-push-to-ECR.sh" && . ".ops/build-docker-image-and-push-to-ECR.sh"
 myops slack --message="-> just finished building Docker image of Integration API :heavy_check_mark:"
 #    Deploy ELB
+export REPOSITORY=my-ops # to switch repository
 myops slack --message="-> starts to deploying new version to ELB (Elastic Beanstalk) :arrows_counterclockwise:"
 myops elb-update-version
 
