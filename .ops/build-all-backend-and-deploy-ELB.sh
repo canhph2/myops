@@ -13,7 +13,7 @@ trap '${POST_WORK_COMMAND}' EXIT
 eval "$(myops pre-work --response-type=eval)"
 myops pre-work --type=start
 # validate
-php app/MyOps.php validate --type=device --type=branch --type=docker
+myops validate --type=device --type=branch --type=docker
 # handle
 
 
