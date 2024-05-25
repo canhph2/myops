@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.10.0 ===
+// === MyOps v3.10.1 ===
 
 // === Generated libraries classes ===
 
@@ -1633,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.10.0';
+    const APP_VERSION = '3.10.1';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1760,6 +1760,7 @@ class CommandEnum
                 "use --message=<custom message> to send a custom message",
                 "use --type=start or --type=finish to send a message of process",
                 "use --process-id=<PROCESS_ID> to handle process time",
+                "use --indent=A to indent the message with |-      <your message>",
             ],
             self::TMP => [
                 'handle temporary directory (tmp)',
@@ -1870,7 +1871,7 @@ class GitHubEnum
     const ENGAGE_SELENIUM_TEST_1 = 'engage-selenium-test-1';
 
     //
-    const DEVELOPMENT_ONLY_REPOSITORIES = [self::MYOPS, self::DOCKER_BASE_IMAGES, self::ENGAGE_SELENIUM_TEST_1];
+    const DEVELOPMENT_ONLY_REPOSITORIES = [self::DOCKER_BASE_IMAGES, self::ENGAGE_SELENIUM_TEST_1];
     const PRODUCTION_REPOSITORIES = [self::ENGAGE_API, self::ENGAGE_BOOKING_API, self::INVOICE_SERVICE, self::PAYMENT_SERVICE,
         self::INTEGRATION_API, self::EMAIL_SERVICE, self::ENGAGE_SPA, self::ENGAGE_BOOKING_SPA];
 
@@ -4195,20 +4196,21 @@ class SlackService
     public static function handleInputMessage(): ?string
     {
         $message = null;
-        $buildTime = self::input('process-id') ? sprintf("in %s", TimeHelper::handleTimeEnd(self::input('process-id'))) : '';
-        $result = is_null(self::input('exit-code')) ? '' // case no exist code
+        $buildTime = self::input('process-id') ? sprintf("(in %s)", TimeHelper::handleTimeEnd(self::input('process-id'))) : '';
+        $resultEmoji = is_null(self::input('exit-code')) ? '' // case no exist code
             : ((int)self::input('exit-code') ? SlackEnum::X_EMOJI : SlackEnum::CHECK_EMOJI);
         //
         if (self::input('type') === ProcessEnum::START) {
             $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
                 GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName()));
         } else if (self::input('type') === ProcessEnum::FINISH) {
-            $message = trim(sprintf("%s just finished building and deploying the project %s %s %s", getenv('DEVICE'),
-                GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime, $result));
+            $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
+                GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime));
         } else if (self::input('message')) {
-            $message = trim(sprintf("%s %s %s", self::input('message'), $buildTime, $result));
+            $message = trim(sprintf("%s %s", self::input('message'), $buildTime));
         }
-        return $message;
+        //
+        return "$message $resultEmoji";
     }
 
     /**
@@ -4259,13 +4261,16 @@ class SlackService
             exit(); // END
         }
         // handle
+        //    indent
+        $indent = self::input('indent') ? sprintf("|-%s", str_repeat(' ', (int)self::input('indent') * 8 - 2)) : '';
+        //
         $slackUrl = "https://slack.com/api/chat.postMessage";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $slackUrl);
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
-            "channel" => $slackChannel, "text" => sprintf("[%s | %s] %s", $repository, $branch, $message),
+            "channel" => $slackChannel, "text" => sprintf("$indent`%s` `%s` %s", $repository, $branch, $message),
         ]));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
         $response = curl_exec($curl);
