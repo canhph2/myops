@@ -40,6 +40,7 @@ cd "${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 chmod u+x ".ops/build-docker-image-and-push-to-ECR.sh" && . ".ops/build-docker-image-and-push-to-ECR.sh"
 myops slack --message="-> just finished building Docker image of Integration API :heavy_check_mark:"
 #    Deploy ELB
+export REPOSITORY=my-ops # to switch repository
 myops slack --message="-> starts to deploying new version to ELB (Elastic Beanstalk) :arrows_counterclockwise:"
 myops elb-update-version
 
