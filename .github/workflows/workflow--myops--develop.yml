@@ -9,40 +9,18 @@ defaults:
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push events
-  # Disable automatically trigger on push a new code to this branch
-  # push:
-  #   branches: [ "develop" ]
+  # Disable automatically trigger on push a new code to the master branch
+  #  push:
+  #    branches: [ "develop" ]
   # Triggers the workflow manually
   workflow_dispatch:
-    inputs:
-      selectedBranch:
-        description: 'Select branch to build all backend projects'
-        required: true
-        default: 'develop'
-        type: choice
-        options:
-          - develop
-          - staging
-          - more
+
 jobs:
 
   build-and-deploy:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-
-      - name: Override Branch
-        run: |
-          echo "selected branch is ${SELECTED_BRANCH}"
-          git checkout ${SELECTED_BRANCH}
-          git pull
-        env:
-          SELECTED_BRANCH: ${{ inputs.selectedBranch }}
-
       - name: Build And Deploy
         run: |
-          myops version
-          myops branch
-          chmod u+x ".ops/sync-and-notify-Slack.sh"
-          . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'
-          # todo build all backend
+          chmod u+x ".ops/sync-and-notify-Slack.sh" && . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'

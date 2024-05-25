@@ -1,0 +1,35 @@
+# All backend projects by environment
+name: workflow--myops--all-backend
+
+# load shell configuration (Ubuntu | .bashrc)
+defaults:
+  run:
+    shell: bash -ileo pipefail {0}
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow manually
+  workflow_dispatch:
+    inputs:
+      selectedBranch:
+        description: 'Select the branch to build all backend projects and deploy ELB'
+        required: true
+        default: 'develop'
+        type: choice
+        options:
+          - develop
+          - staging
+          - moretodo_master
+jobs:
+
+  build-and-deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check Selected Branch
+        run: git checkout ${{ inputs.selectedBranch }} && git pull
+
+      - name: Build And Deploy
+        run: |
+          chmod u+x ".ops/build-all-backend-and-deploy-ELB.sh" && . ".ops/build-all-backend-and-deploy-ELB.sh" 'GitHub Actions'
