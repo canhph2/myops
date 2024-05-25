@@ -49,8 +49,8 @@ class SlackService
     public static function handleInputMessage(): ?string
     {
         $message = null;
-        $buildTime = self::input('process-id') ? sprintf("(in %s)", TimeHelper::handleTimeEnd(self::input('process-id'))) : '';
-        $resultEmoji = is_null(self::input('exit-code')) ? '' // case no exist code
+        $buildTime = self::input('process-id') ? sprintf("(in %s)", TimeHelper::handleTimeEnd(self::input('process-id'))) : null;
+        $resultEmoji = is_null(self::input('exit-code')) ? null // case no exist code
             : ((int)self::input('exit-code') ? SlackEnum::X_EMOJI : SlackEnum::CHECK_EMOJI);
         //
         if (self::input('type') === ProcessEnum::START) {
@@ -63,7 +63,7 @@ class SlackService
             $message = trim(sprintf("%s %s", self::input('message'), $buildTime));
         }
         //
-        return "$message $resultEmoji";
+        return trim("$message $resultEmoji");
     }
 
     /**
