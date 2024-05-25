@@ -15,25 +15,30 @@ on:
   # Triggers the workflow manually
   workflow_dispatch:
     inputs:
-      overideBranch:
-        description: 'Branch to run'
+      selectedBranch:
+        description: 'Select branch to build all backend projects'
         required: true
         default: 'develop'
         type: choice
         options:
-          - staging
           - develop
+          - staging
+          - more
 jobs:
 
   build-and-deploy:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
+
       - name: Override Branch
         run: |
-          echo "branch is ${OVERRIDE_BRANCH}"
+          echo "selected branch is ${SELECTED_BRANCH}"
+          git checkout ${SELECTED_BRANCH}
+          git pull
         env:
-          OVERRIDE_BRANCH: ${{ inputs.overideBranch }}
+          SELECTED_BRANCH: ${{ inputs.selectedBranch }}
+
       - name: Build And Deploy
         run: |
           myops version
