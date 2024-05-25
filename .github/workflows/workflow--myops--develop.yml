@@ -14,13 +14,23 @@ on:
   #   branches: [ "develop" ]
   # Triggers the workflow manually
   workflow_dispatch:
-    environment:
-      description: 'Environment to run tests against'
-      type: choice
-      options:
-        - staging
-        - develop
-      required: true
+    inputs:
+      logLevel:
+        description: 'choose env level'
+        required: true
+        default: 'develop'
+        type: choice
+        options:
+          - staging
+          - develop
+      tags:
+        description: 'Test scenario tags'
+        required: false
+        type: boolean
+      environment:
+        description: 'Environment to run tests against'
+        type: environment
+        required: true
 jobs:
 
   build-and-deploy:
