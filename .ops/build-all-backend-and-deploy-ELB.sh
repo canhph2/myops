@@ -14,6 +14,9 @@ myops pre-work --message="${DEVICE} starts to build all backend projects:"
 # validate
 myops validate --type=device --type=branch --type=docker
 # handle
+#    just prepare a caches directory of myops
+myops checkout-caches
+cd "${ENGAGEPLUS_CACHES_REPOSITORY_DIR}"
 #    Build Docker images
 #        API module
 export REPOSITORY=engage-api # to switch repository
@@ -41,7 +44,6 @@ chmod u+x ".ops/build-docker-image-and-push-to-ECR.sh" && . ".ops/build-docker-i
 myops slack --message="-> just finished building Docker image of Integration API :heavy_check_mark:"
 #    Deploy ELB
 export REPOSITORY=my-ops # to switch repository
+cd "${ENGAGEPLUS_CACHES_REPOSITORY_DIR}" # back to caches directory of myops
 myops slack --message="-> starts to deploying new version to ELB (Elastic Beanstalk) :arrows_counterclockwise:"
 myops elb-update-version
-
-
