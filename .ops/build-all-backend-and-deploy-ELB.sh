@@ -29,21 +29,21 @@ export REPOSITORY=invoice-service # to switch repository
 myops checkout-caches ${REPOSITORY} ${BRANCH}
 cd "${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 chmod u+x ".ops/build-docker-image-and-push-to-ECR.sh" && . ".ops/build-docker-image-and-push-to-ECR.sh"
-myops slack --message="-> just finished building Docker image of Invoice Service :heavy_check_mark:"
+myops slack --indent=1 --message="-> just finished building Docker image of Invoice Service :heavy_check_mark:"
 #        Payment service
 export REPOSITORY=payment-service # to switch repository
 myops checkout-caches ${REPOSITORY} ${BRANCH}
 cd "${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 chmod u+x ".ops/build-docker-image-and-push-to-ECR.sh" && . ".ops/build-docker-image-and-push-to-ECR.sh"
-myops slack --message="-> just finished building Docker image of Payment Service :heavy_check_mark:"
+myops slack --indent=1 --message="-> just finished building Docker image of Payment Service :heavy_check_mark:"
 #        Integration API
 export REPOSITORY=integration-api # to switch repository
 myops checkout-caches ${REPOSITORY} ${BRANCH}
 cd "${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 chmod u+x ".ops/build-docker-image-and-push-to-ECR.sh" && . ".ops/build-docker-image-and-push-to-ECR.sh"
-myops slack --message="-> just finished building Docker image of Integration API :heavy_check_mark:"
+myops slack --indent=1 --message="-> just finished building Docker image of Integration API :heavy_check_mark:"
 #    Deploy ELB
 export REPOSITORY=my-ops # to switch repository
 cd "${ENGAGEPLUS_CACHES_REPOSITORY_DIR}" # back to caches directory of myops
-myops slack --message="-> starts to deploying new version to ELB (Elastic Beanstalk) :arrows_counterclockwise:"
+myops slack --indent=1 --message="-> starts to deploying new version to ELB (Elastic Beanstalk) :arrows_counterclockwise:"
 myops elb-update-version
