@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.9.20 ===
+// === MyOps v3.10.0 ===
 
 // === Generated libraries classes ===
 
@@ -1633,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.9.20';
+    const APP_VERSION = '3.10.0';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1840,7 +1840,8 @@ class GitHubEnum
     const MASTER = 'master';
     const STAGING = 'staging';
     const DEVELOP = 'develop';
-    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP];
+    const SHIP = 'ship'; // ship MyOps to the CI/CD server on May 25, 2024.
+    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SHIP];
     const PRODUCTION_BRANCHES = [self::MAIN, self::MASTER];
 
     // === GitHub users ===

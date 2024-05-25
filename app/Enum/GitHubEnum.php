@@ -22,7 +22,7 @@ class GitHubEnum
     const MASTER = 'master';
     const STAGING = 'staging';
     const DEVELOP = 'develop';
-    const SHIP = 'ship'; // ship MyOps to the CICD server on May 25, 2024.
+    const SHIP = 'ship'; // ship MyOps to the CI/CD server on May 25, 2024.
     const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SHIP];
     const PRODUCTION_BRANCHES = [self::MAIN, self::MASTER];
 
