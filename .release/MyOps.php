@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.8 ===
+// === MyOps v3.12.9 ===
 
 // === Generated libraries classes ===
 
@@ -1636,7 +1636,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.8';
+    const APP_VERSION = '3.12.9';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1840,7 +1840,7 @@ class GitHubEnum
     // === GitHub commands ===
     const INIT_REPOSITORY_COMMAND = 'git init';
     const RESET_BRANCH_COMMAND = 'git reset --hard HEAD'; // rollback all changing
-    CONST CHECKOUT_COMMAND = 'git checkout --force -B %s refs/remotes/origin/%s';
+    const CHECKOUT_COMMAND = 'git checkout --force -B %s refs/remotes/origin/%s';
     const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
     const PULL_COMMAND = 'git pull'; // get the newest code
     const ADD_ALL_FILES_COMMAND = 'git add -A';
@@ -1860,6 +1860,7 @@ class GitHubEnum
     const DEVELOP = 'develop';
     const SHIP = 'ship'; // ship MyOps to the CI/CD server on May 25, 2024.
     const SUPPORT = 'support'; // main branch of MyOps
+    const DIVIDER_BRANCH = '---'; // a divider to reduce wrong click
     const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SHIP, self::SUPPORT];
     const PRODUCTION_BRANCHES = [self::MAIN, self::MASTER];
 
@@ -2876,6 +2877,11 @@ class GitHubHelper
         if (!$branch) {
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
                 ->print("missing a branch");
+            exit(ERROR_END);
+        }
+        if ($branch === GitHubEnum::DIVIDER_BRANCH) {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
+                ->print("detect clicking on divider (branch)");
             exit(ERROR_END);
         }
         // handle

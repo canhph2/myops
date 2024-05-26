@@ -128,6 +128,11 @@ class GitHubHelper
                 ->print("missing a branch");
             exit(ERROR_END);
         }
+        if ($branch === GitHubEnum::DIVIDER_BRANCH) {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
+                ->print("detect clicking on divider (branch)");
+            exit(ERROR_END);
+        }
         // handle
         (new Process("Checkout a branch", DirHelper::getWorkingDir(),
             GitHubFactory::generateCheckoutCommands($branch, self::inputBool('clean'))

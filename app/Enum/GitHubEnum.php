@@ -9,7 +9,7 @@ class GitHubEnum
     // === GitHub commands ===
     const INIT_REPOSITORY_COMMAND = 'git init';
     const RESET_BRANCH_COMMAND = 'git reset --hard HEAD'; // rollback all changing
-    CONST CHECKOUT_COMMAND = 'git checkout --force -B %s refs/remotes/origin/%s';
+    const CHECKOUT_COMMAND = 'git checkout --force -B %s refs/remotes/origin/%s';
     const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
     const PULL_COMMAND = 'git pull'; // get the newest code
     const ADD_ALL_FILES_COMMAND = 'git add -A';
@@ -29,6 +29,7 @@ class GitHubEnum
     const DEVELOP = 'develop';
     const SHIP = 'ship'; // ship MyOps to the CI/CD server on May 25, 2024.
     const SUPPORT = 'support'; // main branch of MyOps
+    const DIVIDER_BRANCH = '---'; // a divider to reduce wrong click
     const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SHIP, self::SUPPORT];
     const PRODUCTION_BRANCHES = [self::MAIN, self::MASTER];
 
