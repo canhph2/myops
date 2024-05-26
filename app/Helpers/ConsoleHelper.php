@@ -13,8 +13,8 @@ class ConsoleHelper
      */
     public static $currentIndentLevel = IndentLevelEnum::MAIN_LINE;
 
-    public static function generateFullField(string $field): string
+    public static function generateFullField(string $field, string $equalSign = '='): string
     {
-        return sprintf("%s%s=", ConsoleEnum::FIELD_PREFIX, $field);
+        return sprintf("%s%s%s", ConsoleEnum::FIELD_PREFIX, $field, $equalSign);
     }
 }
