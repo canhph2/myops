@@ -16,6 +16,7 @@ eval "$(myops pre-work --response-type=eval)"
 myops pre-work --message="${DEVICE} starts to build all backend projects:"
 # validate
 myops validate --type=device --type=branch --type=docker
+exit 2 #todo
 # handle
 #    just prepare a caches directory of myops
 myops checkout-caches
