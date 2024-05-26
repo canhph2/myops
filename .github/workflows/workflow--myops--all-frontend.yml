@@ -31,10 +31,9 @@ jobs:
         run: echo 1234
 
   build-and-deploy:
+    name: Build And Deploy (${{ inputs.selectedBranch }})
     runs-on: self-hosted
     steps:
-      - name: Selected Branch Is '${{ inputs.selectedBranch }}'
-        run: myops title "Selected Branch Is '${{ inputs.selectedBranch }}'"
       - uses: actions/checkout@v3
         with:
           ref: ${{ inputs.selectedBranch }} # Checkout Selected Branch

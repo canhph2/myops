@@ -16,15 +16,8 @@ on:
 
 jobs:
 
-  show-selected-branch:
-    name: Selected Branch Is 'TEST'
-    runs-on: self-hosted
-    steps:
-      - name: test
-        run: echo 1234
-
-  ship-myops-to-GitHub-runner-server:
-    name: Ship MyOps to GitHub runner server
+  job1-sync-myops:
+    name: Sync MyOps
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
