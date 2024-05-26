@@ -77,13 +77,11 @@ class GitHubHelper
 
     public static function setRemoteOriginUrl(string $remoteOriginUrl, string $workingDir = null, bool $isCheckResult = false): void
     {
-        $commandsToCheckResult = $isCheckResult ? [GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND] : [];
+        $commandsToCheckResult = $isCheckResult ? collect([GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND]) : collect();
         (new Process(
-            "GitHub Set Remote Origin Url",
-            $workingDir ?? DirHelper::getWorkingDir(),
-            array_merge([
-                sprintf("git remote set-url origin %s", $remoteOriginUrl)
-            ], $commandsToCheckResult)
+            "GitHub Set Remote Origin Url", $workingDir ?? DirHelper::getWorkingDir(),
+            collect([sprintf(GitHubEnum::SET_REMOTE_ORIGIN_URL_COMMAND, $remoteOriginUrl)])
+                ->merge($commandsToCheckResult)
         ))->execMultiInWorkDir()->printOutput();
     }
 
@@ -120,6 +118,8 @@ class GitHubHelper
     public static function checkout(string $customBranch = null): void
     {
         $branch = $customBranch ?? self::input('branch');
+        $repository = self::getRepository();
+        $GitHubPersonalAccessToken = AWSHelper::getValueEnvOpsSecretManager('GITHUB_PERSONAL_ACCESS_TOKEN');
         //
         self::lineTag(TagEnum::GIT)->printTitle("Checkout '%s' branch", $branch);
         // validate
@@ -133,10 +133,17 @@ class GitHubHelper
                 ->print("detect clicking on divider (branch)");
             exit(ERROR_END);
         }
+        if (!$GitHubPersonalAccessToken) {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("GitHub token not found (in Secret Manager)");
+            exit(ERROR_END);
+        }
         // handle
+        $commands = collect([sprintf(GitHubEnum::SET_REMOTE_ORIGIN_URL_COMMAND, self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken))]);
         (new Process("Checkout a branch", DirHelper::getWorkingDir(),
-            GitHubFactory::generateCheckoutCommands($branch, self::inputBool('clean'))
+            $commands->merge(GitHubFactory::generateCheckoutCommands($branch, self::inputBool('clean')))
         ))->execMultiInWorkDir()->printOutput();
+        // === remove token ===
+        self::setRemoteOriginUrl(self::getRemoteOriginUrl_Custom($repository), null, true);
     }
 
     /**
