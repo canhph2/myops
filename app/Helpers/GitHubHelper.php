@@ -340,6 +340,7 @@ class GitHubHelper
             $commands->addStr("git push");
         }
         $commands->addStr("git checkout %s", $featureBranch);
-        dd($commands);
+        (new Process("Merge Feature All", DirHelper::getWorkingDir(), $commands))
+            ->execMultiInWorkDir()->printOutput();
     }
 }
