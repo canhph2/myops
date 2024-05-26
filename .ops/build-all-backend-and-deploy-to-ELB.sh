@@ -45,5 +45,5 @@ myops slack --indent=1 --message="just finished building Docker image of Integra
 #    Deploy ELB
 export REPOSITORY=myops # to switch repository
 cd "${ENGAGEPLUS_CACHES_REPOSITORY_DIR}" # back to caches directory of myops
-myops slack --indent=1 --message="-> starts to deploying new version to ELB (Elastic Beanstalk) :arrows_counterclockwise:"
+myops slack --indent=1 --message="starts to deploying new version to ELB (Elastic Beanstalk) :arrows_counterclockwise:"
 myops elb-update-version
