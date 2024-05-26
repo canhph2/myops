@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.28 ===
+// === MyOps v3.12.29 ===
 
 // === Generated libraries classes ===
 
@@ -703,7 +703,8 @@ class Process
             if ($exitCode && $this->isExitOnError) {
                 $this->printOutput();
                 self::LineTag(TagEnum::ERROR)->print("detect execute shell command failed, exit app | exit code = $exitCode");
-                exit($exitCode); // END app
+//                exit($exitCode); // END app
+                exit(ERROR_END); // todo test
             }
         }
         //
@@ -1636,7 +1637,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.28';
+    const APP_VERSION = '3.12.29';
 }
 
 // [REMOVED] namespace App\Enum;

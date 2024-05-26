@@ -233,7 +233,8 @@ class Process
             if ($exitCode && $this->isExitOnError) {
                 $this->printOutput();
                 self::LineTag(TagEnum::ERROR)->print("detect execute shell command failed, exit app | exit code = $exitCode");
-                exit($exitCode); // END app
+//                exit($exitCode); // END app
+                exit(ERROR_END); // todo test
             }
         }
         //
