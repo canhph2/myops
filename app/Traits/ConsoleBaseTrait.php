@@ -99,6 +99,11 @@ trait ConsoleBaseTrait
         return null; // END
     }
 
+    private static function inputBool(string $field): bool
+    {
+        return (bool)self::input($field);
+    }
+
     private static function inputArr(string $field): CustomCollection
     {
         $values = new CustomCollection();
