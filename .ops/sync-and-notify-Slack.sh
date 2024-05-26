@@ -15,6 +15,3 @@ php app/MyOps.php pre-work
 php app/MyOps.php validate --type=device --type=branch
 # handle
 php app/MyOps.php sync
-
-#todo test
-exit 2
