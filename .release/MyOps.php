@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.6 ===
+// === MyOps v3.12.7 ===
 
 // === Generated libraries classes ===
 
@@ -1636,7 +1636,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.6';
+    const APP_VERSION = '3.12.7';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2869,8 +2869,10 @@ class GitHubHelper
      */
     public static function checkout(string $customBranch = null): void
     {
-        // validate
         $branch = $customBranch ?? self::input('branch');
+        //
+        self::lineTag(TagEnum::GIT)->printTitle("Checkout '%s' branch", $branch);
+        // validate
         if (!$branch) {
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
                 ->print("missing a branch");

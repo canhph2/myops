@@ -119,8 +119,10 @@ class GitHubHelper
      */
     public static function checkout(string $customBranch = null): void
     {
-        // validate
         $branch = $customBranch ?? self::input('branch');
+        //
+        self::lineTag(TagEnum::GIT)->printTitle("Checkout '%s' branch", $branch);
+        // validate
         if (!$branch) {
             self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
                 ->print("missing a branch");
