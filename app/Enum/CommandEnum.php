@@ -124,6 +124,7 @@ class CommandEnum
                 "use --message=<custom message> to send a custom message",
                 "use --type=start or --type=finish to send a message of process",
                 "use --process-id=<PROCESS_ID> to handle process time",
+                "use --indent=A to indent the message with |-      <your message>",
             ],
             self::TMP => [
                 'handle temporary directory (tmp)',

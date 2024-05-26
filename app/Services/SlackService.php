@@ -49,20 +49,21 @@ class SlackService
     public static function handleInputMessage(): ?string
     {
         $message = null;
-        $buildTime = self::input('process-id') ? sprintf("in %s", TimeHelper::handleTimeEnd(self::input('process-id'))) : '';
-        $result = is_null(self::input('exit-code')) ? '' // case no exist code
+        $buildTime = self::input('process-id') ? sprintf("(in %s)", TimeHelper::handleTimeEnd(self::input('process-id'))) : null;
+        $resultEmoji = is_null(self::input('exit-code')) ? null // case no exist code
             : ((int)self::input('exit-code') ? SlackEnum::X_EMOJI : SlackEnum::CHECK_EMOJI);
         //
         if (self::input('type') === ProcessEnum::START) {
             $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
                 GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName()));
         } else if (self::input('type') === ProcessEnum::FINISH) {
-            $message = trim(sprintf("%s just finished building and deploying the project %s %s %s", getenv('DEVICE'),
-                GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime, $result));
+            $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
+                GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime));
         } else if (self::input('message')) {
-            $message = trim(sprintf("%s %s %s", self::input('message'), $buildTime, $result));
+            $message = trim(sprintf("%s %s", self::input('message'), $buildTime));
         }
-        return $message;
+        //
+        return trim("$message $resultEmoji");
     }
 
     /**
@@ -113,13 +114,16 @@ class SlackService
             exit(); // END
         }
         // handle
+        //    indent
+        $indent = self::input('indent') ? sprintf("|-%s", str_repeat(' ', (int)self::input('indent') * 8 - 2)) : '';
+        //
         $slackUrl = "https://slack.com/api/chat.postMessage";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $slackUrl);
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
-            "channel" => $slackChannel, "text" => sprintf("[%s | %s] %s", $repository, $branch, $message),
+            "channel" => $slackChannel, "text" => sprintf("$indent`%s` `%s` %s", $repository, $branch, $message),
         ]));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
         $response = curl_exec($curl);
