@@ -9,7 +9,7 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 # cleanup: in case success, in case failure and exit with code at any commands
 #trap 'export REPOSITORY=myops && myops post-work --process-id=${PROCESS_ID} --exit-code=$?    --message="${DEVICE} just finished deploying all backend projects" ' EXIT
 #todo
-trap 'echo "exit code" && echo $? && myops post-work --process-id=${PROCESS_ID} --exit-code=$?    --message="${DEVICE} just finished deploying all backend projects" ' EXIT
+trap 'myops post-work --process-id=${PROCESS_ID} --exit-code=$?    --message="${DEVICE} just finished deploying all backend projects" ' EXIT
 
 exit 2;
 
