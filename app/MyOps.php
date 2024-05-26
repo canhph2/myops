@@ -127,6 +127,9 @@ class MyOps
             case CommandEnum::FORCE_CHECKOUT:
                 GitHubHelper::forceCheckout();
                 break;
+            case CommandEnum::MERGE_FEATURE_ALL:
+                GitHubHelper::mergeFeatureAllConsole();
+                break;
             //        GitHub Actions
             case CommandEnum::BUILD_ALL_PROJECTS:
                 GitHubHelper::buildAllProject();

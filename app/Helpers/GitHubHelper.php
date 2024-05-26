@@ -137,13 +137,13 @@ class GitHubHelper
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        if($customRepository) $repositoryFrom = "CODE";
-        elseif(self::arg(1)) $repositoryFrom = "CONSOLE";
-        elseif(getenv('REPOSITORY')) $repositoryFrom = "ENV";
+        if ($customRepository) $repositoryFrom = "CODE";
+        elseif (self::arg(1)) $repositoryFrom = "CONSOLE";
+        elseif (getenv('REPOSITORY')) $repositoryFrom = "ENV";
 
-        if($customBranch) $branchFrom = "CODE";
-        elseif(self::arg(2)) $branchFrom = "CONSOLE";
-        elseif(getenv('BRANCH')) $branchFrom = "ENV";
+        if ($customBranch) $branchFrom = "CODE";
+        elseif (self::arg(2)) $branchFrom = "CONSOLE";
+        elseif (getenv('BRANCH')) $branchFrom = "ENV";
 
         self::lineTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
             ->setTag($branchFrom)->print("BRANCH = %s", $branch)
@@ -310,5 +310,10 @@ class GitHubHelper
         ]))->execMultiInWorkDirAndGetOutputStrAll();
         //
         return count(json_decode($resultInProgress, true)) || count(json_decode($resultQueued, true));
+    }
+
+    public static function mergeFeatureAllConsole(): void
+    {
+
     }
 }
