@@ -314,6 +314,15 @@ class GitHubHelper
 
     public static function mergeFeatureAllConsole(): void
     {
+        // validate
+        $branch = GitHubHelper::getCurrentBranch();
+        if (!in_array($branch, GitHubEnum::SUPPORT_BRANCHES)) {
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("the branch '%s' is allow merge-feature-all", $branch);
+        } else {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid branch to merge feature all, should be a feature A branch | current branch is '%s'", $branch);
+            exitApp(ERROR_END);
+        }
+        // handle
 
     }
 }
