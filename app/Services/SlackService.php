@@ -114,9 +114,6 @@ class SlackService
             exit(); // END
         }
         // handle
-        //    indent
-        $indent = self::input('indent') ? sprintf("|-%s", str_repeat(' ', (int)self::input('indent') * 8 - 2)) : '';
-        //
         $slackUrl = "https://slack.com/api/chat.postMessage";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $slackUrl);
@@ -124,7 +121,7 @@ class SlackService
         curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
             "channel" => $slackChannel,
-            "text" => sprintf("$indent%s %s %s", self::generateTag($repository), self::generateTag($branch), $message),
+            "text" => sprintf("%s%s %s  %s", self::generateIndent(), self::generateTag($repository), self::generateTag($branch), $message),
         ]));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
         $response = curl_exec($curl);
@@ -147,5 +144,14 @@ class SlackService
     private static function generateTag(string $tagName): string
     {
         return sprintf("%s%s%s", SlackEnum::CODE_CHAR, $tagName, SlackEnum::CODE_CHAR);
+    }
+
+    /**
+     * require input --indent=A
+     * @return null|string
+     */
+    private static function generateIndent(): ?string
+    {
+        return self::input('indent') ? sprintf("|-%s", str_repeat(' ', (int)self::input('indent') * 8 - 2)) : '';
     }
 }
