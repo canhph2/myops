@@ -86,13 +86,14 @@ trait ConsoleBaseTrait
      * - a Field starts with prefix --, .e.g --field=value
      * - Get single input field will get first item
      * @param string $field
-     * @return string
+     * @return null|string|bool
      */
-    private static function input(string $field): ?string
+    private static function input(string $field)
     {
         foreach (self::args() as $arg) {
-            if (StrHelper::startsWith($arg, ConsoleHelper::generateFullField($field))) {
-                return str_replace(ConsoleHelper::generateFullField($field), '', $arg); // END
+            if (StrHelper::startsWith($arg, ConsoleHelper::generateFullField($field, ''))) {
+                return $arg === ConsoleHelper::generateFullField($field, '') ? true : // case input only
+                    str_replace(ConsoleHelper::generateFullField($field), '', $arg); // case --field=value
             }
         }
         return null; // END
