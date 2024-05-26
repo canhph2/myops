@@ -116,7 +116,7 @@ class MyOps
                 echo exec(GitHubEnum::GET_BRANCH_COMMAND);
                 break;
             case CommandEnum::REPOSITORY:
-                echo basename(str_replace('.git', '', exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND)));
+                echo GitHubHelper::getRepository();
                 break;
             case CommandEnum::HEAD_COMMIT_ID:
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
