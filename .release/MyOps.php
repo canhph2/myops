@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.29 ===
+// === MyOps v3.12.30 ===
 
 // === Generated libraries classes ===
 
@@ -697,14 +697,12 @@ class Process
         }
         //
         if ($this->commands->count()) {
-            $resultCode = null;
             exec($this->commands->join(';'), $tempOutput, $exitCode);
             $this->output = new CustomCollection($tempOutput);
             if ($exitCode && $this->isExitOnError) {
                 $this->printOutput();
                 self::LineTag(TagEnum::ERROR)->print("detect execute shell command failed, exit app | exit code = $exitCode");
-//                exit($exitCode); // END app
-                exit(ERROR_END); // todo test
+                exit($exitCode); // END app
             }
         }
         //
@@ -1637,7 +1635,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.29';
+    const APP_VERSION = '3.12.30';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3368,7 +3366,7 @@ class AWSHelper
                     $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
                 //    update EB environment
-                sprintf("aws elasticbeanstalk update-environment --environment-name %s --version-label %s > /dev/null",
+                sprintf("aws elasticbeanstalk update-environment --environment-name %s --version-label %s > /dev/null || exit 1",
                     getenv('EB_ENVIRONMENT_NAME'), $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
             ]))->execMultiInWorkDir()->printOutput();
