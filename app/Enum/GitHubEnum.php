@@ -9,13 +9,16 @@ class GitHubEnum
     // === GitHub commands ===
     const INIT_REPOSITORY_COMMAND = 'git init';
     const RESET_BRANCH_COMMAND = 'git reset --hard HEAD'; // rollback all changing
+    CONST CHECKOUT_COMMAND = 'git checkout --force -B %s refs/remotes/origin/%s';
     const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
     const PULL_COMMAND = 'git pull'; // get the newest code
     const ADD_ALL_FILES_COMMAND = 'git add -A';
     const PUSH_COMMAND = 'git push';
+    const SET_REMOTE_ORIGIN_URL_COMMAND = 'git remote set-url origin %s';
     const GET_REMOTE_ORIGIN_URL_COMMAND = 'git config --get remote.origin.url';
     const GET_REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
     const GET_HEAD_COMMIT_ID_COMMAND = 'git rev-parse --short HEAD';
+    const CLEAN_COMMAND = 'git clean -ffdx';
 
     // === Git branches ===
     const MAIN = 'main';

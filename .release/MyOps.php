@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.11.11 ===
+// === MyOps v3.11.12 ===
 
 // === Generated libraries classes ===
 
@@ -1633,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.11.11';
+    const APP_VERSION = '3.11.12';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1832,13 +1832,16 @@ class GitHubEnum
     // === GitHub commands ===
     const INIT_REPOSITORY_COMMAND = 'git init';
     const RESET_BRANCH_COMMAND = 'git reset --hard HEAD'; // rollback all changing
+    CONST CHECKOUT_COMMAND = 'git checkout --force -B %s refs/remotes/origin/%s';
     const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
     const PULL_COMMAND = 'git pull'; // get the newest code
     const ADD_ALL_FILES_COMMAND = 'git add -A';
     const PUSH_COMMAND = 'git push';
+    const SET_REMOTE_ORIGIN_URL_COMMAND = 'git remote set-url origin %s';
     const GET_REMOTE_ORIGIN_URL_COMMAND = 'git config --get remote.origin.url';
     const GET_REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
     const GET_HEAD_COMMIT_ID_COMMAND = 'git rev-parse --short HEAD';
+    const CLEAN_COMMAND = 'git clean -ffdx';
 
     // === Git branches ===
     const MAIN = 'main';
@@ -2857,9 +2860,9 @@ class GitHubHelper
         }
         // === update new code ===
         (new Process("UPDATE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
-            sprintf("git remote set-url origin %s", self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
+            sprintf(GitHubEnum::SET_REMOTE_ORIGIN_URL_COMMAND, self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
             GitHubEnum::RESET_BRANCH_COMMAND,
-            sprintf("git checkout %s", $branch),
+            sprintf(GitHubEnum::CHECKOUT_COMMAND, $branch, $branch),
             GitHubEnum::PULL_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
         // === remove token ===
