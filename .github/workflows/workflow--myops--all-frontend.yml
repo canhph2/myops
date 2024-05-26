@@ -27,9 +27,11 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.selectedBranch }} # Checkout Selected Branch
 
-      - name: Checkout Selected Branch
-        run: myops checkout --branch=${{ inputs.selectedBranch }} --clean
+#      - name: Checkout Selected Branch
+#        run: myops checkout --branch=${{ inputs.selectedBranch }} --clean
 
       - name: Build And Deploy
         run: chmod u+x ".ops/build-all-frontend-and-deploy-to-S3.sh" && . ".ops/build-all-frontend-and-deploy-to-S3.sh" 'GitHub Actions'
