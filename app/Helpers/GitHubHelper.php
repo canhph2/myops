@@ -171,9 +171,9 @@ class GitHubHelper
         }
         // === update new code ===
         (new Process("UPDATE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
-            sprintf("git remote set-url origin %s", self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
+            sprintf(GitHubEnum::SET_REMOTE_ORIGIN_URL_COMMAND, self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
             GitHubEnum::RESET_BRANCH_COMMAND,
-            sprintf("git checkout %s", $branch),
+            sprintf(GitHubEnum::CHECKOUT_COMMAND, $branch, $branch),
             GitHubEnum::PULL_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
         // === remove token ===
