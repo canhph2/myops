@@ -15,9 +15,7 @@ trap 'export REPOSITORY=myops && echo "exit code" && echo $? && myops post-work 
 eval "$(myops pre-work --response-type=eval)"
 myops pre-work --message="${DEVICE} starts to build all backend projects:"
 # validate
-exit 2 #todo
 myops validate --type=device --type=branch --type=docker
-
 # handle
 #    just prepare a caches directory of myops
 myops checkout-caches
