@@ -19,7 +19,7 @@ on:
         options:
           - develop
           - staging
-          - moretodo_master
+          - master
 jobs:
 
   build-and-deploy:

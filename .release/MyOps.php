@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.11.10 ===
+// === MyOps v3.11.11 ===
 
 // === Generated libraries classes ===
 
@@ -1633,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.11.10';
+    const APP_VERSION = '3.11.11';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -4285,6 +4285,7 @@ class SlackService
      * @param string|null $customMessage
      * @param string $customRepository
      * @param string $customBranch
+     * @param int $indent
      * @return void
      */
     public static function sendMessageInternal(string $customMessage = null, string $customRepository = 'custom_repository',
@@ -4305,6 +4306,7 @@ class SlackService
      * @param string|null $branch
      * @param string|null $slackBotToken
      * @param string|null $slackChannel
+     * @param int $indent
      * @return void
      */
     private static function sendMessage(string $message = null, string $repository = null, string $branch = null,
