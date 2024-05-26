@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.11.3 ===
+// === MyOps v3.11.4 ===
 
 // === Generated libraries classes ===
 
@@ -1633,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.11.3';
+    const APP_VERSION = '3.11.4';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3018,12 +3018,14 @@ class GitHubHelper
         }
         // handle
         //    push new code to GitHub
-        //        ask what news
-        $whatNewsInput = ucfirst(readline("Please input the commit message:"));
-        //        push
-        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
-            GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNewsInput'", GitHubEnum::PUSH_COMMAND,
-        ]))->execMultiInWorkDir()->printOutput();
+        if(!self::input('skip-commit')) {
+            //    ask what news
+            $whatNewsInput = ucfirst(readline("Please input the commit message:"));
+            //    push
+            (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
+                GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNewsInput'", GitHubEnum::PUSH_COMMAND,
+            ]))->execMultiInWorkDir()->printOutput();
+        }
         //    checkout branches and push
         $commands = new CustomCollection();
         $supportBranches = collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]);
