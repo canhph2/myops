@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.11.0 ===
+// === MyOps v3.11.1 ===
 
 // === Generated libraries classes ===
 
@@ -1633,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.11.0';
+    const APP_VERSION = '3.11.1';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1659,6 +1659,7 @@ class CommandEnum
     const HEAD_COMMIT_ID = 'head-commit-id';
     const CHECKOUT_CACHES = 'checkout-caches';
     const FORCE_CHECKOUT = 'force-checkout';
+    const MERGE_FEATURE_ALL = 'merge-feature-all';
     //        GitHub Actions
     const BUILD_ALL_PROJECTS = 'build-all-projects';
 
@@ -1739,6 +1740,9 @@ class CommandEnum
             self::FORCE_CHECKOUT => [
                 'force checkout a GitHub repository with specific branch',
                 '.e.g to test source code in the server'
+            ],
+            self::MERGE_FEATURE_ALL => [
+                '[MyOps only] will merge feature to ship, develop, staging, master, support branches and push',
             ],
             //        GitHub Actions
             self::BUILD_ALL_PROJECTS => [
@@ -1842,7 +1846,8 @@ class GitHubEnum
     const STAGING = 'staging';
     const DEVELOP = 'develop';
     const SHIP = 'ship'; // ship MyOps to the CI/CD server on May 25, 2024.
-    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SHIP];
+    const SUPPORT = 'support'; // main branch of MyOps
+    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SHIP, self::SUPPORT];
     const PRODUCTION_BRANCHES = [self::MAIN, self::MASTER];
 
     // === GitHub users ===
@@ -2682,6 +2687,7 @@ class OPSHelper
 
 // [REMOVED] namespace App\Helpers;
 
+// [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Classes\Duration;
 // [REMOVED] use App\Classes\GitHubRepositoryInfo;
 // [REMOVED] use App\Classes\Process;
@@ -2690,6 +2696,7 @@ class OPSHelper
 // [REMOVED] use App\Enum\IconEnum;
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\TagEnum;
+// [REMOVED] use App\MyOps;
 // [REMOVED] use App\Services\SlackService;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
@@ -2817,13 +2824,13 @@ class GitHubHelper
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        if($customRepository) $repositoryFrom = "CODE";
-        elseif(self::arg(1)) $repositoryFrom = "CONSOLE";
-        elseif(getenv('REPOSITORY')) $repositoryFrom = "ENV";
+        if ($customRepository) $repositoryFrom = "CODE";
+        elseif (self::arg(1)) $repositoryFrom = "CONSOLE";
+        elseif (getenv('REPOSITORY')) $repositoryFrom = "ENV";
 
-        if($customBranch) $branchFrom = "CODE";
-        elseif(self::arg(2)) $branchFrom = "CONSOLE";
-        elseif(getenv('BRANCH')) $branchFrom = "ENV";
+        if ($customBranch) $branchFrom = "CODE";
+        elseif (self::arg(2)) $branchFrom = "CONSOLE";
+        elseif (getenv('BRANCH')) $branchFrom = "ENV";
 
         self::lineTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
             ->setTag($branchFrom)->print("BRANCH = %s", $branch)
@@ -2990,6 +2997,36 @@ class GitHubHelper
         ]))->execMultiInWorkDirAndGetOutputStrAll();
         //
         return count(json_decode($resultInProgress, true)) || count(json_decode($resultQueued, true));
+    }
+
+    public static function mergeFeatureAllConsole(): void
+    {
+        // validate
+        $featureBranch = GitHubHelper::getCurrentBranch();
+        if (!in_array($featureBranch, GitHubEnum::SUPPORT_BRANCHES)) {
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("the branch '%s' is allow merge-feature-all", $featureBranch);
+        } else {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid branch to merge feature all, should be a feature A branch | current branch is '%s'", $featureBranch);
+            exitApp(ERROR_END);
+        }
+        // handle
+        //    push new code to GitHub
+        //        ask what news
+        $whatNewsInput = ucfirst(readline("Please input the commit message:"));
+        //        push
+        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
+            GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNewsInput'", GitHubEnum::PUSH_COMMAND,
+        ]))->execMultiInWorkDir()->printOutput();
+        //    checkout branches and push
+        $commands = new CustomCollection();
+        foreach(collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]) as $destinationBranch){
+            $commands->addStr("git checkout %s", $destinationBranch);
+            $commands->addStr("git merge %s", $featureBranch);
+            $commands->addStr("git push");
+        }
+        $commands->addStr("git checkout %s", $featureBranch);
+        (new Process("Merge Feature All", DirHelper::getWorkingDir(), $commands))
+            ->execMultiInWorkDir()->printOutput();
     }
 }
 
@@ -4086,15 +4123,16 @@ class ValidationHelper
     }
 
     /**
-     * allow branches: develop, staging, master
+     * Parameter priority: custom > env
      * @return void
      */
-    private static function validateBranch()
+    public static function validateBranch($customBranch = null)
     {
-        if (in_array(getenv('BRANCH'), GitHubEnum::SUPPORT_BRANCHES)) {
-            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("validation branch got OK result: %s", getenv('BRANCH'));
+        $branch = $customBranch ?? getenv('BRANCH');
+        if (in_array($branch, GitHubEnum::SUPPORT_BRANCHES)) {
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("validation branch got OK result: %s", $branch);
         } else {
-            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid branch to build | current branch is '%s'", $branch);
             exitApp(ERROR_END);
         }
     }
@@ -4607,6 +4645,9 @@ class MyOps
                 break;
             case CommandEnum::FORCE_CHECKOUT:
                 GitHubHelper::forceCheckout();
+                break;
+            case CommandEnum::MERGE_FEATURE_ALL:
+                GitHubHelper::mergeFeatureAllConsole();
                 break;
             //        GitHub Actions
             case CommandEnum::BUILD_ALL_PROJECTS:
