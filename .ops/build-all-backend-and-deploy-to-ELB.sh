@@ -7,12 +7,7 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 # usage:    sh .ops/build-all-backend-and-deploy-to-ELB.sh 'DEVICE_NAME'
 
 # cleanup: in case success, in case failure and exit with code at any commands
-#trap 'export REPOSITORY=myops && myops post-work --process-id=${PROCESS_ID} --exit-code=$?    --message="${DEVICE} just finished deploying all backend projects" ' EXIT
-#todo
 trap 'myops post-work --process-id=${PROCESS_ID} --exit-code=$?    --message="${DEVICE} just finished deploying all backend projects" ' EXIT
-
-exit 2;
-
 #
 eval "$(myops pre-work --response-type=eval)"
 myops pre-work --message="${DEVICE} starts to build all backend projects:"
@@ -52,6 +47,3 @@ export REPOSITORY=myops # to switch repository
 cd "${ENGAGEPLUS_CACHES_REPOSITORY_DIR}" # back to caches directory of myops
 myops slack --indent=1 --message="starts to deploying new version to ELB (Elastic Beanstalk) :arrows_counterclockwise:"
 myops elb-update-version
-
-# todo
-myops sub-title test

@@ -54,7 +54,6 @@ class SlackService
         $buildTime = self::input('process-id') ? sprintf("(in %s)", TimeHelper::handleTimeEnd(self::input('process-id'))) : null;
         $resultEmoji = is_null(self::input('exit-code')) ? null // case no exist code
             : ((int)self::input('exit-code') ? SlackEnum::X_EMOJI : SlackEnum::CHECK_EMOJI);
-        echo "(int)self::input('exit-code')= ".(int)self::input('exit-code')."  resultEmoji = $resultEmoji\n"; // todo test
         //
         if (self::input('type') === ProcessEnum::START) {
             $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
