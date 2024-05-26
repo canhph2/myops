@@ -22,5 +22,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build And Deploy
-        run: |
-          chmod u+x ".ops/sync-and-notify-Slack.sh" && . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'
+        run: chmod u+x ".ops/sync-and-notify-Slack.sh" && . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'
