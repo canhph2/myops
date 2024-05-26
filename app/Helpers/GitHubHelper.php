@@ -340,5 +340,6 @@ class GitHubHelper
             $commands->addStr("git push");
         }
         $commands->addStr("git checkout %s", $featureBranch);
+        dd($commands);
     }
 }
