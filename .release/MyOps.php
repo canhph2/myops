@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.11.7 ===
+// === MyOps v3.11.8 ===
 
 // === Generated libraries classes ===
 
@@ -1633,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.11.7';
+    const APP_VERSION = '3.11.8';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -4203,6 +4203,7 @@ class ConsoleHelper
 // [REMOVED] namespace App\Services;
 
 // [REMOVED] use App\Enum\GitHubEnum;
+// [REMOVED] use App\Enum\IconEnum;
 // [REMOVED] use App\Enum\ProcessEnum;
 // [REMOVED] use App\Enum\SlackEnum;
 // [REMOVED] use App\Enum\TagEnum;
@@ -4352,7 +4353,8 @@ class SlackService
      */
     private static function generateIndent(): ?string
     {
-        return self::input('indent') ? sprintf("|-%s", str_repeat(' ', (int)self::input('indent') * 8 - 2)) : '';
+        return self::input('indent') ? sprintf("%s%s", IconEnum::DOT,
+            str_repeat(' ', (int)self::input('indent') * 8 - 1)) : '';
     }
 }
 

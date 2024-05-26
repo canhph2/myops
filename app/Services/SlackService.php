@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enum\GitHubEnum;
+use App\Enum\IconEnum;
 use App\Enum\ProcessEnum;
 use App\Enum\SlackEnum;
 use App\Enum\TagEnum;
@@ -152,6 +153,7 @@ class SlackService
      */
     private static function generateIndent(): ?string
     {
-        return self::input('indent') ? sprintf("|-%s", str_repeat(' ', (int)self::input('indent') * 8 - 2)) : '';
+        return self::input('indent') ? sprintf("%s%s", IconEnum::DOT,
+            str_repeat(' ', (int)self::input('indent') * 8 - 1)) : '';
     }
 }
