@@ -10,6 +10,7 @@ use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
+use App\MyOps;
 use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
@@ -323,6 +324,13 @@ class GitHubHelper
             exitApp(ERROR_END);
         }
         // handle
+        //    push new code to GitHub
+        //        ask what news
+        $whatNewsInput = ucfirst(readline("Please input the commit message:"));
+        //        push
+        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
+            GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNewsInput'", GitHubEnum::PUSH_COMMAND,
+        ]))->execMultiInWorkDir()->printOutput();
 
     }
 }
