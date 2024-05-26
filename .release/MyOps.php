@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.11.1 ===
+// === MyOps v3.11.3 ===
 
 // === Generated libraries classes ===
 
@@ -1633,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.11.1';
+    const APP_VERSION = '3.11.3';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1957,6 +1957,7 @@ class TagEnum
     const DOCKER = 'DOCKER';
     const SLACK = 'SLACK';
     const SHELL = 'SHELL';
+    const DONE = 'DONE';
 
     const VALIDATION_ERROR = [self::VALIDATION, self::ERROR];
     const VALIDATION_SUCCESS = [self::VALIDATION, self::SUCCESS];
@@ -2696,7 +2697,7 @@ class OPSHelper
 // [REMOVED] use App\Enum\IconEnum;
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\TagEnum;
-// [REMOVED] use App\MyOps;
+// [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Services\SlackService;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
@@ -2791,9 +2792,9 @@ class GitHubHelper
         return is_dir(sprintf("%s/.git", $dirToCheck));
     }
 
-    public static function getRepositoryDirCommand(): string
+    public static function getRepository(): string
     {
-        return exec(GitHubEnum::GET_REPOSITORY_DIR_COMMAND);
+        return basename(str_replace('.git', '', exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND)));
     }
 
     /**
@@ -3002,6 +3003,12 @@ class GitHubHelper
     public static function mergeFeatureAllConsole(): void
     {
         // validate
+        //    repository
+        if (GitHubHelper::getRepository() != GitHubEnum::MYOPS) {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid repository, only support %s repository", GitHubEnum::MYOPS);
+            exitApp(ERROR_END);
+        }
+        //    branch
         $featureBranch = GitHubHelper::getCurrentBranch();
         if (!in_array($featureBranch, GitHubEnum::SUPPORT_BRANCHES)) {
             self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("the branch '%s' is allow merge-feature-all", $featureBranch);
@@ -3019,7 +3026,8 @@ class GitHubHelper
         ]))->execMultiInWorkDir()->printOutput();
         //    checkout branches and push
         $commands = new CustomCollection();
-        foreach(collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]) as $destinationBranch){
+        $supportBranches = collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]);
+        foreach ($supportBranches as $destinationBranch) {
             $commands->addStr("git checkout %s", $destinationBranch);
             $commands->addStr("git merge %s", $featureBranch);
             $commands->addStr("git push");
@@ -3027,6 +3035,8 @@ class GitHubHelper
         $commands->addStr("git checkout %s", $featureBranch);
         (new Process("Merge Feature All", DirHelper::getWorkingDir(), $commands))
             ->execMultiInWorkDir()->printOutput();
+        // done
+        self::lineTag(TagEnum::DONE)->setColor(UIEnum::COLOR_GREEN)->print("Merge feature '%s' to %s branches successfully", $featureBranch, $supportBranches->join(', '));
     }
 }
 
@@ -4179,9 +4189,9 @@ class ConsoleHelper
      */
     public static $currentIndentLevel = IndentLevelEnum::MAIN_LINE;
 
-    public static function generateFullField(string $field): string
+    public static function generateFullField(string $field, string $equalSign = '='): string
     {
-        return sprintf("%s%s=", ConsoleEnum::FIELD_PREFIX, $field);
+        return sprintf("%s%s%s", ConsoleEnum::FIELD_PREFIX, $field, $equalSign);
     }
 }
 
@@ -4415,13 +4425,14 @@ trait ConsoleBaseTrait
      * - a Field starts with prefix --, .e.g --field=value
      * - Get single input field will get first item
      * @param string $field
-     * @return string
+     * @return null|string|bool
      */
-    private static function input(string $field): ?string
+    private static function input(string $field)
     {
         foreach (self::args() as $arg) {
-            if (StrHelper::startsWith($arg, ConsoleHelper::generateFullField($field))) {
-                return str_replace(ConsoleHelper::generateFullField($field), '', $arg); // END
+            if (StrHelper::startsWith($arg, ConsoleHelper::generateFullField($field, ''))) {
+                return $arg === ConsoleHelper::generateFullField($field, '') ? true : // case input only
+                    str_replace(ConsoleHelper::generateFullField($field), '', $arg); // case --field=value
             }
         }
         return null; // END
@@ -4635,7 +4646,7 @@ class MyOps
                 echo exec(GitHubEnum::GET_BRANCH_COMMAND);
                 break;
             case CommandEnum::REPOSITORY:
-                echo basename(str_replace('.git', '', exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND)));
+                echo GitHubHelper::getRepository();
                 break;
             case CommandEnum::HEAD_COMMIT_ID:
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
