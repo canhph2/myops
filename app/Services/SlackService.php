@@ -123,7 +123,8 @@ class SlackService
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
-            "channel" => $slackChannel, "text" => sprintf("$indent`%s` `%s` %s", $repository, $branch, $message),
+            "channel" => $slackChannel,
+            "text" => sprintf("$indent%s %s %s", self::generateTag($repository), self::generateTag($branch), $message),
         ]));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
         $response = curl_exec($curl);
@@ -141,5 +142,10 @@ class SlackService
                 self::LineTagMultiple([TagEnum::SLACK, TagEnum::ERROR])->print("Sending message has got an error | HTTP code is $responseCode");
             }
         }
+    }
+
+    private static function generateTag(string $tagName): string
+    {
+        return sprintf("%s%s%s", SlackEnum::CODE_CHAR, $tagName, SlackEnum::CODE_CHAR);
     }
 }
