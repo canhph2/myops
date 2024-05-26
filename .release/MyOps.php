@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.11.4 ===
+// === MyOps v3.11.5 ===
 
 // === Generated libraries classes ===
 
@@ -1633,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.11.4';
+    const APP_VERSION = '3.11.5';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3018,7 +3018,10 @@ class GitHubHelper
         }
         // handle
         //    push new code to GitHub
-        if(!self::input('skip-commit')) {
+        if (self::input('skip-commit')) {
+            self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)
+                ->setColor(UIEnum::COLOR_RED)->print("skip commit");
+        } else {
             //    ask what news
             $whatNewsInput = ucfirst(readline("Please input the commit message:"));
             //    push
