@@ -1,5 +1,5 @@
-# All backend projects by environment
-name: workflow--myops--all-backend
+# All frontend projects by environment
+name: workflow--myops--all-frontend
 
 # load shell configuration (Ubuntu | .bashrc)
 defaults:
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       selectedBranch:
-        description: 'Select the branch to build all backend projects and deploy to ELB'
+        description: 'Select the branch to build all frontend projects and deploy to S3'
         required: true
         default: 'develop'
         type: choice
@@ -32,4 +32,4 @@ jobs:
 
       - name: Build And Deploy
         run: |
-          chmod u+x ".ops/build-all-backend-and-deploy-to-ELB.sh" && . ".ops/build-all-backend-and-deploy-to-ELB.sh" 'GitHub Actions'
+          chmod u+x ".ops/build-all-frontend-and-deploy-to-S3.sh" && . ".ops/build-all-frontend-and-deploy-to-S3.sh" 'GitHub Actions'
