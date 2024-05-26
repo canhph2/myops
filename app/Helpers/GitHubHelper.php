@@ -332,7 +332,10 @@ class GitHubHelper
         }
         // handle
         //    push new code to GitHub
-        if(!self::input('skip-commit')) {
+        if (self::input('skip-commit')) {
+            self::lineIndent(IndentLevelEnum::ITEM_LINE)->setIcon(IconEnum::DOT)
+                ->setColor(UIEnum::COLOR_RED)->print("skip commit");
+        } else {
             //    ask what news
             $whatNewsInput = ucfirst(readline("Please input the commit message:"));
             //    push
