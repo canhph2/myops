@@ -30,3 +30,6 @@ myops checkout-caches ${REPOSITORY} ${BRANCH}
 cd "${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
 chmod u+x ".ops/build-Angular-and-deploy-to-S3.sh" && . ".ops/build-Angular-and-deploy-to-S3.sh"
 myops slack --indent=1 --message="just finished building Angular project of Booking SPA (frontend) :heavy_check_mark:"
+#
+export REPOSITORY=myops # to switch repository
+cd "${ENGAGEPLUS_CACHES_REPOSITORY_DIR}" # back to caches directory of myops
