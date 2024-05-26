@@ -26,9 +26,6 @@ jobs:
   job1-show-selected-branch:
     name: Selected Branch Is '${{ inputs.selectedBranch }}'
     runs-on: self-hosted
-    steps:
-      - name: test
-        run: echo 1234
 
   job2-build-and-deploy:
     name: Build And Deploy (${{ inputs.selectedBranch }})
