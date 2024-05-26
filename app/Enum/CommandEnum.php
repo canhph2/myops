@@ -103,7 +103,7 @@ class CommandEnum
             self::HEAD_COMMIT_ID => ['get head commit id of branch'],
             self::CHECKOUT => [
                 'checkout a branch in current directory',
-                'uses --branch=<your branch>,  --is-clean to clean'
+                'uses --branch=<your branch>,  --clean to clean'
             ],
             self::CHECKOUT_CACHES => ['checkout GitHub repository in caches directory'],
             self::FORCE_CHECKOUT => [

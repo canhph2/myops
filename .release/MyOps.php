@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.3 ===
+// === MyOps v3.12.4 ===
 
 // === Generated libraries classes ===
 
@@ -1636,7 +1636,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.3';
+    const APP_VERSION = '3.12.4';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1742,7 +1742,7 @@ class CommandEnum
             self::HEAD_COMMIT_ID => ['get head commit id of branch'],
             self::CHECKOUT => [
                 'checkout a branch in current directory',
-                'uses --branch=<your branch>,  --is-clean to clean'
+                'uses --branch=<your branch>,  --clean to clean'
             ],
             self::CHECKOUT_CACHES => ['checkout GitHub repository in caches directory'],
             self::FORCE_CHECKOUT => [
@@ -2878,7 +2878,7 @@ class GitHubHelper
         }
         // handle
         (new Process("Checkout a branch", DirHelper::getWorkingDir(),
-            GitHubFactory::generateCheckoutCommands($branch, self::inputBool('is-clean'))
+            GitHubFactory::generateCheckoutCommands($branch, self::inputBool('clean'))
         ))->execMultiInWorkDir()->printOutput();
     }
 
