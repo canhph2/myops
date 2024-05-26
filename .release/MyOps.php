@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.11.9 ===
+// === MyOps v3.11.10 ===
 
 // === Generated libraries classes ===
 
@@ -1633,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.11.9';
+    const APP_VERSION = '3.11.10';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2971,7 +2971,7 @@ class GitHubHelper
                         self::LineIcon(IconEnum::DOT)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
                             ->print($message);
                         if ($duration->totalMinutes && $duration->totalMinutes > $lastSendingMinute && $duration->totalMinutes % 3 === 0) { // notify every A minutes
-                            SlackService::sendMessageInternal(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
+                            SlackService::sendMessageInternal($message, $repoInfo->getRepositoryName(), $branchToBuild, IndentLevelEnum::ITEM_LINE);
                             $lastSendingMinute = $duration->totalMinutes;
                         }
                         sleep(30); // loop with interval = A seconds
@@ -4204,6 +4204,7 @@ class ConsoleHelper
 
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\IconEnum;
+// [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\ProcessEnum;
 // [REMOVED] use App\Enum\SlackEnum;
 // [REMOVED] use App\Enum\TagEnum;
@@ -4274,7 +4275,7 @@ class SlackService
     public static function sendMessageConsole(): void
     {
         self::sendMessage(self::handleInputMessage(), getenv('REPOSITORY'), getenv('BRANCH'),
-            getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel());
+            getenv('SLACK_BOT_TOKEN'), self::selectSlackChannel(), (int)self::input('indent'));
     }
 
     /**
@@ -4287,12 +4288,13 @@ class SlackService
      * @return void
      */
     public static function sendMessageInternal(string $customMessage = null, string $customRepository = 'custom_repository',
-                                               string $customBranch = 'custom_branch'): void
+                                               string $customBranch = 'custom_branch', int $indent = IndentLevelEnum::MAIN_LINE): void
     {
 
         self::sendMessage($customMessage, $customRepository, $customBranch,
             AWSHelper::getValueEnvOpsSecretManager('SLACK_BOT_TOKEN'),
-            AWSHelper::getValueEnvOpsSecretManager('SLACK_CHANNEL_DEV')
+            AWSHelper::getValueEnvOpsSecretManager('SLACK_CHANNEL_DEV'),
+            $indent
         );
     }
 
@@ -4306,7 +4308,9 @@ class SlackService
      * @return void
      */
     private static function sendMessage(string $message = null, string $repository = null, string $branch = null,
-                                        string $slackBotToken = null, string $slackChannel = null): void
+                                        string $slackBotToken = null, string $slackChannel = null,
+                                        int    $indent = IndentLevelEnum::MAIN_LINE
+    ): void
     {
         // validate
         if (!$message || !$repository || !$branch || !$slackBotToken || !$slackChannel) {
@@ -4322,7 +4326,7 @@ class SlackService
         curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
             "channel" => $slackChannel,
-            "text" => sprintf("%s%s %s  %s", self::generateIndent(), self::generateTag($repository), self::generateTag($branch), $message),
+            "text" => sprintf("%s%s %s  %s", self::generateIndent($indent), self::generateTag($repository), self::generateTag($branch), $message),
         ]));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
         $response = curl_exec($curl);
@@ -4351,10 +4355,10 @@ class SlackService
      * require input --indent=A
      * @return null|string
      */
-    private static function generateIndent(): ?string
+    private static function generateIndent(int $indent): ?string
     {
         return self::input('indent') ? sprintf("%s%s", IconEnum::DOT,
-            str_repeat(' ', (int)self::input('indent') * 8 - 1)) : '';
+            str_repeat(' ', $indent * 8 - 1)) : '';
     }
 }
 

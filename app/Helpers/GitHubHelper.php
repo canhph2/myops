@@ -285,7 +285,7 @@ class GitHubHelper
                         self::LineIcon(IconEnum::DOT)->setIndentLevel(IndentLevelEnum::ITEM_LINE)
                             ->print($message);
                         if ($duration->totalMinutes && $duration->totalMinutes > $lastSendingMinute && $duration->totalMinutes % 3 === 0) { // notify every A minutes
-                            SlackService::sendMessageInternal(sprintf("    %s %s", IconEnum::DOT, $message), $repoInfo->getRepositoryName(), $branchToBuild);
+                            SlackService::sendMessageInternal($message, $repoInfo->getRepositoryName(), $branchToBuild, IndentLevelEnum::ITEM_LINE);
                             $lastSendingMinute = $duration->totalMinutes;
                         }
                         sleep(30); // loop with interval = A seconds
