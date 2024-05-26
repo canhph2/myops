@@ -1,4 +1,4 @@
-# MyOps v3.11.3
+# MyOps v3.11.4
 *DevOps | CICD | MyOps App (PHP)*
 
 ## === Usage ===
@@ -51,6 +51,7 @@ php app/MyOps.php release
 ```shell
 php app/MyOps.php sync
 php vendor/phpunit/phpunit/phpunit tests
+php app/MyOps.php merge-feature-all --skip-commit
 ```
 
 ### Note 3 | AWS services
