@@ -12,7 +12,6 @@ use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
 use App\Enum\UIEnum;
-use App\MyOps;
 use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
@@ -107,9 +106,9 @@ class GitHubHelper
         return is_dir(sprintf("%s/.git", $dirToCheck));
     }
 
-    public static function getRepositoryDirCommand(): string
+    public static function getRepository(): string
     {
-        return exec(GitHubEnum::GET_REPOSITORY_DIR_COMMAND);
+        return basename(str_replace('.git', '', exec(GitHubEnum::GET_REMOTE_ORIGIN_URL_COMMAND)));
     }
 
     /**
@@ -318,6 +317,12 @@ class GitHubHelper
     public static function mergeFeatureAllConsole(): void
     {
         // validate
+        //    repository
+        if (GitHubHelper::getRepository() != GitHubEnum::MYOPS) {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid repository, only support %s repository", GitHubEnum::MYOPS);
+            exitApp(ERROR_END);
+        }
+        //    branch
         $featureBranch = GitHubHelper::getCurrentBranch();
         if (!in_array($featureBranch, GitHubEnum::SUPPORT_BRANCHES)) {
             self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("the branch '%s' is allow merge-feature-all", $featureBranch);
@@ -336,7 +341,7 @@ class GitHubHelper
         //    checkout branches and push
         $commands = new CustomCollection();
         $supportBranches = collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]);
-        foreach($supportBranches as $destinationBranch){
+        foreach ($supportBranches as $destinationBranch) {
             $commands->addStr("git checkout %s", $destinationBranch);
             $commands->addStr("git merge %s", $featureBranch);
             $commands->addStr("git push");
@@ -345,6 +350,6 @@ class GitHubHelper
         (new Process("Merge Feature All", DirHelper::getWorkingDir(), $commands))
             ->execMultiInWorkDir()->printOutput();
         // done
-        self::lineTag(TagEnum::DONE)->setColor(UIEnum::COLOR_GREEN)->print("Merge feature '%s' to %s successfully", $featureBranch, $supportBranches->join(', '));
+        self::lineTag(TagEnum::DONE)->setColor(UIEnum::COLOR_GREEN)->print("Merge feature '%s' to %s branches successfully", $featureBranch, $supportBranches->join(', '));
     }
 }
