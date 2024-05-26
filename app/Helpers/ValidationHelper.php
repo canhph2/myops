@@ -154,15 +154,16 @@ class ValidationHelper
     }
 
     /**
-     * allow branches: develop, staging, master
+     * Parameter priority: custom > env
      * @return void
      */
-    private static function validateBranch()
+    public static function validateBranch($customBranch = null)
     {
-        if (in_array(getenv('BRANCH'), GitHubEnum::SUPPORT_BRANCHES)) {
-            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("validation branch got OK result: %s", getenv('BRANCH'));
+        $branch = $customBranch ?? getenv('BRANCH');
+        if (in_array($branch, GitHubEnum::SUPPORT_BRANCHES)) {
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("validation branch got OK result: %s", $branch);
         } else {
-            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid branch to build | current branch is '%s'", getenv('BRANCH'));
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid branch to build | current branch is '%s'", $branch);
             exitApp(ERROR_END);
         }
     }

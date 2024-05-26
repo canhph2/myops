@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Classes\Base\CustomCollection;
 use App\Classes\Duration;
 use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Process;
@@ -10,6 +11,7 @@ use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
+use App\MyOps;
 use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
@@ -137,13 +139,13 @@ class GitHubHelper
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
         //     message validate
-        if($customRepository) $repositoryFrom = "CODE";
-        elseif(self::arg(1)) $repositoryFrom = "CONSOLE";
-        elseif(getenv('REPOSITORY')) $repositoryFrom = "ENV";
+        if ($customRepository) $repositoryFrom = "CODE";
+        elseif (self::arg(1)) $repositoryFrom = "CONSOLE";
+        elseif (getenv('REPOSITORY')) $repositoryFrom = "ENV";
 
-        if($customBranch) $branchFrom = "CODE";
-        elseif(self::arg(2)) $branchFrom = "CONSOLE";
-        elseif(getenv('BRANCH')) $branchFrom = "ENV";
+        if ($customBranch) $branchFrom = "CODE";
+        elseif (self::arg(2)) $branchFrom = "CONSOLE";
+        elseif (getenv('BRANCH')) $branchFrom = "ENV";
 
         self::lineTag($repositoryFrom)->print("REPOSITORY = %s", $repository)
             ->setTag($branchFrom)->print("BRANCH = %s", $branch)
@@ -310,5 +312,35 @@ class GitHubHelper
         ]))->execMultiInWorkDirAndGetOutputStrAll();
         //
         return count(json_decode($resultInProgress, true)) || count(json_decode($resultQueued, true));
+    }
+
+    public static function mergeFeatureAllConsole(): void
+    {
+        // validate
+        $featureBranch = GitHubHelper::getCurrentBranch();
+        if (!in_array($featureBranch, GitHubEnum::SUPPORT_BRANCHES)) {
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("the branch '%s' is allow merge-feature-all", $featureBranch);
+        } else {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid branch to merge feature all, should be a feature A branch | current branch is '%s'", $featureBranch);
+            exitApp(ERROR_END);
+        }
+        // handle
+        //    push new code to GitHub
+        //        ask what news
+        $whatNewsInput = ucfirst(readline("Please input the commit message:"));
+        //        push
+        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
+            GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNewsInput'", GitHubEnum::PUSH_COMMAND,
+        ]))->execMultiInWorkDir()->printOutput();
+        //    checkout branches and push
+        $commands = new CustomCollection();
+        foreach(collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]) as $destinationBranch){
+            $commands->addStr("git checkout %s", $destinationBranch);
+            $commands->addStr("git merge %s", $featureBranch);
+            $commands->addStr("git push");
+        }
+        $commands->addStr("git checkout %s", $featureBranch);
+        (new Process("Merge Feature All", DirHelper::getWorkingDir(), $commands))
+            ->execMultiInWorkDir()->printOutput();
     }
 }

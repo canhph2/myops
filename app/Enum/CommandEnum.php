@@ -23,6 +23,7 @@ class CommandEnum
     const HEAD_COMMIT_ID = 'head-commit-id';
     const CHECKOUT_CACHES = 'checkout-caches';
     const FORCE_CHECKOUT = 'force-checkout';
+    const MERGE_FEATURE_ALL = 'merge-feature-all';
     //        GitHub Actions
     const BUILD_ALL_PROJECTS = 'build-all-projects';
 
@@ -103,6 +104,9 @@ class CommandEnum
             self::FORCE_CHECKOUT => [
                 'force checkout a GitHub repository with specific branch',
                 '.e.g to test source code in the server'
+            ],
+            self::MERGE_FEATURE_ALL => [
+                '[MyOps only] will merge feature to ship, develop, staging, master, support branches and push',
             ],
             //        GitHub Actions
             self::BUILD_ALL_PROJECTS => [

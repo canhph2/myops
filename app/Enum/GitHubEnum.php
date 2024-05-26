@@ -23,7 +23,8 @@ class GitHubEnum
     const STAGING = 'staging';
     const DEVELOP = 'develop';
     const SHIP = 'ship'; // ship MyOps to the CI/CD server on May 25, 2024.
-    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SHIP];
+    const SUPPORT = 'support'; // main branch of MyOps
+    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SHIP, self::SUPPORT];
     const PRODUCTION_BRANCHES = [self::MAIN, self::MASTER];
 
     // === GitHub users ===
