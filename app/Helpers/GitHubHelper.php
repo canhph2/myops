@@ -336,7 +336,7 @@ class GitHubHelper
         $commands = new CustomCollection();
         foreach(collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]) as $destinationBranch){
             $commands->addStr("git checkout %s", $destinationBranch);
-            $commands->addStr("merge %s", $featureBranch);
+            $commands->addStr("git merge %s", $featureBranch);
             $commands->addStr("git push");
         }
         $commands->addStr("git checkout %s", $featureBranch);
