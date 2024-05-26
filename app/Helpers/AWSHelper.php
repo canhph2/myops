@@ -108,7 +108,6 @@ class AWSHelper
      */
     public static function ELBUpdateVersion()
     {
-        exit(1); // todo  test
         try {
             // === validate ===
             if (!ValidationHelper::validateEnvVars([
@@ -223,7 +222,7 @@ class AWSHelper
                     $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
                 //    update EB environment
-                sprintf("aws elasticbeanstalk update-environment --environment-name %s --version-label %s > /dev/null || exit 1",
+                sprintf("aws elasticbeanstalk update-environment --environment-name %s --version-label %s > /dev/null",
                     getenv('EB_ENVIRONMENT_NAME'), $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
             ]))->execMultiInWorkDir()->printOutput();

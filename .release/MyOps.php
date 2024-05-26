@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.39 ===
+// === MyOps v3.12.40 ===
 
 // === Generated libraries classes ===
 
@@ -1635,7 +1635,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.39';
+    const APP_VERSION = '3.12.40';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3252,7 +3252,6 @@ class AWSHelper
      */
     public static function ELBUpdateVersion()
     {
-        exit(1); // todo  test
         try {
             // === validate ===
             if (!ValidationHelper::validateEnvVars([
@@ -3367,7 +3366,7 @@ class AWSHelper
                     $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
                 //    update EB environment
-                sprintf("aws elasticbeanstalk update-environment --environment-name %s --version-label %s > /dev/null || exit 1",
+                sprintf("aws elasticbeanstalk update-environment --environment-name %s --version-label %s > /dev/null",
                     getenv('EB_ENVIRONMENT_NAME'), $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
             ]))->execMultiInWorkDir()->printOutput();
