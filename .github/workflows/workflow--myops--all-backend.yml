@@ -27,9 +27,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-
-      - name: Checkout Selected Branch
-        run: myops checkout --branch=${{ inputs.selectedBranch }} --clean
-
+        with:
+          ref: ${{ inputs.selectedBranch }} # Checkout Selected Branch
       - name: Build And Deploy
         run: chmod u+x ".ops/build-all-backend-and-deploy-to-ELB.sh" && . ".ops/build-all-backend-and-deploy-to-ELB.sh" 'GitHub Actions'
