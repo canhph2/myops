@@ -7,7 +7,7 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 # usage:    sh .ops/build-all-frontend-and-deploy-to-S3.sh 'DEVICE_NAME'
 
 # cleanup: in case success, in case failure and exit with code at any commands
-trap 'export REPOSITORY=myops && myops post-work --process-id=${PROCESS_ID} --exit-code=$?    --message="${DEVICE} just finished deploying all frontend projects to S3 bucket" ' EXIT
+trap 'myops post-work --process-id=${PROCESS_ID} --exit-code=$?    --message="${DEVICE} just finished deploying all frontend projects to S3 bucket" ' EXIT
 #
 eval "$(myops pre-work --response-type=eval)"
 myops pre-work --message="${DEVICE} starts to build all frontend projects:"
