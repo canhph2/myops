@@ -11,6 +11,7 @@ use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
+use App\Enum\UIEnum;
 use App\MyOps;
 use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
@@ -334,7 +335,8 @@ class GitHubHelper
         ]))->execMultiInWorkDir()->printOutput();
         //    checkout branches and push
         $commands = new CustomCollection();
-        foreach(collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]) as $destinationBranch){
+        $supportBranches = collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]);
+        foreach($supportBranches as $destinationBranch){
             $commands->addStr("git checkout %s", $destinationBranch);
             $commands->addStr("git merge %s", $featureBranch);
             $commands->addStr("git push");
@@ -342,5 +344,7 @@ class GitHubHelper
         $commands->addStr("git checkout %s", $featureBranch);
         (new Process("Merge Feature All", DirHelper::getWorkingDir(), $commands))
             ->execMultiInWorkDir()->printOutput();
+        // done
+        self::lineTag(TagEnum::DONE)->setColor(UIEnum::COLOR_GREEN)->print("Merge feature '%s' to %s successfully", $featureBranch, $supportBranches->join(', '));
     }
 }
