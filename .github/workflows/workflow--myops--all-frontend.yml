@@ -23,14 +23,14 @@ on:
           - master
 jobs:
 
-  show-selected-branch:
+  job1-show-selected-branch:
     name: Selected Branch Is '${{ inputs.selectedBranch }}'
     runs-on: self-hosted
     steps:
       - name: test
         run: echo 1234
 
-  build-and-deploy:
+  job2-build-and-deploy:
     name: Build And Deploy (${{ inputs.selectedBranch }})
     runs-on: self-hosted
     steps:

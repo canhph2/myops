@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.24 ===
+// === MyOps v3.12.25 ===
 
 // === Generated libraries classes ===
 
@@ -1636,7 +1636,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.24';
+    const APP_VERSION = '3.12.25';
 }
 
 // [REMOVED] namespace App\Enum;
