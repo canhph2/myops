@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.11.6 ===
+// === MyOps v3.11.7 ===
 
 // === Generated libraries classes ===
 
@@ -1633,7 +1633,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.11.6';
+    const APP_VERSION = '3.11.7';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -4314,9 +4314,6 @@ class SlackService
             exit(); // END
         }
         // handle
-        //    indent
-        $indent = self::input('indent') ? sprintf("|-%s", str_repeat(' ', (int)self::input('indent') * 8 - 2)) : '';
-        //
         $slackUrl = "https://slack.com/api/chat.postMessage";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $slackUrl);
@@ -4324,7 +4321,7 @@ class SlackService
         curl_setopt($curl, CURLOPT_HTTPHEADER, [sprintf("Authorization: Bearer %s", $slackBotToken)]);
         curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
             "channel" => $slackChannel,
-            "text" => sprintf("$indent%s %s %s", self::generateTag($repository), self::generateTag($branch), $message),
+            "text" => sprintf("%s%s %s  %s", self::generateIndent(), self::generateTag($repository), self::generateTag($branch), $message),
         ]));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  // Suppress output
         $response = curl_exec($curl);
@@ -4347,6 +4344,15 @@ class SlackService
     private static function generateTag(string $tagName): string
     {
         return sprintf("%s%s%s", SlackEnum::CODE_CHAR, $tagName, SlackEnum::CODE_CHAR);
+    }
+
+    /**
+     * require input --indent=A
+     * @return null|string
+     */
+    private static function generateIndent(): ?string
+    {
+        return self::input('indent') ? sprintf("|-%s", str_repeat(' ', (int)self::input('indent') * 8 - 2)) : '';
     }
 }
 
