@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.30 ===
+// === MyOps v3.12.31 ===
 
 // === Generated libraries classes ===
 
@@ -1635,7 +1635,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.30';
+    const APP_VERSION = '3.12.31';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3252,6 +3252,7 @@ class AWSHelper
      */
     public static function ELBUpdateVersion()
     {
+        exit(1); // todo  test
         try {
             // === validate ===
             if (!ValidationHelper::validateEnvVars([

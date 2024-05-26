@@ -108,6 +108,7 @@ class AWSHelper
      */
     public static function ELBUpdateVersion()
     {
+        exit(1); // todo  test
         try {
             // === validate ===
             if (!ValidationHelper::validateEnvVars([
