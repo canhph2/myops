@@ -155,9 +155,6 @@ class GitHubHelper
      */
     public static function checkoutCaches(string $customRepository = null, string $customBranch = null): void
     {
-        // todo test
-        exitApp(ERROR_END);
-
         self::LineTag(TagEnum::GIT)->printTitle("Checkout The Repository In Caches Dir");
         // === validate ===
         //        env vars
