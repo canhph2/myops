@@ -227,14 +227,12 @@ class Process
         }
         //
         if ($this->commands->count()) {
-            $resultCode = null;
             exec($this->commands->join(';'), $tempOutput, $exitCode);
             $this->output = new CustomCollection($tempOutput);
             if ($exitCode && $this->isExitOnError) {
                 $this->printOutput();
                 self::LineTag(TagEnum::ERROR)->print("detect execute shell command failed, exit app | exit code = $exitCode");
-//                exit($exitCode); // END app
-                exit(ERROR_END); // todo test
+                exit($exitCode); // END app
             }
         }
         //

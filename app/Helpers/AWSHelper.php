@@ -222,7 +222,7 @@ class AWSHelper
                     $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
                 //    update EB environment
-                sprintf("aws elasticbeanstalk update-environment --environment-name %s --version-label %s > /dev/null",
+                sprintf("aws elasticbeanstalk update-environment --environment-name %s --version-label %s > /dev/null || exit 1",
                     getenv('EB_ENVIRONMENT_NAME'), $EB_APP_VERSION_LABEL
                 ), // > /dev/null : disabled output
             ]))->execMultiInWorkDir()->printOutput();
