@@ -332,12 +332,14 @@ class GitHubHelper
         }
         // handle
         //    push new code to GitHub
-        //        ask what news
-        $whatNewsInput = ucfirst(readline("Please input the commit message:"));
-        //        push
-        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
-            GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNewsInput'", GitHubEnum::PUSH_COMMAND,
-        ]))->execMultiInWorkDir()->printOutput();
+        if(!self::input('skip-commit')) {
+            //    ask what news
+            $whatNewsInput = ucfirst(readline("Please input the commit message:"));
+            //    push
+            (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
+                GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNewsInput'", GitHubEnum::PUSH_COMMAND,
+            ]))->execMultiInWorkDir()->printOutput();
+        }
         //    checkout branches and push
         $commands = new CustomCollection();
         $supportBranches = collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]);
