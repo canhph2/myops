@@ -13,6 +13,8 @@ class GitHubEnum
     const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
     const PULL_COMMAND = 'git pull'; // get the newest code
     const ADD_ALL_FILES_COMMAND = 'git add -A';
+    const COMMIT_COMMAND = "git commit -m '%s'";
+    const MERGE_COMMAND = 'git merge %s';
     const PUSH_COMMAND = 'git push';
     const SET_REMOTE_ORIGIN_URL_COMMAND = 'git remote set-url origin %s';
     const GET_REMOTE_ORIGIN_URL_COMMAND = 'git config --get remote.origin.url';

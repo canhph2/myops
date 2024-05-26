@@ -1,7 +1,8 @@
 <?php
-// === MyOps v3.11.12 ===
+// === MyOps v3.12.0 ===
 
 // === Generated libraries classes ===
+
 
 
 // [REMOVED] use App\Classes\Base\CustomCollection;
@@ -62,7 +63,7 @@ if (!function_exists('collect')) {
      * @param array $arr
      * @return CustomCollection
      */
-    function collect(array $arr): CustomCollection
+    function collect(array $arr = []): CustomCollection
     {
         return new CustomCollection($arr);
     }
@@ -240,6 +241,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Enum\TimeEnum;
 // [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
+// [REMOVED] use App\Factories\GitHubFactory;
 // [REMOVED] use App\Factories\ShellFactory;
 // [REMOVED] use App\Helpers\AppHelper;
 // [REMOVED] use App\Helpers\AppInfoHelper;
@@ -306,6 +308,7 @@ class Release
             DirHelper::getClassPathAndFileName(SlackEnum::class),
             // === Factories ===
             DirHelper::getClassPathAndFileName(ShellFactory::class),
+            DirHelper::getClassPathAndFileName(GitHubFactory::class),
             // === Helpers ===
             DirHelper::getClassPathAndFileName(AppInfoHelper::class),
             DirHelper::getClassPathAndFileName(DirHelper::class),
@@ -386,9 +389,9 @@ class Release
         $whatNewsInput = ucfirst(readline("  What are news in this release?  (default = '$whatNewsDefault')  :"));
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
-        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
-            GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNews'", GitHubEnum::PUSH_COMMAND,
-        ]))->execMultiInWorkDir()->printOutput();
+        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(),
+            GitHubFactory::generateCommitAndPushCommands($whatNews)
+        ))->execMultiInWorkDir()->printOutput();
         //
         self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::getAppVersionStr($newVersion));
@@ -1633,7 +1636,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.11.12';
+    const APP_VERSION = '3.12.0';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1657,6 +1660,7 @@ class CommandEnum
     const BRANCH = 'branch';
     const REPOSITORY = 'repository';
     const HEAD_COMMIT_ID = 'head-commit-id';
+    const CHECKOUT = 'checkout';
     const CHECKOUT_CACHES = 'checkout-caches';
     const FORCE_CHECKOUT = 'force-checkout';
     const MERGE_FEATURE_ALL = 'merge-feature-all';
@@ -1736,6 +1740,10 @@ class CommandEnum
             self::BRANCH => ['get git branch / GitHub branch'],
             self::REPOSITORY => ['get GitHub repository name'],
             self::HEAD_COMMIT_ID => ['get head commit id of branch'],
+            self::CHECKOUT => [
+                'checkout a branch in current directory',
+                'uses --branch=<your branch>,  --is-clean to clean'
+            ],
             self::CHECKOUT_CACHES => ['checkout GitHub repository in caches directory'],
             self::FORCE_CHECKOUT => [
                 'force checkout a GitHub repository with specific branch',
@@ -1836,6 +1844,8 @@ class GitHubEnum
     const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
     const PULL_COMMAND = 'git pull'; // get the newest code
     const ADD_ALL_FILES_COMMAND = 'git add -A';
+    const COMMIT_COMMAND = "git commit -m '%s'";
+    const MERGE_COMMAND = 'git merge %s';
     const PUSH_COMMAND = 'git push';
     const SET_REMOTE_ORIGIN_URL_COMMAND = 'git remote set-url origin %s';
     const GET_REMOTE_ORIGIN_URL_COMMAND = 'git config --get remote.origin.url';
@@ -2101,6 +2111,57 @@ class ShellFactory
             $commands->addStr("rm -rf '%s'", $fileOrDirFullPath);
         }
         return $commands;
+    }
+}
+
+// [REMOVED] namespace App\Factories;
+
+// [REMOVED] use App\Classes\Base\CustomCollection;
+// [REMOVED] use App\Enum\GitHubEnum;
+
+class GitHubFactory
+{
+    /**
+     * @param string $branch
+     * @return string
+     */
+    public static function generateCheckoutCommand(string $branch): string
+    {
+        return sprintf(GitHubEnum::CHECKOUT_COMMAND, $branch, $branch);
+    }
+
+    /**
+     * @param string $message
+     * @return string
+     */
+    public static function generateCommitCommand(string $message): string
+    {
+        return sprintf(GitHubEnum::COMMIT_COMMAND, $message);
+    }
+
+    /**
+     * @param string $message
+     * @return CustomCollection
+     */
+    public static function generateCommitAndPushCommands(string $message): CustomCollection
+    {
+        return collect([
+            GitHubEnum::ADD_ALL_FILES_COMMAND, self::generateCommitCommand($message), GitHubEnum::PUSH_COMMAND,
+        ]);
+    }
+
+    /**
+     * @param string $branch
+     * @param bool $isClean
+     * @return CustomCollection
+     */
+    public static function generateCheckoutCommands(string $branch, bool $isClean = false): CustomCollection
+    {
+        return ($isClean ? collect([GithubEnum::CLEAN_COMMAND]) : collect())->merge([
+            GitHubEnum::RESET_BRANCH_COMMAND,
+            self::generateCheckoutCommand($branch),
+            GitHubEnum::PULL_COMMAND
+        ]);
     }
 }
 
@@ -2701,6 +2762,7 @@ class OPSHelper
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Enum\UIEnum;
+// [REMOVED] use App\Factories\GitHubFactory;
 // [REMOVED] use App\Services\SlackService;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
 // [REMOVED] use App\Traits\ConsoleUITrait;
@@ -2801,6 +2863,26 @@ class GitHubHelper
     }
 
     /**
+     * - Parameter priority: custom > console arg
+     * @param string|null $customBranch
+     * @return void
+     */
+    public static function checkout(string $customBranch = null): void
+    {
+        // validate
+        $branch = $customBranch ?? self::input('branch');
+        if (!$branch) {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
+                ->print("missing a branch");
+            exit(ERROR_END);
+        }
+        // handle
+        (new Process("Checkout a branch", DirHelper::getWorkingDir(),
+            GitHubFactory::generateCheckoutCommands($branch, self::input('is-clean'))
+        ))->execMultiInWorkDir()->printOutput();
+    }
+
+    /**
      * - Require envs: GITHUB_PERSONAL_ACCESS_TOKEN
      * - parameter priority: $customRepository > console arg > getenv()
      * @param string|null $customRepository
@@ -2823,7 +2905,7 @@ class GitHubHelper
         if (!$repository || !$branch || !$engagePlusCachesDir || !$GitHubPersonalAccessToken) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
                 ->print("missing a REPOSITORY or BRANCH or ENGAGEPLUS_CACHES_DIR or GITHUB_PERSONAL_ACCESS_TOKEN");
-            exit(); // END
+            exit(ERROR_END);
         }
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
@@ -2862,7 +2944,7 @@ class GitHubHelper
         (new Process("UPDATE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
             sprintf(GitHubEnum::SET_REMOTE_ORIGIN_URL_COMMAND, self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
             GitHubEnum::RESET_BRANCH_COMMAND,
-            sprintf(GitHubEnum::CHECKOUT_COMMAND, $branch, $branch),
+            GitHubFactory::generateCheckoutCommand($branch),
             GitHubEnum::PULL_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
         // === remove token ===
@@ -2878,8 +2960,8 @@ class GitHubHelper
             self::LineTag(TagEnum::ERROR)->print("GitHub repository url with Token should be string");
             exit(); // END
         }
-        $BRANCH_TO_FORCE_CHECKOUT = readline("Please input BRANCH_TO_FORCE_CHECKOUT? ");
-        if (!$BRANCH_TO_FORCE_CHECKOUT) {
+        $branchToCheckout = readline("Please input BRANCH_TO_FORCE_CHECKOUT? ");
+        if (!$branchToCheckout) {
             self::LineTag(TagEnum::ERROR)->print("branch to force checkout should be string");
             exit(); // END
         }
@@ -2901,7 +2983,7 @@ class GitHubHelper
             $setRemoteOriginUrlCommand,
             GitHubEnum::PULL_COMMAND,
             GitHubEnum::RESET_BRANCH_COMMAND,
-            sprintf("git checkout -f %s", $BRANCH_TO_FORCE_CHECKOUT),
+            GitHubFactory::generateCheckoutCommand($branchToCheckout),
             GitHubEnum::PULL_COMMAND,
         ])))->execMultiInWorkDir(true)->printOutput();
         // === validate result ===
@@ -3028,19 +3110,19 @@ class GitHubHelper
             //    ask what news
             $whatNewsInput = ucfirst(readline("Please input the commit message:"));
             //    push
-            (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
-                GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNewsInput'", GitHubEnum::PUSH_COMMAND,
-            ]))->execMultiInWorkDir()->printOutput();
+            (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(),
+                GitHubFactory::generateCommitAndPushCommands($whatNewsInput)
+            ))->execMultiInWorkDir()->printOutput();
         }
         //    checkout branches and push
         $commands = new CustomCollection();
         $supportBranches = collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]);
         foreach ($supportBranches as $destinationBranch) {
-            $commands->addStr("git checkout %s", $destinationBranch);
-            $commands->addStr("git merge %s", $featureBranch);
-            $commands->addStr("git push");
+            $commands->add(GitHubFactory::generateCheckoutCommand($destinationBranch));
+            $commands->addStr(GitHubEnum::MERGE_COMMAND, $featureBranch);
+            $commands->addStr(GitHubEnum::PUSH_COMMAND);
         }
-        $commands->addStr("git checkout %s", $featureBranch);
+        $commands->add(GitHubFactory::generateCheckoutCommand($featureBranch));
         (new Process("Merge Feature All", DirHelper::getWorkingDir(), $commands))
             ->execMultiInWorkDir()->printOutput();
         // done
@@ -4678,6 +4760,9 @@ class MyOps
                 break;
             case CommandEnum::HEAD_COMMIT_ID:
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
+                break;
+            case CommandEnum::CHECKOUT:
+                GitHubHelper::checkout();
                 break;
             case CommandEnum::CHECKOUT_CACHES:
                 GitHubHelper::checkoutCaches();

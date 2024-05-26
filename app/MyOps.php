@@ -121,6 +121,9 @@ class MyOps
             case CommandEnum::HEAD_COMMIT_ID:
                 echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
                 break;
+            case CommandEnum::CHECKOUT:
+                GitHubHelper::checkout();
+                break;
             case CommandEnum::CHECKOUT_CACHES:
                 GitHubHelper::checkoutCaches();
                 break;

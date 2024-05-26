@@ -21,6 +21,7 @@ class CommandEnum
     const BRANCH = 'branch';
     const REPOSITORY = 'repository';
     const HEAD_COMMIT_ID = 'head-commit-id';
+    const CHECKOUT = 'checkout';
     const CHECKOUT_CACHES = 'checkout-caches';
     const FORCE_CHECKOUT = 'force-checkout';
     const MERGE_FEATURE_ALL = 'merge-feature-all';
@@ -100,6 +101,10 @@ class CommandEnum
             self::BRANCH => ['get git branch / GitHub branch'],
             self::REPOSITORY => ['get GitHub repository name'],
             self::HEAD_COMMIT_ID => ['get head commit id of branch'],
+            self::CHECKOUT => [
+                'checkout a branch in current directory',
+                'uses --branch=<your branch>,  --is-clean to clean'
+            ],
             self::CHECKOUT_CACHES => ['checkout GitHub repository in caches directory'],
             self::FORCE_CHECKOUT => [
                 'force checkout a GitHub repository with specific branch',
