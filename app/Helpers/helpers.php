@@ -1,4 +1,5 @@
 <?php
+
 use App\Classes\Base\CustomCollection;
 
 /**
@@ -57,7 +58,7 @@ if (!function_exists('collect')) {
      * @param array $arr
      * @return CustomCollection
      */
-    function collect(array $arr): CustomCollection
+    function collect(array $arr = []): CustomCollection
     {
         return new CustomCollection($arr);
     }

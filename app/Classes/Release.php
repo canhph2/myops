@@ -18,6 +18,7 @@ use App\Enum\TagEnum;
 use App\Enum\TimeEnum;
 use App\Enum\UIEnum;
 use App\Enum\ValidationTypeEnum;
+use App\Factories\GitHubFactory;
 use App\Factories\ShellFactory;
 use App\Helpers\AppHelper;
 use App\Helpers\AppInfoHelper;
@@ -84,6 +85,7 @@ class Release
             DirHelper::getClassPathAndFileName(SlackEnum::class),
             // === Factories ===
             DirHelper::getClassPathAndFileName(ShellFactory::class),
+            DirHelper::getClassPathAndFileName(GitHubFactory::class),
             // === Helpers ===
             DirHelper::getClassPathAndFileName(AppInfoHelper::class),
             DirHelper::getClassPathAndFileName(DirHelper::class),
@@ -164,9 +166,9 @@ class Release
         $whatNewsInput = ucfirst(readline("  What are news in this release?  (default = '$whatNewsDefault')  :"));
         $whatNews = $whatNewsInput ? "$whatNewsInput | $whatNewsDefault" : $whatNewsDefault;
         //        push
-        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
-            GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNews'", GitHubEnum::PUSH_COMMAND,
-        ]))->execMultiInWorkDir()->printOutput();
+        (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(),
+            GitHubFactory::generateCommitAndPushCommands($whatNews)
+        ))->execMultiInWorkDir()->printOutput();
         //
         self::LineNew()->printSeparatorLine()
             ->setTag(TagEnum::SUCCESS)->print("Release successful %s", MyOps::getAppVersionStr($newVersion));

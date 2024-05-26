@@ -12,6 +12,7 @@ use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
 use App\Enum\UIEnum;
+use App\Factories\GitHubFactory;
 use App\Services\SlackService;
 use App\Traits\ConsoleBaseTrait;
 use App\Traits\ConsoleUITrait;
@@ -112,6 +113,26 @@ class GitHubHelper
     }
 
     /**
+     * - Parameter priority: custom > console arg
+     * @param string|null $customBranch
+     * @return void
+     */
+    public static function checkout(string $customBranch = null): void
+    {
+        // validate
+        $branch = $customBranch ?? self::input('branch');
+        if (!$branch) {
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)
+                ->print("missing a branch");
+            exit(ERROR_END);
+        }
+        // handle
+        (new Process("Checkout a branch", DirHelper::getWorkingDir(),
+            GitHubFactory::generateCheckoutCommands($branch, self::input('is-clean'))
+        ))->execMultiInWorkDir()->printOutput();
+    }
+
+    /**
      * - Require envs: GITHUB_PERSONAL_ACCESS_TOKEN
      * - parameter priority: $customRepository > console arg > getenv()
      * @param string|null $customRepository
@@ -134,7 +155,7 @@ class GitHubHelper
         if (!$repository || !$branch || !$engagePlusCachesDir || !$GitHubPersonalAccessToken) {
             self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::ENV])
                 ->print("missing a REPOSITORY or BRANCH or ENGAGEPLUS_CACHES_DIR or GITHUB_PERSONAL_ACCESS_TOKEN");
-            exit(); // END
+            exit(ERROR_END);
         }
 
         $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
@@ -173,7 +194,7 @@ class GitHubHelper
         (new Process("UPDATE SOURCE CODE", $EngagePlusCachesRepositoryDir, [
             sprintf(GitHubEnum::SET_REMOTE_ORIGIN_URL_COMMAND, self::getRemoteOriginUrl_Custom($repository, $GitHubPersonalAccessToken)),
             GitHubEnum::RESET_BRANCH_COMMAND,
-            sprintf(GitHubEnum::CHECKOUT_COMMAND, $branch, $branch),
+            GitHubFactory::generateCheckoutCommand($branch),
             GitHubEnum::PULL_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
         // === remove token ===
@@ -189,8 +210,8 @@ class GitHubHelper
             self::LineTag(TagEnum::ERROR)->print("GitHub repository url with Token should be string");
             exit(); // END
         }
-        $BRANCH_TO_FORCE_CHECKOUT = readline("Please input BRANCH_TO_FORCE_CHECKOUT? ");
-        if (!$BRANCH_TO_FORCE_CHECKOUT) {
+        $branchToCheckout = readline("Please input BRANCH_TO_FORCE_CHECKOUT? ");
+        if (!$branchToCheckout) {
             self::LineTag(TagEnum::ERROR)->print("branch to force checkout should be string");
             exit(); // END
         }
@@ -212,7 +233,7 @@ class GitHubHelper
             $setRemoteOriginUrlCommand,
             GitHubEnum::PULL_COMMAND,
             GitHubEnum::RESET_BRANCH_COMMAND,
-            sprintf("git checkout -f %s", $BRANCH_TO_FORCE_CHECKOUT),
+            GitHubFactory::generateCheckoutCommand($branchToCheckout),
             GitHubEnum::PULL_COMMAND,
         ])))->execMultiInWorkDir(true)->printOutput();
         // === validate result ===
@@ -339,19 +360,19 @@ class GitHubHelper
             //    ask what news
             $whatNewsInput = ucfirst(readline("Please input the commit message:"));
             //    push
-            (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
-                GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNewsInput'", GitHubEnum::PUSH_COMMAND,
-            ]))->execMultiInWorkDir()->printOutput();
+            (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(),
+                GitHubFactory::generateCommitAndPushCommands($whatNewsInput)
+            ))->execMultiInWorkDir()->printOutput();
         }
         //    checkout branches and push
         $commands = new CustomCollection();
         $supportBranches = collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]);
         foreach ($supportBranches as $destinationBranch) {
-            $commands->addStr("git checkout %s", $destinationBranch);
-            $commands->addStr("git merge %s", $featureBranch);
-            $commands->addStr("git push");
+            $commands->add(GitHubFactory::generateCheckoutCommand($destinationBranch));
+            $commands->addStr(GitHubEnum::MERGE_COMMAND, $featureBranch);
+            $commands->addStr(GitHubEnum::PUSH_COMMAND);
         }
-        $commands->addStr("git checkout %s", $featureBranch);
+        $commands->add(GitHubFactory::generateCheckoutCommand($featureBranch));
         (new Process("Merge Feature All", DirHelper::getWorkingDir(), $commands))
             ->execMultiInWorkDir()->printOutput();
         // done
