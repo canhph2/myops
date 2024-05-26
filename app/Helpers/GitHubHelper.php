@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Classes\Base\CustomCollection;
 use App\Classes\Duration;
 use App\Classes\GitHubRepositoryInfo;
 use App\Classes\Process;
@@ -316,11 +317,11 @@ class GitHubHelper
     public static function mergeFeatureAllConsole(): void
     {
         // validate
-        $branch = GitHubHelper::getCurrentBranch();
-        if (!in_array($branch, GitHubEnum::SUPPORT_BRANCHES)) {
-            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("the branch '%s' is allow merge-feature-all", $branch);
+        $featureBranch = GitHubHelper::getCurrentBranch();
+        if (!in_array($featureBranch, GitHubEnum::SUPPORT_BRANCHES)) {
+            self::LineTagMultiple(TagEnum::VALIDATION_SUCCESS)->print("the branch '%s' is allow merge-feature-all", $featureBranch);
         } else {
-            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid branch to merge feature all, should be a feature A branch | current branch is '%s'", $branch);
+            self::LineTagMultiple(TagEnum::VALIDATION_ERROR)->print("Invalid branch to merge feature all, should be a feature A branch | current branch is '%s'", $featureBranch);
             exitApp(ERROR_END);
         }
         // handle
@@ -331,6 +332,13 @@ class GitHubHelper
         (new Process("PUSH NEW RELEASE TO GITHUB", DirHelper::getWorkingDir(), [
             GitHubEnum::ADD_ALL_FILES_COMMAND, "git commit -m '$whatNewsInput'", GitHubEnum::PUSH_COMMAND,
         ]))->execMultiInWorkDir()->printOutput();
-
+        //    checkout branches and push
+        $commands = new CustomCollection();
+        foreach(collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]) as $destinationBranch){
+            $commands->addStr("git checkout %s", $destinationBranch);
+            $commands->addStr("merge %s", $featureBranch);
+            $commands->addStr("git push");
+        }
+        $commands->addStr("git checkout %s", $featureBranch);
     }
 }
