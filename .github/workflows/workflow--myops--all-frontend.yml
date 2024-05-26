@@ -26,6 +26,8 @@ jobs:
   build-and-deploy:
     runs-on: self-hosted
     steps:
+      - name: Show Selected Branch
+        run: myops title "Selected Branch Is '${{ inputs.selectedBranch^^ }}'"
       - uses: actions/checkout@v3
         with:
           ref: ${{ inputs.selectedBranch }} # Checkout Selected Branch
