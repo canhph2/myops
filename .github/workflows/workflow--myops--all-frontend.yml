@@ -19,6 +19,7 @@ on:
         options:
           - develop
           - staging
+          - --- # a divider to reduce wrong click
           - master
 jobs:
 
