@@ -128,7 +128,7 @@ class GitHubHelper
         }
         // handle
         (new Process("Checkout a branch", DirHelper::getWorkingDir(),
-            GitHubFactory::generateCheckoutCommands($branch, self::inputBool('is-clean'))
+            GitHubFactory::generateCheckoutCommands($branch, self::inputBool('clean'))
         ))->execMultiInWorkDir()->printOutput();
     }
 
