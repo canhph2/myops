@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.1 ===
+// === MyOps v3.12.3 ===
 
 // === Generated libraries classes ===
 
@@ -1636,7 +1636,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.1';
+    const APP_VERSION = '3.12.3';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2878,7 +2878,7 @@ class GitHubHelper
         }
         // handle
         (new Process("Checkout a branch", DirHelper::getWorkingDir(),
-            GitHubFactory::generateCheckoutCommands($branch, self::input('is-clean'))
+            GitHubFactory::generateCheckoutCommands($branch, self::inputBool('is-clean'))
         ))->execMultiInWorkDir()->printOutput();
     }
 
@@ -4546,6 +4546,11 @@ trait ConsoleBaseTrait
             }
         }
         return null; // END
+    }
+
+    private static function inputBool(string $field): bool
+    {
+        return (bool)self::input($field);
     }
 
     private static function inputArr(string $field): CustomCollection
