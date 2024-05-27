@@ -380,7 +380,7 @@ class GitHubHelper
         }
         //    checkout branches and push
         $commands = new CustomCollection();
-        $supportBranches = collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]);
+        $supportBranches = collect([GitHubEnum::SYNC, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]);
         foreach ($supportBranches as $destinationBranch) {
             $commands->add(GitHubFactory::generateCheckoutCommand($destinationBranch));
             $commands->addStr(GitHubEnum::MERGE_COMMAND, $featureBranch);

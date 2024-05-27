@@ -27,10 +27,9 @@ class GitHubEnum
     const MASTER = 'master';
     const STAGING = 'staging';
     const DEVELOP = 'develop';
-    const SHIP = 'ship'; // ship MyOps to the CI/CD server on May 25, 2024.
-    const SUPPORT = 'support'; // main branch of MyOps
+    const SYNC = 'sync'; // sync MyOps to the CI/CD server on May 25, 2024.
     const DIVIDER_BRANCH = '---'; // a divider to reduce wrong click
-    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SHIP, self::SUPPORT];
+    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SYNC];
     const PRODUCTION_BRANCHES = [self::MAIN, self::MASTER];
 
     // === GitHub users ===

@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.43 ===
+// === MyOps v3.12.44 ===
 
 // === Generated libraries classes ===
 
@@ -1635,7 +1635,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.43';
+    const APP_VERSION = '3.12.44';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1857,10 +1857,9 @@ class GitHubEnum
     const MASTER = 'master';
     const STAGING = 'staging';
     const DEVELOP = 'develop';
-    const SHIP = 'ship'; // ship MyOps to the CI/CD server on May 25, 2024.
-    const SUPPORT = 'support'; // main branch of MyOps
+    const SYNC = 'sync'; // sync MyOps to the CI/CD server on May 25, 2024.
     const DIVIDER_BRANCH = '---'; // a divider to reduce wrong click
-    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SHIP, self::SUPPORT];
+    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SYNC];
     const PRODUCTION_BRANCHES = [self::MAIN, self::MASTER];
 
     // === GitHub users ===
@@ -3130,7 +3129,7 @@ class GitHubHelper
         }
         //    checkout branches and push
         $commands = new CustomCollection();
-        $supportBranches = collect([GitHubEnum::SUPPORT, GitHubEnum::SHIP, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]);
+        $supportBranches = collect([GitHubEnum::SYNC, GitHubEnum::MASTER, GitHubEnum::STAGING, GitHubEnum::DEVELOP]);
         foreach ($supportBranches as $destinationBranch) {
             $commands->add(GitHubFactory::generateCheckoutCommand($destinationBranch));
             $commands->addStr(GitHubEnum::MERGE_COMMAND, $featureBranch);
