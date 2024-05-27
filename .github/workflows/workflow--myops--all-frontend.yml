@@ -10,25 +10,13 @@ defaults:
 on:
   # Triggers the workflow manually
   workflow_dispatch:
-    inputs:
-      selectedBranch:
-        description: 'Select the branch to build all frontend projects and deploy to S3'
-        required: true
-        default: 'develop'
-        type: choice
-        options:
-          - develop
-          - staging
-          - --- # a divider to reduce wrong click
-          - master
+
 jobs:
 
-  job2-build-and-deploy:
-    name: Build And Deploy (${{ inputs.selectedBranch }} env)
+  job1-build-and-deploy:
+    name: Build And Deploy
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ inputs.selectedBranch }} # Checkout Selected Branch
-      - name: Build And Deploy (${{ inputs.selectedBranch }} env)
+      - name: Build And Deploy
         run: chmod u+x ".ops/build-all-frontend-and-deploy-to-S3.sh" && . ".ops/build-all-frontend-and-deploy-to-S3.sh" 'GitHub Actions'
