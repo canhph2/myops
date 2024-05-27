@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.53 ===
+// === MyOps v3.12.54 ===
 
 // === Generated libraries classes ===
 
@@ -1635,7 +1635,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.53';
+    const APP_VERSION = '3.12.54';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2074,9 +2074,10 @@ class DevelopmentEnum
 
 class SlackEnum
 {
+    const CODE_CHAR = '`';
     const CHECK_EMOJI = ':white_check_mark:';
     const X_EMOJI = ':x:';
-    const CODE_CHAR = '`';
+    const WARNING_EMOJI = ':warning:';
 }
 
 // [REMOVED] namespace App\Factories;
