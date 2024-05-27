@@ -1,5 +1,5 @@
-# MyOps v3.12.54
-*DevOps | CICD | MyOps App (PHP)*
+# MyOps v3.12.55
+*DevOps | CI/CD | MyOps App (PHP)*
 
 ## === Usage ===
 - *Add this instruction in the project's README.MD (should be in the DevOps Notes section):*
