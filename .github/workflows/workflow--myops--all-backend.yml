@@ -10,25 +10,13 @@ defaults:
 on:
   # Triggers the workflow manually
   workflow_dispatch:
-    inputs:
-      selectedBranch:
-        description: 'Select the branch to build all backend projects and deploy to ELB'
-        required: true
-        default: 'develop'
-        type: choice
-        options:
-          - develop
-          - staging
-          - --- # a divider to reduce wrong click
-          - master
+
 jobs:
 
-  job2-build-and-deploy:
-    name: Build And Deploy (${{ inputs.selectedBranch }} env)
+  job1-build-and-deploy:
+    name: Build And Deploy (branch '${{ github.ref }}')
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ inputs.selectedBranch }} # Checkout Selected Branch
-      - name: Build And Deploy (${{ inputs.selectedBranch }} env)
+      - name: Build And Deploy (branch '${{ github.ref }}')
         run: chmod u+x ".ops/build-all-backend-and-deploy-to-ELB.sh" && . ".ops/build-all-backend-and-deploy-to-ELB.sh" 'GitHub Actions'
