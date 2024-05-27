@@ -14,9 +14,9 @@ on:
 jobs:
 
   job1-build-and-deploy:
-    name: Build And Deploy (branch ${{ github.ref }})
+    name: Build And Deploy (branch '${{ github.ref }}')
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      - name: Build And Deploy (branch ${{ github.ref }}")
+      - name: Build And Deploy (branch '${{ github.ref }}')
         run: chmod u+x ".ops/build-all-frontend-and-deploy-to-S3.sh" && . ".ops/build-all-frontend-and-deploy-to-S3.sh" 'GitHub Actions'
