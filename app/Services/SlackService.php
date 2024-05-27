@@ -155,12 +155,12 @@ class SlackService
 
     /**
      *
-     * @param int|null $indent require $indent or input --indent=A
+     * @param int $indent
      * @return null|string
      */
-    private static function generateIndent(int $indent = null): ?string
+    private static function generateIndent(int $indent): ?string
     {
-        return $indent ?? self::input('indent') ? sprintf("%s%s", IconEnum::DOT,
+        return $indent ? sprintf("%s%s", IconEnum::DOT,
             str_repeat(' ', $indent * 8 - 1)) : '';
     }
 }
