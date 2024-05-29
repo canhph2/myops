@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.56 ===
+// === MyOps v3.12.57 ===
 
 // === Generated libraries classes ===
 
@@ -1635,7 +1635,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.56';
+    const APP_VERSION = '3.12.57';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1889,7 +1889,7 @@ class GitHubEnum
 
     //
     const DEVELOPMENT_ONLY_REPOSITORIES = [self::DOCKER_BASE_IMAGES, self::ENGAGE_SELENIUM_TEST_1];
-    const PRODUCTION_REPOSITORIES = [self::ENGAGE_API, self::ENGAGE_BOOKING_API, self::INVOICE_SERVICE, self::PAYMENT_SERVICE,
+    const PRODUCTION_REPOSITORIES = [self::MYOPS, self::ENGAGE_API, self::ENGAGE_BOOKING_API, self::INVOICE_SERVICE, self::PAYMENT_SERVICE,
         self::INTEGRATION_API, self::EMAIL_SERVICE, self::ENGAGE_SPA, self::ENGAGE_BOOKING_SPA];
 
     /**
