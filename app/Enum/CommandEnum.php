@@ -153,7 +153,7 @@ class CommandEnum
             ],
             self::POST_WORK => [
                 "do post works",
-                "[Optional] add param '--skip-check-dir=1' to skip check dir",
+                "[Optional] add param '--skip-check-dir' to skip check dir",
                 "[Optional] add param '--process-id=<PROCESS_ID>' to get process build time",
                 '[NORMAL] slack notify to finish, will support Slack options above',
             ],

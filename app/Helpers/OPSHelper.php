@@ -228,11 +228,8 @@ class OPSHelper
     public
     static function postWork(): void
     {
-        // === param ===
-        $isSkipCheckDir = (bool)self::input('skip-check-dir');
-        //
         self::LineNew()->printTitle("Post works");
-        if ($isSkipCheckDir) {
+        if (self::inputBool('skip-check-dir')) {
             self::lineIcon(IconEnum::DOT)->print("skip check execution directory");
         }
         // === cleanup ===

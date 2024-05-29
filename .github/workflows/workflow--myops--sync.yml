@@ -17,9 +17,9 @@ on:
 jobs:
 
   job1-sync-myops:
-    name: Sync MyOps
+    name: Sync MyOps (branch '${{ github.ref }}')
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      - name: Build And Deploy
+      - name: Sync MyOps (branch '${{ github.ref }}')
         run: chmod u+x ".ops/sync-and-notify-Slack.sh" && . ".ops/sync-and-notify-Slack.sh" 'GitHub Actions'

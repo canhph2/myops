@@ -113,7 +113,7 @@ class DirHelper
                 }
                 //    execute
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
-                    ->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
+                    ->execMultiInWorkDir(self::inputBool('skip-check-dir'))->printOutput();
                 // validate the result
                 self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), DevelopmentEnum::TMP);
                 foreach ($subDirs as $subDir) {
@@ -130,7 +130,7 @@ class DirHelper
                 }
                 //    execute
                 (new Process("Remove tmp dir", self::getWorkingDir(), $commands))
-                    ->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
+                    ->execMultiInWorkDir(self::inputBool('skip-check-dir'))->printOutput();
                 // validate the result
                 DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), DevelopmentEnum::TMP);
                 foreach ($subDirs as $subDir) {
@@ -262,7 +262,7 @@ class DirHelper
             && (is_file(DirHelper::getWorkingDir($fileOrDirName)) || is_dir(DirHelper::getWorkingDir($fileOrDirName)))) {
             (new Process("Remove " . $fileOrDirName, DirHelper::getWorkingDir(),
                 ShellFactory::generateRemoveFileOrDirCommand(DirHelper::getWorkingDir($fileOrDirName))
-            ))->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
+            ))->execMultiInWorkDir(self::inputBool('skip-check-dir'))->printOutput();
             // validate result
             DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, DirHelper::getWorkingDir(), $fileOrDirName);
             //
@@ -280,7 +280,7 @@ class DirHelper
         if (is_file(DirHelper::getWorkingDir($fileOrDirName)) || is_dir(DirHelper::getWorkingDir($fileOrDirName))) {
             (new Process("Remove " . $fileOrDirName, DirHelper::getWorkingDir(),
                 ShellFactory::generateRemoveFileOrDirCommand(DirHelper::getWorkingDir($fileOrDirName))
-            ))->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
+            ))->execMultiInWorkDir(self::inputBool('skip-check-dir'))->printOutput();
             // validate result
             DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, DirHelper::getWorkingDir(), $fileOrDirName);
             //

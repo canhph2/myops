@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.55 ===
+// === MyOps v3.12.56 ===
 
 // === Generated libraries classes ===
 
@@ -1635,7 +1635,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.55';
+    const APP_VERSION = '3.12.56';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1791,7 +1791,7 @@ class CommandEnum
             ],
             self::POST_WORK => [
                 "do post works",
-                "[Optional] add param '--skip-check-dir=1' to skip check dir",
+                "[Optional] add param '--skip-check-dir' to skip check dir",
                 "[Optional] add param '--process-id=<PROCESS_ID>' to get process build time",
                 '[NORMAL] slack notify to finish, will support Slack options above',
             ],
@@ -2301,7 +2301,7 @@ class DirHelper
                 }
                 //    execute
                 (new Process("Add tmp dir", self::getWorkingDir(), $commands))
-                    ->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
+                    ->execMultiInWorkDir(self::inputBool('skip-check-dir'))->printOutput();
                 // validate the result
                 self::validateDirOrFileExisting(ValidationTypeEnum::EXISTS, self::getWorkingDir(), DevelopmentEnum::TMP);
                 foreach ($subDirs as $subDir) {
@@ -2318,7 +2318,7 @@ class DirHelper
                 }
                 //    execute
                 (new Process("Remove tmp dir", self::getWorkingDir(), $commands))
-                    ->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
+                    ->execMultiInWorkDir(self::inputBool('skip-check-dir'))->printOutput();
                 // validate the result
                 DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, self::getWorkingDir(), DevelopmentEnum::TMP);
                 foreach ($subDirs as $subDir) {
@@ -2450,7 +2450,7 @@ class DirHelper
             && (is_file(DirHelper::getWorkingDir($fileOrDirName)) || is_dir(DirHelper::getWorkingDir($fileOrDirName)))) {
             (new Process("Remove " . $fileOrDirName, DirHelper::getWorkingDir(),
                 ShellFactory::generateRemoveFileOrDirCommand(DirHelper::getWorkingDir($fileOrDirName))
-            ))->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
+            ))->execMultiInWorkDir(self::inputBool('skip-check-dir'))->printOutput();
             // validate result
             DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, DirHelper::getWorkingDir(), $fileOrDirName);
             //
@@ -2468,7 +2468,7 @@ class DirHelper
         if (is_file(DirHelper::getWorkingDir($fileOrDirName)) || is_dir(DirHelper::getWorkingDir($fileOrDirName))) {
             (new Process("Remove " . $fileOrDirName, DirHelper::getWorkingDir(),
                 ShellFactory::generateRemoveFileOrDirCommand(DirHelper::getWorkingDir($fileOrDirName))
-            ))->execMultiInWorkDir((bool)self::input('skip-check-dir'))->printOutput();
+            ))->execMultiInWorkDir(self::inputBool('skip-check-dir'))->printOutput();
             // validate result
             DirHelper::validateDirOrFileExisting(ValidationTypeEnum::DONT_EXISTS, DirHelper::getWorkingDir(), $fileOrDirName);
             //
@@ -2708,11 +2708,8 @@ class OPSHelper
     public
     static function postWork(): void
     {
-        // === param ===
-        $isSkipCheckDir = (bool)self::input('skip-check-dir');
-        //
         self::LineNew()->printTitle("Post works");
-        if ($isSkipCheckDir) {
+        if (self::inputBool('skip-check-dir')) {
             self::lineIcon(IconEnum::DOT)->print("skip check execution directory");
         }
         // === cleanup ===
