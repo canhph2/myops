@@ -246,8 +246,8 @@ class GitHubHelper
         (new Process("Set repository remote url and force checkout branch", DirHelper::getWorkingDir(), array_merge($initGitCommands, [
             $setRemoteOriginUrlCommand,
             GitHubEnum::PULL_COMMAND,
+            GitHubFactory::generateCheckoutCommand($branchToCheckout, true),
             GitHubEnum::RESET_BRANCH_COMMAND,
-            GitHubFactory::generateCheckoutCommand($branchToCheckout),
             GitHubEnum::PULL_COMMAND,
         ])))->execMultiInWorkDir(true)->printOutput();
         // === validate result ===

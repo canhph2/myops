@@ -9,7 +9,7 @@ class GitHubEnum
     // === GitHub commands ===
     const INIT_REPOSITORY_COMMAND = 'git init';
     const RESET_BRANCH_COMMAND = 'git reset --hard HEAD'; // rollback all changing
-    const CHECKOUT_COMMAND = 'git checkout %s';
+    const CHECKOUT_COMMAND = 'git checkout %s%s';
     const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
     const PULL_COMMAND = 'git pull'; // get the newest code
     const ADD_ALL_FILES_COMMAND = 'git add -A';

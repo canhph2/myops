@@ -11,9 +11,9 @@ class GitHubFactory
      * @param string $branch
      * @return string
      */
-    public static function generateCheckoutCommand(string $branch): string
+    public static function generateCheckoutCommand(string $branch, bool $isForce = false): string
     {
-        return sprintf(GitHubEnum::CHECKOUT_COMMAND, $branch, $branch);
+        return sprintf(GitHubEnum::CHECKOUT_COMMAND, $isForce ? '-f ' : '', $branch);
     }
 
     /**

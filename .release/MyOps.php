@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.57 ===
+// === MyOps v3.12.58 ===
 
 // === Generated libraries classes ===
 
@@ -1635,7 +1635,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.57';
+    const APP_VERSION = '3.12.58';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1839,7 +1839,7 @@ class GitHubEnum
     // === GitHub commands ===
     const INIT_REPOSITORY_COMMAND = 'git init';
     const RESET_BRANCH_COMMAND = 'git reset --hard HEAD'; // rollback all changing
-    const CHECKOUT_COMMAND = 'git checkout %s';
+    const CHECKOUT_COMMAND = 'git checkout %s%s';
     const GET_BRANCH_COMMAND = "git symbolic-ref HEAD | sed 's/refs\/heads\///g'";
     const PULL_COMMAND = 'git pull'; // get the newest code
     const ADD_ALL_FILES_COMMAND = 'git add -A';
@@ -2125,9 +2125,9 @@ class GitHubFactory
      * @param string $branch
      * @return string
      */
-    public static function generateCheckoutCommand(string $branch): string
+    public static function generateCheckoutCommand(string $branch, bool $isForce = false): string
     {
-        return sprintf(GitHubEnum::CHECKOUT_COMMAND, $branch, $branch);
+        return sprintf(GitHubEnum::CHECKOUT_COMMAND, $isForce ? '-f ' : '', $branch);
     }
 
     /**
@@ -2993,8 +2993,8 @@ class GitHubHelper
         (new Process("Set repository remote url and force checkout branch", DirHelper::getWorkingDir(), array_merge($initGitCommands, [
             $setRemoteOriginUrlCommand,
             GitHubEnum::PULL_COMMAND,
+            GitHubFactory::generateCheckoutCommand($branchToCheckout, true),
             GitHubEnum::RESET_BRANCH_COMMAND,
-            GitHubFactory::generateCheckoutCommand($branchToCheckout),
             GitHubEnum::PULL_COMMAND,
         ])))->execMultiInWorkDir(true)->printOutput();
         // === validate result ===
