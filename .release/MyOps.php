@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.14.8 ===
+// === MyOps v3.14.9 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.14.8';
+    const APP_VERSION = '3.14.9';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3095,7 +3095,7 @@ class GitHubHelper
         ]))->execMultiInWorkDirAndGetOutputStrAll();
         self::lineNew()->printSeparatorLine()->print("Last updated:");
         foreach(explode(PHP_EOL, $lastLogs) as $log) {
-            if(trim($lastLogs)){
+            if(trim($log)){
                 self::lineIcon(IconEnum::CHECK)->setColor(UIEnum::COLOR_GREEN)->print($log);
             }
         }

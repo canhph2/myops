@@ -260,7 +260,7 @@ class GitHubHelper
         ]))->execMultiInWorkDirAndGetOutputStrAll();
         self::lineNew()->printSeparatorLine()->print("Last updated:");
         foreach(explode(PHP_EOL, $lastLogs) as $log) {
-            if(trim($lastLogs)){
+            if(trim($log)){
                 self::lineIcon(IconEnum::CHECK)->setColor(UIEnum::COLOR_GREEN)->print($log);
             }
         }
