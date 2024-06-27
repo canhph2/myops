@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.14.7 ===
+// === MyOps v3.14.8 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.14.7';
+    const APP_VERSION = '3.14.8';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3084,12 +3084,21 @@ class GitHubHelper
             GitHubFactory::generateCheckoutCommand($branchToCheckout, true),
             GitHubEnum::RESET_BRANCH_COMMAND,
             GitHubEnum::PULL_COMMAND,
-            GitHubFactory::generateLogCommand(5),
         ])))->execMultiInWorkDir(true)->printOutput();
         // === validate result ===
         (new Process("Validate branch", DirHelper::getWorkingDir(), [
             GitHubEnum::GET_BRANCH_COMMAND
         ]))->execMultiInWorkDir()->printOutput();
+        // print last log
+        $lastLogs = (new Process("get last log (silent)", DirHelper::getWorkingDir(), [
+            GitHubFactory::generateLogCommand(5)
+        ]))->execMultiInWorkDirAndGetOutputStrAll();
+        self::lineNew()->printSeparatorLine()->print("Last updated:");
+        foreach(explode(PHP_EOL, $lastLogs) as $log) {
+            if(trim($lastLogs)){
+                self::lineIcon(IconEnum::CHECK)->setColor(UIEnum::COLOR_GREEN)->print($log);
+            }
+        }
     }
 
     /**
