@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.14.4 ===
+// === MyOps v3.14.5 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.14.4';
+    const APP_VERSION = '3.14.5';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3069,7 +3069,7 @@ class GitHubHelper
             : sprintf("git remote add origin %s", $GIT_URL_WITH_TOKEN);
         (new Process("Set repository remote url and force checkout branch", DirHelper::getWorkingDir(), array_merge($initGitCommands, [
             $setRemoteOriginUrlCommand,
-            GitHubEnum::PULL_COMMAND,
+            sprintf("%s --quiet || true", GitHubEnum::PULL_COMMAND), // exit code always is 0
             GitHubFactory::generateCheckoutCommand($branchToCheckout, true),
             GitHubEnum::RESET_BRANCH_COMMAND,
             GitHubEnum::PULL_COMMAND,
