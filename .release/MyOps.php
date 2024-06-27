@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.14.5 ===
+// === MyOps v3.14.6 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.14.5';
+    const APP_VERSION = '3.14.6';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1859,6 +1859,7 @@ class GitHubEnum
     const GET_REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
     const GET_HEAD_COMMIT_ID_COMMAND = 'git rev-parse --short HEAD';
     const CLEAN_COMMAND = 'git clean -ffdx';
+    const LOG_COMMAND = 'git log --pretty=format:%B -%s'; // A line
 
     // === Git branches ===
     const MAIN = 'main';
@@ -2147,6 +2148,7 @@ class GitHubFactory
 {
     /**
      * @param string $branch
+     * @param bool $isForce
      * @return string
      */
     public static function generateCheckoutCommand(string $branch, bool $isForce = false): string
@@ -2186,6 +2188,15 @@ class GitHubFactory
             self::generateCheckoutCommand($branch),
             GitHubEnum::PULL_COMMAND
         ]);
+    }
+
+    /**
+     * @param int $amountLines
+     * @return string
+     */
+    public static function generateLogCommand(int $amountLines = 1): string
+    {
+        return sprintf(GitHubEnum::LOG_COMMAND, $amountLines);
     }
 }
 
@@ -3073,6 +3084,7 @@ class GitHubHelper
             GitHubFactory::generateCheckoutCommand($branchToCheckout, true),
             GitHubEnum::RESET_BRANCH_COMMAND,
             GitHubEnum::PULL_COMMAND,
+            GitHubFactory::generateLogCommand(5),
         ])))->execMultiInWorkDir(true)->printOutput();
         // === validate result ===
         (new Process("Validate branch", DirHelper::getWorkingDir(), [
