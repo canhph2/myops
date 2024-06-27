@@ -2,6 +2,7 @@
 
 ---
 ## === v3 ===
+- 3.13.0 | TODO ADD SOME CHANGE LOGS
 - 3.12.0 | Add `checkout` command
 - 3.11.0 | Add `merge-feature-all` command
 - 3.10.0 | Add `build all backend projects` workflow, organize branches

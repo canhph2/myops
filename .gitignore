@@ -1,6 +1,8 @@
 # === DotENV ===
 .env
 .env-ops
+.conf-ryt
+.env.test
 # === END ===
 
 # ----------------------------

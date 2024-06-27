@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.12.58 ===
+// === MyOps v3.13.0 ===
 
 // === Generated libraries classes ===
 
@@ -1635,7 +1635,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.12.58';
+    const APP_VERSION = '3.13.0';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1644,6 +1644,7 @@ class CommandEnum
 {
     // === this app commands ===
     const HELP = 'help';
+    const INFO = 'info';
     const RELEASE = 'release';
     const VERSION = 'version';
     const SYNC = 'sync';
@@ -1716,6 +1717,7 @@ class CommandEnum
                 'show list support command and usage',
                 sprintf("add arg1 is your <search command> to highlight red the command .e.g % help searchA", AppInfoEnum::APP_MAIN_COMMAND),
             ],
+            self::INFO => ['to get current project info like environment, image name'],
             self::RELEASE => [
                 sprintf("combine all PHP files into '.release/MyOps.php' and install a alias '%s'", AppInfoEnum::APP_MAIN_COMMAND),
                 "default version increasing is 'patch'",
@@ -2167,6 +2169,11 @@ class GitHubFactory
 
 // [REMOVED] namespace App\Helpers;
 
+// [REMOVED] use App\Classes\Base\CustomCollection;
+// [REMOVED] use App\Enum\DevelopmentEnum;
+// [REMOVED] use App\Enum\IconEnum;
+// [REMOVED] use App\Enum\IndentLevelEnum;
+// [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Enum\UIEnum;
 // [REMOVED] use App\MyOps;
 // [REMOVED] use App\Traits\ConsoleBaseTrait;
@@ -2185,6 +2192,53 @@ class AppInfoHelper
             // default
             self::lineColorFormat(UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD)->print(MyOps::getAppVersionStr());
         }
+    }
+
+    public static function info(): void {
+        // validate
+        $envPath = DirHelper::getWorkingDir(DevelopmentEnum::DOT_CONFIG_RYT);
+        if(!is_file($envPath)){
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print('%s not found',DevelopmentEnum::DOT_CONFIG_RYT);
+        }
+        // handle
+        //    get env value
+        $tempEnvs = new CustomCollection(StrHelper::findLinesContainsTextInFile($envPath, 'APP_NAME'));
+        if(!getenv('SYS_ENV')){
+            $tempEnvs->merge(StrHelper::findLinesContainsTextInFile($envPath, 'SYS_ENV'));
+        }
+        if(!getenv('FRONTEND_URL')){
+            $tempEnvs->merge(StrHelper::findLinesContainsTextInFile($envPath, 'FRONTEND_URL'));
+        }
+        if(!getenv('DB_HOST')){
+            $tempEnvs->merge(StrHelper::findLinesContainsTextInFile($envPath, 'DB_HOST'));
+        }
+        if(!getenv('DB_DATABASE_API')){
+            $tempEnvs->merge(StrHelper::findLinesContainsTextInFile($envPath, 'DB_DATABASE_API'));
+        }
+        if(!getenv('DB_DATABASE_PAYMENT')){
+            $tempEnvs->merge(StrHelper::findLinesContainsTextInFile($envPath, 'DB_DATABASE_PAYMENT'));
+        }
+        foreach ($tempEnvs as $line) {
+            putenv($line);
+        }
+        //    print
+        self::lineNew()->printTitle("project info");
+        //    app name
+        $appNameFormat = self::colorFormat(ucwords(str_replace('-', ' ', getenv("APP_NAME"))),
+            UIEnum::COLOR_BLUE, UIEnum::FORMAT_BOLD);
+        self::lineIcon(IconEnum::DOT)->print('app name         : %s', $appNameFormat);
+        //    env
+        self::lineIcon(IconEnum::DOT)->print('env              : %s', self::color(ENVHelper::getENVText(), UIEnum::COLOR_BLUE));
+        //    url
+        self::lineNew()->printSeparatorLine();
+        self::lineIcon(IconEnum::DOT)->print('frontend URL     : %s',  self::color(getenv("FRONTEND_URL"), UIEnum::COLOR_BLUE));
+        //    database info
+        self::lineNew()->printSeparatorLine();
+        self::lineIcon(IconEnum::DOT)->print('database host    : %s',  self::color(getenv("DB_HOST"), UIEnum::COLOR_BLUE));
+        self::lineIcon(IconEnum::DOT)->print('database API     : %s',  self::color(getenv("DB_DATABASE_API"), UIEnum::COLOR_BLUE));
+        self::lineIcon(IconEnum::DOT)->print('database payment : %s',  self::color(getenv("DB_DATABASE_PAYMENT"), UIEnum::COLOR_BLUE));
+        //
+        self::lineIndent(IndentLevelEnum::DECREASE)->printSeparatorLine();
     }
 }
 
@@ -4734,6 +4788,9 @@ class MyOps
             // === this app ===
             case CommandEnum::HELP:
                 $this->help();
+                break;
+            case CommandEnum::INFO:
+                AppInfoHelper::info();
                 break;
             case CommandEnum::RELEASE:
                 // release

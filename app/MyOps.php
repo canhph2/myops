@@ -78,6 +78,9 @@ class MyOps
             case CommandEnum::HELP:
                 $this->help();
                 break;
+            case CommandEnum::INFO:
+                AppInfoHelper::info();
+                break;
             case CommandEnum::RELEASE:
                 // release
                 (new Release())->handle();
