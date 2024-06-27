@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.14.1 ===
+// === MyOps v3.14.2 ===
 
 // === Generated libraries classes ===
 
@@ -231,6 +231,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Enum\ConsoleEnum;
 // [REMOVED] use App\Enum\DevelopmentEnum;
 // [REMOVED] use App\Enum\DockerEnum;
+// [REMOVED] use App\Enum\ENVEnum;
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\IconEnum;
 // [REMOVED] use App\Enum\IndentLevelEnum;
@@ -251,6 +252,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Helpers\DateHelper;
 // [REMOVED] use App\Helpers\DirHelper;
 // [REMOVED] use App\Helpers\DockerHelper;
+// [REMOVED] use App\Helpers\ENVHelper;
 // [REMOVED] use App\Helpers\GitHubHelper;
 // [REMOVED] use App\Helpers\OPSHelper;
 // [REMOVED] use App\Helpers\ProcessHelper;
@@ -306,6 +308,7 @@ class Release
             DirHelper::getClassPathAndFileName(ConsoleEnum::class),
             DirHelper::getClassPathAndFileName(DevelopmentEnum::class),
             DirHelper::getClassPathAndFileName(SlackEnum::class),
+            DirHelper::getClassPathAndFileName(ENVEnum::class),
             // === Factories ===
             DirHelper::getClassPathAndFileName(ShellFactory::class),
             DirHelper::getClassPathAndFileName(GitHubFactory::class),
@@ -325,6 +328,7 @@ class Release
             DirHelper::getClassPathAndFileName(UuidHelper::class),
             DirHelper::getClassPathAndFileName(ValidationHelper::class),
             DirHelper::getClassPathAndFileName(ConsoleHelper::class),
+            DirHelper::getClassPathAndFileName(ENVHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
@@ -1635,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.14.1';
+    const APP_VERSION = '3.14.2';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2080,6 +2084,22 @@ class SlackEnum
     const CHECK_EMOJI = ':white_check_mark:';
     const X_EMOJI = ':x:';
     const WARNING_EMOJI = ':warning:';
+}
+
+// [REMOVED] namespace App\Enum;
+
+class ENVEnum
+{
+    // code
+    const PRODUCTION_CODE = 'prd';
+    const STAGING_CODE = 'stg';
+    const DEVELOP_CODE = 'dev';
+    const LOCAL_CODE = 'loc';
+    // name
+    const PRODUCTION = 'production';
+    const STAGING = 'staging';
+    const DEVELOP = 'develop';
+    const LOCAL = 'local';
 }
 
 // [REMOVED] namespace App\Factories;
@@ -4347,6 +4367,43 @@ class ConsoleHelper
     public static function generateFullField(string $field, string $equalSign = '='): string
     {
         return sprintf("%s%s%s", ConsoleEnum::FIELD_PREFIX, $field, $equalSign);
+    }
+}
+
+// [REMOVED] namespace App\Helpers;
+
+// [REMOVED] use App\Enum\ENVEnum;
+
+class ENVHelper
+{
+    /**
+     * @return string|null
+     */
+    public static function getENVCode(): ?string
+    {
+        return strtolower(getenv('SYS_ENV'));
+    }
+
+    /**
+     * @return string
+     */
+    public static function getENVText(): string
+    {
+        switch (self::getENVCode()) {
+            case ENVEnum::PRODUCTION_CODE:
+            case 'prod':
+            case ENVEnum::PRODUCTION:
+                return ENVEnum::PRODUCTION;
+            case ENVEnum::STAGING_CODE:
+                return ENVEnum::STAGING;
+            case ENVEnum::DEVELOP_CODE:
+                return ENVEnum::DEVELOP;
+            case ENVEnum::LOCAL_CODE:
+            case ENVEnum::LOCAL:
+                return ENVEnum::LOCAL;
+            default:
+                return 'unknown_env';
+        }
     }
 }
 

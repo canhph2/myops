@@ -8,6 +8,7 @@ use App\Enum\CommandEnum;
 use App\Enum\ConsoleEnum;
 use App\Enum\DevelopmentEnum;
 use App\Enum\DockerEnum;
+use App\Enum\ENVEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
@@ -28,6 +29,7 @@ use App\Helpers\Data;
 use App\Helpers\DateHelper;
 use App\Helpers\DirHelper;
 use App\Helpers\DockerHelper;
+use App\Helpers\ENVHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OPSHelper;
 use App\Helpers\ProcessHelper;
@@ -83,6 +85,7 @@ class Release
             DirHelper::getClassPathAndFileName(ConsoleEnum::class),
             DirHelper::getClassPathAndFileName(DevelopmentEnum::class),
             DirHelper::getClassPathAndFileName(SlackEnum::class),
+            DirHelper::getClassPathAndFileName(ENVEnum::class),
             // === Factories ===
             DirHelper::getClassPathAndFileName(ShellFactory::class),
             DirHelper::getClassPathAndFileName(GitHubFactory::class),
@@ -102,6 +105,7 @@ class Release
             DirHelper::getClassPathAndFileName(UuidHelper::class),
             DirHelper::getClassPathAndFileName(ValidationHelper::class),
             DirHelper::getClassPathAndFileName(ConsoleHelper::class),
+            DirHelper::getClassPathAndFileName(ENVHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
