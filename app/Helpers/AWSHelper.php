@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Classes\Process;
+use App\Enum\ENVEnum;
 use App\Enum\GitHubEnum;
 use App\Enum\TagEnum;
 use App\Enum\ValidationTypeEnum;
@@ -288,5 +289,64 @@ class AWSHelper
             self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, self::AWS_CONFIGURATION_CREDENTIALS_FILE),
             trim(substr(file_get_contents(self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, $AWSCredentialFile)), -6), "\n")
         );
+    }
+
+    /**
+     * - Will generate a `temp` directory contain 2 files: .env.develop, .env.staging
+     * - To copy to .conf-ryt when the develop needs to switch env in local development process
+     * @return void
+     */
+    public static function generateTempEnvs(): void
+    {
+        $envDev = self::generateEnvFileName(GitHubHelper::getRepository(), ENVEnum::DEVELOP_CODE);
+        $envStg = self::generateEnvFileName(GitHubHelper::getRepository(), ENVEnum::STAGING_CODE);
+        $tempEnvDev = DirHelper::getWorkingDir(sprintf("temp/%s", sprintf(".env.%s", ENVEnum::DEVELOP)));
+        $tempEnvStg = DirHelper::getWorkingDir(sprintf("temp/%s", sprintf(".env.%s", ENVEnum::STAGING)));
+        //
+        (new Process("Create a 'temp' dir", DirHelper::getWorkingDir(), [
+            sprintf("rm -rf %s", DirHelper::getWorkingDir('temp')),
+            sprintf("mkdir %s", DirHelper::getWorkingDir('temp')),
+        ]))->execMultiInWorkDir()->printOutput();
+        // Get shared env
+        AWSHelper::getSecretEnv(sprintf("env-engageplus-credentials-%s", ENVEnum::DEVELOP_CODE),
+        sprintf(".env.%s", ENVEnum::DEVELOP));
+        AWSHelper::getSecretEnv(sprintf("env-engageplus-credentials-%s", ENVEnum::STAGING_CODE),
+            sprintf(".env.%s", ENVEnum::STAGING));
+        (new Process("Move temp files", DirHelper::getWorkingDir(), [
+            sprintf("mv '%s' '%s'", DirHelper::getWorkingDir(sprintf(".env.%s", ENVEnum::DEVELOP)), $tempEnvDev),
+            sprintf("mv '%s' '%s'", DirHelper::getWorkingDir(sprintf(".env.%s", ENVEnum::STAGING)), $tempEnvStg),
+        ]))->execMultiInWorkDir()->printOutput();
+        // Get repository's env
+        AWSHelper::getSecretEnv($envDev, $envDev);
+        AWSHelper::getSecretEnv($envStg, $envStg);
+        (new Process("Get repository's env", DirHelper::getWorkingDir(), [
+            sprintf("echo \"\n\n\n# === %s's env (%s) ===\" >> '%s' ", GitHubHelper::getRepository(), $envDev, $tempEnvDev),
+            sprintf("cat '%s' >> '%s' ", DirHelper::getWorkingDir($envDev), $tempEnvDev),
+            sprintf("rm -f '%s'", DirHelper::getWorkingDir($envDev)),
+            //
+            sprintf("echo \"\n\n\n# === %s's env (%s) ===\" >> '%s' ", GitHubHelper::getRepository(), $envStg, $tempEnvStg),
+            sprintf("cat '%s' >> '%s' ", DirHelper::getWorkingDir($envStg), $tempEnvStg),
+            sprintf("rm -f '%s'", DirHelper::getWorkingDir($envStg)),
+        ]))->execMultiInWorkDir()->printOutput();
+    }
+
+    private static function generateEnvFileName($repository, $envCode): string
+    {
+        switch ($repository) {
+            case GitHubEnum::ENGAGE_API:
+                return "env-legacy-$envCode";
+            case GitHubEnum::ENGAGE_BOOKING_API:
+                return "env-booking-$envCode";
+            case GitHubEnum::INVOICE_SERVICE:
+                return "env-invoice-$envCode";
+            case GitHubEnum::PAYMENT_SERVICE:
+                return "env-payment-$envCode";
+            case GitHubEnum::INTEGRATION_API:
+                return "env-integration-$envCode";
+            case GitHubEnum::EMAIL_SERVICE:
+                return "env-email-$envCode";
+            default:
+                return 'error';
+        }
     }
 }

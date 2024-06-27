@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.14.3 ===
+// === MyOps v3.14.4 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.14.3';
+    const APP_VERSION = '3.14.4';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1659,6 +1659,7 @@ class CommandEnum
     const GET_SECRET_ENV = 'get-secret-env';
     const ELB_UPDATE_VERSION = 'elb-update-version';
     const AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD = 'automate-switching-aws-credential-for-cicd';
+    const GENERATE_TEMP_ENVS = 'generate-temp-envs';
 
     // === Git/GitHub ===
     const BRANCH = 'branch';
@@ -1740,6 +1741,7 @@ class CommandEnum
             self::GET_SECRET_ENV => ["[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName"],
             self::ELB_UPDATE_VERSION => ["[AWS Elastic Beanstalk] create a new version and update an environment"],
             self::AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD => ['Automate to switch AWS Credential Keys for deployments in GitHub Runner Server'],
+            self::GENERATE_TEMP_ENVS => ["get and generate temp envs file in 'temp' directory"],
             // group title
             "GIT / GITHUB" => [],
             self::BRANCH => ['get git branch / GitHub branch'],
@@ -3219,6 +3221,7 @@ class GitHubHelper
 // [REMOVED] namespace App\Helpers;
 
 // [REMOVED] use App\Classes\Process;
+// [REMOVED] use App\Enum\ENVEnum;
 // [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Enum\ValidationTypeEnum;
@@ -3504,6 +3507,65 @@ class AWSHelper
             self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, self::AWS_CONFIGURATION_CREDENTIALS_FILE),
             trim(substr(file_get_contents(self::getAWSConfigurationPath(self::AWS_CONFIGURATION_DIR, $AWSCredentialFile)), -6), "\n")
         );
+    }
+
+    /**
+     * - Will generate a `temp` directory contain 2 files: .env.develop, .env.staging
+     * - To copy to .conf-ryt when the develop needs to switch env in local development process
+     * @return void
+     */
+    public static function generateTempEnvs(): void
+    {
+        $envDev = self::generateEnvFileName(GitHubHelper::getRepository(), ENVEnum::DEVELOP_CODE);
+        $envStg = self::generateEnvFileName(GitHubHelper::getRepository(), ENVEnum::STAGING_CODE);
+        $tempEnvDev = DirHelper::getWorkingDir(sprintf("temp/%s", sprintf(".env.%s", ENVEnum::DEVELOP)));
+        $tempEnvStg = DirHelper::getWorkingDir(sprintf("temp/%s", sprintf(".env.%s", ENVEnum::STAGING)));
+        //
+        (new Process("Create a 'temp' dir", DirHelper::getWorkingDir(), [
+            sprintf("rm -rf %s", DirHelper::getWorkingDir('temp')),
+            sprintf("mkdir %s", DirHelper::getWorkingDir('temp')),
+        ]))->execMultiInWorkDir()->printOutput();
+        // Get shared env
+        AWSHelper::getSecretEnv(sprintf("env-engageplus-credentials-%s", ENVEnum::DEVELOP_CODE),
+        sprintf(".env.%s", ENVEnum::DEVELOP));
+        AWSHelper::getSecretEnv(sprintf("env-engageplus-credentials-%s", ENVEnum::STAGING_CODE),
+            sprintf(".env.%s", ENVEnum::STAGING));
+        (new Process("Move temp files", DirHelper::getWorkingDir(), [
+            sprintf("mv '%s' '%s'", DirHelper::getWorkingDir(sprintf(".env.%s", ENVEnum::DEVELOP)), $tempEnvDev),
+            sprintf("mv '%s' '%s'", DirHelper::getWorkingDir(sprintf(".env.%s", ENVEnum::STAGING)), $tempEnvStg),
+        ]))->execMultiInWorkDir()->printOutput();
+        // Get repository's env
+        AWSHelper::getSecretEnv($envDev, $envDev);
+        AWSHelper::getSecretEnv($envStg, $envStg);
+        (new Process("Get repository's env", DirHelper::getWorkingDir(), [
+            sprintf("echo \"\n\n\n# === %s's env (%s) ===\" >> '%s' ", GitHubHelper::getRepository(), $envDev, $tempEnvDev),
+            sprintf("cat '%s' >> '%s' ", DirHelper::getWorkingDir($envDev), $tempEnvDev),
+            sprintf("rm -f '%s'", DirHelper::getWorkingDir($envDev)),
+            //
+            sprintf("echo \"\n\n\n# === %s's env (%s) ===\" >> '%s' ", GitHubHelper::getRepository(), $envStg, $tempEnvStg),
+            sprintf("cat '%s' >> '%s' ", DirHelper::getWorkingDir($envStg), $tempEnvStg),
+            sprintf("rm -f '%s'", DirHelper::getWorkingDir($envStg)),
+        ]))->execMultiInWorkDir()->printOutput();
+    }
+
+    private static function generateEnvFileName($repository, $envCode): string
+    {
+        switch ($repository) {
+            case GitHubEnum::ENGAGE_API:
+                return "env-legacy-$envCode";
+            case GitHubEnum::ENGAGE_BOOKING_API:
+                return "env-booking-$envCode";
+            case GitHubEnum::INVOICE_SERVICE:
+                return "env-invoice-$envCode";
+            case GitHubEnum::PAYMENT_SERVICE:
+                return "env-payment-$envCode";
+            case GitHubEnum::INTEGRATION_API:
+                return "env-integration-$envCode";
+            case GitHubEnum::EMAIL_SERVICE:
+                return "env-email-$envCode";
+            default:
+                return 'error';
+        }
     }
 }
 
@@ -4882,6 +4944,9 @@ class MyOps
                 break;
             case CommandEnum::AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD:
                 AWSHelper::automateToSwitchAWSCredentialForCICD();
+                break;
+            case CommandEnum::GENERATE_TEMP_ENVS:
+                AWSHelper::generateTempEnvs();
                 break;
             // === Git / GitHub ===
             case CommandEnum::BRANCH:

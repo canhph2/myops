@@ -17,6 +17,7 @@ class CommandEnum
     const GET_SECRET_ENV = 'get-secret-env';
     const ELB_UPDATE_VERSION = 'elb-update-version';
     const AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD = 'automate-switching-aws-credential-for-cicd';
+    const GENERATE_TEMP_ENVS = 'generate-temp-envs';
 
     // === Git/GitHub ===
     const BRANCH = 'branch';
@@ -98,6 +99,7 @@ class CommandEnum
             self::GET_SECRET_ENV => ["[AWS Secret Manager] [CREDENTIAL REQUIRED] get .env | params:  secretName, customENVName"],
             self::ELB_UPDATE_VERSION => ["[AWS Elastic Beanstalk] create a new version and update an environment"],
             self::AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD => ['Automate to switch AWS Credential Keys for deployments in GitHub Runner Server'],
+            self::GENERATE_TEMP_ENVS => ["get and generate temp envs file in 'temp' directory"],
             // group title
             "GIT / GITHUB" => [],
             self::BRANCH => ['get git branch / GitHub branch'],
