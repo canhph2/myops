@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.14.2 ===
+// === MyOps v3.14.3 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.14.2';
+    const APP_VERSION = '3.14.3';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2219,6 +2219,7 @@ class AppInfoHelper
         $envPath = DirHelper::getWorkingDir(DevelopmentEnum::DOT_CONFIG_RYT);
         if(!is_file($envPath)){
             self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print('%s not found',DevelopmentEnum::DOT_CONFIG_RYT);
+            return; // END
         }
         // handle
         //    get env value

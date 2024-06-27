@@ -32,6 +32,7 @@ class AppInfoHelper
         $envPath = DirHelper::getWorkingDir(DevelopmentEnum::DOT_CONFIG_RYT);
         if(!is_file($envPath)){
             self::lineTagMultiple(TagEnum::VALIDATION_ERROR)->print('%s not found',DevelopmentEnum::DOT_CONFIG_RYT);
+            return; // END
         }
         // handle
         //    get env value
