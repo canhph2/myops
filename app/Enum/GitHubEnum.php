@@ -21,6 +21,7 @@ class GitHubEnum
     const GET_REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
     const GET_HEAD_COMMIT_ID_COMMAND = 'git rev-parse --short HEAD';
     const CLEAN_COMMAND = 'git clean -ffdx';
+    const LOG_COMMAND = 'git log --pretty=format:%B -%s'; // A line
 
     // === Git branches ===
     const MAIN = 'main';

@@ -9,6 +9,7 @@ class GitHubFactory
 {
     /**
      * @param string $branch
+     * @param bool $isForce
      * @return string
      */
     public static function generateCheckoutCommand(string $branch, bool $isForce = false): string
@@ -48,5 +49,14 @@ class GitHubFactory
             self::generateCheckoutCommand($branch),
             GitHubEnum::PULL_COMMAND
         ]);
+    }
+
+    /**
+     * @param int $amountLines
+     * @return string
+     */
+    public static function generateLogCommand(int $amountLines = 1): string
+    {
+        return sprintf(GitHubEnum::LOG_COMMAND, $amountLines);
     }
 }

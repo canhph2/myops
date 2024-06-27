@@ -249,6 +249,7 @@ class GitHubHelper
             GitHubFactory::generateCheckoutCommand($branchToCheckout, true),
             GitHubEnum::RESET_BRANCH_COMMAND,
             GitHubEnum::PULL_COMMAND,
+            GitHubFactory::generateLogCommand(5),
         ])))->execMultiInWorkDir(true)->printOutput();
         // === validate result ===
         (new Process("Validate branch", DirHelper::getWorkingDir(), [
