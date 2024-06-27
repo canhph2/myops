@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.14.6 ===
+// === MyOps v3.14.7 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.14.6';
+    const APP_VERSION = '3.14.7';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1859,7 +1859,7 @@ class GitHubEnum
     const GET_REPOSITORY_DIR_COMMAND = 'git rev-parse --show-toplevel';
     const GET_HEAD_COMMIT_ID_COMMAND = 'git rev-parse --short HEAD';
     const CLEAN_COMMAND = 'git clean -ffdx';
-    const LOG_COMMAND = 'git log --pretty=format:%B -%s'; // A line
+    const LOG_COMMAND = 'git log --pretty=format:%%B -%s'; // A line
 
     // === Git branches ===
     const MAIN = 'main';
