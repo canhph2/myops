@@ -86,8 +86,10 @@ class AppInfoHelper
         // All Linux OS
         $LinuxOSReleaseInfoPath = '/etc/os-release';
         if (is_file($LinuxOSReleaseInfoPath)) {
-            foreach (explode("\n", file_get_contents($LinuxOSReleaseInfoPath)) as $line) {
-                putenv($line);
+            foreach (explode(PHP_EOL, file_get_contents($LinuxOSReleaseInfoPath)) as $line) {
+                if(trim($line)) {
+                    putenv($line);
+                }
             }
             return trim(getenv('PRETTY_NAME'), "\"'"); // END
         }
