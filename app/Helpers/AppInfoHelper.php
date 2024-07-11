@@ -89,7 +89,7 @@ class AppInfoHelper
             foreach (explode("\n", file_get_contents($LinuxOSReleaseInfoPath)) as $line) {
                 putenv($line);
             }
-            return sprintf("%s v%s", getenv("NAME"), getenv("VERSION_ID")); // END
+            return trim(getenv('PRETTY_NAME'), "\"'"); // END
         }
         // Mac
         $macVersionInfo = (new Process('get mac version info', DirHelper::getWorkingDir(),

@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.14.11 ===
+// === MyOps v3.14.12 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.14.11';
+    const APP_VERSION = '3.14.12';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2289,7 +2289,7 @@ class AppInfoHelper
             foreach (explode("\n", file_get_contents($LinuxOSReleaseInfoPath)) as $line) {
                 putenv($line);
             }
-            return sprintf("%s v%s", getenv("NAME"), getenv("VERSION_ID")); // END
+            return trim(getenv('PRETTY_NAME'), "\"'"); // END
         }
         // Mac
         $macVersionInfo = (new Process('get mac version info', DirHelper::getWorkingDir(),
