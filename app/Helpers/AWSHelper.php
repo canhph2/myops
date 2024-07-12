@@ -328,6 +328,20 @@ class AWSHelper
             sprintf("cat '%s' >> '%s' ", DirHelper::getWorkingDir($envStg), $tempEnvStg),
             sprintf("rm -f '%s'", DirHelper::getWorkingDir($envStg)),
         ]))->execMultiInWorkDir()->printOutput();
+        // Modify data for Mac
+        //    Firebase config (many projects)
+        $FirebaseConfigServerPath = 'GOOGLE_APPLICATION_CREDENTIALS=/.credentials/firebase-service-account-credentials.json';
+        $FirebaseConfigMacPath = sprintf("GOOGLE_APPLICATION_CREDENTIALS=%s/.credentials/firebase-service-account-credentials.json",
+            DirHelper::getHomeDir());
+        StrHelper::replaceTextInFile($FirebaseConfigServerPath, $FirebaseConfigMacPath, $tempEnvDev);
+        StrHelper::replaceTextInFile($FirebaseConfigServerPath, $FirebaseConfigMacPath, $tempEnvStg);
+        //    engage-api
+        //        APP_ENV (staging only)
+        StrHelper::replaceTextInFile("###> symfony/framework-bundle ###\nAPP_ENV=prod",
+            "###> symfony/framework-bundle ###\nAPP_ENV=dev", $tempEnvStg);
+        //        html to pdf
+        StrHelper::replaceTextInFile("_PATH=/usr/bin/wkhtmlto", "_PATH=/usr/local/bin/wkhtmlto", $tempEnvDev);
+        StrHelper::replaceTextInFile("_PATH=/usr/bin/wkhtmlto", "_PATH=/usr/local/bin/wkhtmlto", $tempEnvStg);
     }
 
     private static function generateEnvFileName($repository, $envCode): string
