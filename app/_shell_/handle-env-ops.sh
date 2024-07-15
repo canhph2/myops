@@ -75,6 +75,7 @@ export ECR_REPO_PAYMENT_SERVICE_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazon
 export ECR_REPO_INVOICE_SERVICE_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-base-invoice-service-repository"
 export ECR_REPO_INTEGRATION_API_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-base-integration-api-repository"
 export ECR_REPO_EMAIL_SERVICE_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-base-email-service-repository"
+export ECR_REPO_OTHERS_SERVICE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-others-service-repository"
 #        normal repositories
 export ECR_REPO_API="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-api-repository"
 export ECR_REPO_PAYMENT_SERVICE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-payment-service-repository"
