@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.14.17 ===
+// === MyOps v3.15.0 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.14.17';
+    const APP_VERSION = '3.15.0';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1680,6 +1680,7 @@ class CommandEnum
     const HOME_DIR = 'home-dir';
     const SCRIPT_DIR = 'script-dir';
     const WORKING_DIR = 'working-dir';
+    const REPO_DIR = 'repo-dir';
     const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
     const SLACK = 'slack';
     const TMP = 'tmp';
@@ -1772,7 +1773,8 @@ class CommandEnum
             "UTILS" => [],
             self::HOME_DIR => ['return home directory of machine / server'],
             self::SCRIPT_DIR => ['return directory of script'],
-            self::WORKING_DIR => ['get root project directory / current working directory'],
+            self::WORKING_DIR => ['get current working directory'],
+            self::REPO_DIR => ['get root project directory'],
             self::REPLACE_TEXT_IN_FILE => [sprintf('php %s replace-text-in-file "search text" "replace text" "file path"', AppInfoEnum::APP_MAIN_COMMAND)],
             self::SLACK => [
                 "notify a message to Slack",
@@ -2312,6 +2314,7 @@ class AppInfoHelper
 // [REMOVED] use App\Classes\Base\CustomCollection;
 // [REMOVED] use App\Classes\Process;
 // [REMOVED] use App\Enum\DevelopmentEnum;
+// [REMOVED] use App\Enum\GitHubEnum;
 // [REMOVED] use App\Enum\IconEnum;
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\TagEnum;
@@ -2349,6 +2352,16 @@ class DirHelper
     public static function getWorkingDir(...$subDirOrFiles): string
     {
         return count($subDirOrFiles) ? self::join($_SERVER['PWD'], ...$subDirOrFiles) : $_SERVER['PWD'];
+    }
+
+    /**
+     * @param ...$subDirOrFiles
+     * @return string
+     */
+    public static function getRepositoryDir(...$subDirOrFiles): string
+    {
+        $repositoryDir = exec(GitHubEnum::GET_REPOSITORY_DIR_COMMAND);
+        return count($subDirOrFiles) ? self::join($repositoryDir, ...$subDirOrFiles) : $repositoryDir;
     }
 
     /**
@@ -5056,6 +5069,9 @@ class MyOps
                 break;
             case CommandEnum::WORKING_DIR:
                 echo DirHelper::getWorkingDir();
+                break;
+            case CommandEnum::REPO_DIR:
+                echo DirHelper::getRepositoryDir();
                 break;
             case CommandEnum::REPLACE_TEXT_IN_FILE:
                 StrHelper::replaceTextInFile();
