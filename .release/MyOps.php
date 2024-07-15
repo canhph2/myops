@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.15.3 ===
+// === MyOps v3.15.4 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.15.3';
+    const APP_VERSION = '3.15.4';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3444,19 +3444,22 @@ class AWSHelper
                         break;
                 }
             }
+            $TAG_REDIS_SERVICE_NAME = "redis-7-2-bookworm-official";
             //   handle Dockerrun.aws.json content
             $DockerrunContent = str_replace(
                 [
                     "_MAIL_CATCHER_PORT_",
                     "ECR_REPO_IMAGE_URI_API", "ECR_REPO_IMAGE_URI_INVOICE_SERVICE",
-                    "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE", "ECR_REPO_IMAGE_URI_INTEGRATION_API"
+                    "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE", "ECR_REPO_IMAGE_URI_INTEGRATION_API",
+                    "ECR_REPO_IMAGE_URI_REDIS_SERVICE",
                 ],
                 [
                     getenv('EB_MAIL_CATCHER_PORT'),
                     sprintf("%s:%s", getenv('ECR_REPO_API'), $TAG_API_NAME),
                     sprintf("%s:%s", getenv('ECR_REPO_INVOICE_SERVICE'), $TAG_INVOICE_SERVICE_NAME),
                     sprintf("%s:%s", getenv('ECR_REPO_PAYMENT_SERVICE'), $TAG_PAYMENT_SERVICE_NAME),
-                    sprintf("%s:%s", getenv('ECR_REPO_INTEGRATION_API'), $TAG_INTEGRATION_API_NAME)
+                    sprintf("%s:%s", getenv('ECR_REPO_INTEGRATION_API'), $TAG_INTEGRATION_API_NAME),
+                    sprintf("%s:%s", getenv('ECR_REPO_OTHERS_SERVICE'), $TAG_REDIS_SERVICE_NAME),
                 ],
                 MyOps::getELBTemplate()["DockerrunTemplate"]
             );
@@ -4961,7 +4964,7 @@ class MyOps
             : file_get_contents('app/_shell_/handle-env-ops.sh');
     }
 
-    const ELB_TEMPLATE_BASE_64 = 'eyJibG9ja2RldmljZVRlbXBsYXRlIjoib3B0aW9uX3NldHRpbmdzOlxuICBhd3M6YXV0b3NjYWxpbmc6bGF1bmNoY29uZmlndXJhdGlvbjpcbiAgICBCbG9ja0RldmljZU1hcHBpbmdzOiBcL2RldlwveHZkY3o9Ol8yTkRfRElTS19TSVpFXzp0cnVlOmdwMlxuIiwiRG9ja2VycnVuVGVtcGxhdGUiOiJ7XG4gIFwiQVdTRUJEb2NrZXJydW5WZXJzaW9uXCI6IDIsXG4gIFwiY29udGFpbmVyRGVmaW5pdGlvbnNcIjogW1xuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9BUElcIixcbiAgICAgIFwiZXNzZW50aWFsXCI6IHRydWUsXG4gICAgICBcIm1lbW9yeVJlc2VydmF0aW9uXCI6IDI1NixcbiAgICAgIFwicG9ydE1hcHBpbmdzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiaG9zdFBvcnRcIjogODAsXG4gICAgICAgICAgXCJjb250YWluZXJQb3J0XCI6IDgwODBcbiAgICAgICAgfVxuICAgICAgICBfTUFJTF9DQVRDSEVSX1BPUlRfXG4gICAgICBdLFxuICAgICAgXCJsaW5rc1wiOiBbXG4gICAgICAgIFwicGF5bWVudC1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW52b2ljZS1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW50ZWdyYXRpb24tYXBpXCJcbiAgICAgIF1cbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludm9pY2Utc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlZPSUNFX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcInBheW1lbnQtc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9QQVlNRU5UX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludGVncmF0aW9uLWFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlRFR1JBVElPTl9BUElcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9XG4gIF1cbn1cbiJ9';
+    const ELB_TEMPLATE_BASE_64 = 'eyJibG9ja2RldmljZVRlbXBsYXRlIjoib3B0aW9uX3NldHRpbmdzOlxuICBhd3M6YXV0b3NjYWxpbmc6bGF1bmNoY29uZmlndXJhdGlvbjpcbiAgICBCbG9ja0RldmljZU1hcHBpbmdzOiBcL2RldlwveHZkY3o9Ol8yTkRfRElTS19TSVpFXzp0cnVlOmdwMlxuIiwiRG9ja2VycnVuVGVtcGxhdGUiOiJ7XG4gIFwiQVdTRUJEb2NrZXJydW5WZXJzaW9uXCI6IDIsXG4gIFwiY29udGFpbmVyRGVmaW5pdGlvbnNcIjogW1xuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9BUElcIixcbiAgICAgIFwiZXNzZW50aWFsXCI6IHRydWUsXG4gICAgICBcIm1lbW9yeVJlc2VydmF0aW9uXCI6IDI1NixcbiAgICAgIFwicG9ydE1hcHBpbmdzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiaG9zdFBvcnRcIjogODAsXG4gICAgICAgICAgXCJjb250YWluZXJQb3J0XCI6IDgwODBcbiAgICAgICAgfVxuICAgICAgICBfTUFJTF9DQVRDSEVSX1BPUlRfXG4gICAgICBdLFxuICAgICAgXCJsaW5rc1wiOiBbXG4gICAgICAgIFwicGF5bWVudC1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW52b2ljZS1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW50ZWdyYXRpb24tYXBpXCJcbiAgICAgIF1cbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludm9pY2Utc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlZPSUNFX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcInBheW1lbnQtc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9QQVlNRU5UX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludGVncmF0aW9uLWFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlRFR1JBVElPTl9BUElcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcInJlZGlzLXNlcnZpY2VcIixcbiAgICAgIFwiaW1hZ2VcIjogXCJFQ1JfUkVQT19JTUFHRV9VUklfUkVESVNfU0VSVklDRVwiLFxuICAgICAgXCJtZW1vcnlSZXNlcnZhdGlvblwiOiAyNTYsXG4gICAgICBcImVzc2VudGlhbFwiOiBmYWxzZSxcbiAgICAgIFwicG9ydE1hcHBpbmdzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiY29udGFpbmVyUG9ydFwiOiA2Mzc5LFxuICAgICAgICAgIFwiaG9zdFBvcnRcIjogNjM3OVxuICAgICAgICB9XG4gICAgICBdXG4gICAgfVxuICBdXG59XG4ifQ==';
 
     public static function getELBTemplate()
     {

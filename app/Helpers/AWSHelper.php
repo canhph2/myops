@@ -161,19 +161,22 @@ class AWSHelper
                         break;
                 }
             }
+            $TAG_REDIS_SERVICE_NAME = "redis-7-2-bookworm-official";
             //   handle Dockerrun.aws.json content
             $DockerrunContent = str_replace(
                 [
                     "_MAIL_CATCHER_PORT_",
                     "ECR_REPO_IMAGE_URI_API", "ECR_REPO_IMAGE_URI_INVOICE_SERVICE",
-                    "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE", "ECR_REPO_IMAGE_URI_INTEGRATION_API"
+                    "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE", "ECR_REPO_IMAGE_URI_INTEGRATION_API",
+                    "ECR_REPO_IMAGE_URI_REDIS_SERVICE",
                 ],
                 [
                     getenv('EB_MAIL_CATCHER_PORT'),
                     sprintf("%s:%s", getenv('ECR_REPO_API'), $TAG_API_NAME),
                     sprintf("%s:%s", getenv('ECR_REPO_INVOICE_SERVICE'), $TAG_INVOICE_SERVICE_NAME),
                     sprintf("%s:%s", getenv('ECR_REPO_PAYMENT_SERVICE'), $TAG_PAYMENT_SERVICE_NAME),
-                    sprintf("%s:%s", getenv('ECR_REPO_INTEGRATION_API'), $TAG_INTEGRATION_API_NAME)
+                    sprintf("%s:%s", getenv('ECR_REPO_INTEGRATION_API'), $TAG_INTEGRATION_API_NAME),
+                    sprintf("%s:%s", getenv('ECR_REPO_OTHERS_SERVICE'), $TAG_REDIS_SERVICE_NAME),
                 ],
                 MyOps::getELBTemplate()["DockerrunTemplate"]
             );
