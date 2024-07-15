@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.15.4 ===
+// === MyOps v3.15.5 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.15.4';
+    const APP_VERSION = '3.15.5';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3621,6 +3621,14 @@ class AWSHelper
             DirHelper::getHomeDir());
         StrHelper::replaceTextInFile($FirebaseConfigServerPath, $FirebaseConfigMacPath, $tempEnvDev);
         StrHelper::replaceTextInFile($FirebaseConfigServerPath, $FirebaseConfigMacPath, $tempEnvStg);
+        //
+        //    EC2_PRIVATE_IP (fake to localhost on Mac)
+        (new Process("fake EC2_PRIVATE_IP", DirHelper::getWorkingDir(), [
+            sprintf('printf "\n## [Generated] EC2 private IP (handle at container starting in engage-api-deploy/start-container.sh)\n" >> "%s" ', $tempEnvDev),
+            sprintf('echo "EC2_PRIVATE_IP=127.0.0.1" >> "%s" ', $tempEnvDev),
+            sprintf('printf "\n## [Generated] EC2 private IP (handle at container starting in engage-api-deploy/start-container.sh)\n" >> "%s" ', $tempEnvStg),
+            sprintf('echo "EC2_PRIVATE_IP=127.0.0.1" >> "%s" ', $tempEnvStg),
+        ]))->execMultiInWorkDir()->printOutput();
         //    engage-api
         //        APP_ENV (staging only)
         StrHelper::replaceTextInFile("###> symfony/framework-bundle ###\nAPP_ENV=prod",
