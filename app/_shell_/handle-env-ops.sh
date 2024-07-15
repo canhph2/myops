@@ -9,6 +9,7 @@ export HEAD_COMMIT_ID=$(myops head-commit-id)
 # === constants ===
 export DOCKER_BASE_TAG_PRODUCTION="production"
 export DOCKER_BASE_TAG_DEVELOP="develop"
+export DOCKER_BASE_TAG_OFFICIAL="official"
 #    WARNING: delete 'auth.json' after use this command 'COMPOSER_CONFIG_GITHUB_TOKEN'
 export COMPOSER_CONFIG_GITHUB_TOKEN="composer config github-oauth.github.com ${GITHUB_PERSONAL_ACCESS_TOKEN}"
 export COMPOSER_CONFIG_ALLOW_PLUGINS_SYMFONY_FLEX="composer config --no-plugins allow-plugins.symfony/flex true"
