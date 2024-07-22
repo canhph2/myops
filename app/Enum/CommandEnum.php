@@ -38,7 +38,6 @@ class CommandEnum
     const HOME_DIR = 'home-dir';
     const SCRIPT_DIR = 'script-dir';
     const WORKING_DIR = 'working-dir';
-    const REPO_DIR = 'repo-dir';
     const REPLACE_TEXT_IN_FILE = 'replace-text-in-file';
     const SLACK = 'slack';
     const TMP = 'tmp';
@@ -131,8 +130,7 @@ class CommandEnum
             "UTILS" => [],
             self::HOME_DIR => ['return home directory of machine / server'],
             self::SCRIPT_DIR => ['return directory of script'],
-            self::WORKING_DIR => ['get current working directory'],
-            self::REPO_DIR => ['get root project directory'],
+            self::WORKING_DIR => ['get root project directory / current working directory'],
             self::REPLACE_TEXT_IN_FILE => [sprintf('php %s replace-text-in-file "search text" "replace text" "file path"', AppInfoEnum::APP_MAIN_COMMAND)],
             self::SLACK => [
                 "notify a message to Slack",
