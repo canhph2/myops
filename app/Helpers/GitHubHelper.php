@@ -318,7 +318,7 @@ class GitHubHelper
                 // handle send command to build
                 if ($repoInfo->isGitHubAction()) {
                     (new Process("build project " . $repoInfo->getRepositoryName(), $repoInfo->getCurrentRepositoryDir(), [
-                        sprintf('gh workflow run workflow--%s--%s -r %s', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch(), $repoInfo->getCurrentBranch())
+                        sprintf('gh workflow run workflow-%s -r %s', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
                     ]))->execMultiInWorkDir();
                     // check completed
                     $startTime = new DateTime();
