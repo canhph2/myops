@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.15.5 ===
+// === MyOps v3.15.6 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.15.5';
+    const APP_VERSION = '3.15.6';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3197,7 +3197,7 @@ class GitHubHelper
                 // handle send command to build
                 if ($repoInfo->isGitHubAction()) {
                     (new Process("build project " . $repoInfo->getRepositoryName(), $repoInfo->getCurrentRepositoryDir(), [
-                        sprintf('gh workflow run workflow--%s--%s -r %s', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch(), $repoInfo->getCurrentBranch())
+                        sprintf('gh workflow run workflow-%s -r %s', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
                     ]))->execMultiInWorkDir();
                     // check completed
                     $startTime = new DateTime();
