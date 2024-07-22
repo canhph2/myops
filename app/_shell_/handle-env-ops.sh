@@ -9,6 +9,7 @@ export HEAD_COMMIT_ID=$(myops head-commit-id)
 # === constants ===
 export DOCKER_BASE_TAG_PRODUCTION="production"
 export DOCKER_BASE_TAG_DEVELOP="develop"
+export DOCKER_BASE_TAG_OFFICIAL="official"
 #    WARNING: delete 'auth.json' after use this command 'COMPOSER_CONFIG_GITHUB_TOKEN'
 export COMPOSER_CONFIG_GITHUB_TOKEN="composer config github-oauth.github.com ${GITHUB_PERSONAL_ACCESS_TOKEN}"
 export COMPOSER_CONFIG_ALLOW_PLUGINS_SYMFONY_FLEX="composer config --no-plugins allow-plugins.symfony/flex true"
@@ -75,6 +76,7 @@ export ECR_REPO_PAYMENT_SERVICE_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazon
 export ECR_REPO_INVOICE_SERVICE_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-base-invoice-service-repository"
 export ECR_REPO_INTEGRATION_API_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-base-integration-api-repository"
 export ECR_REPO_EMAIL_SERVICE_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-base-email-service-repository"
+export ECR_REPO_OTHERS_SERVICE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-others-service-repository"
 #        normal repositories
 export ECR_REPO_API="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-api-repository"
 export ECR_REPO_PAYMENT_SERVICE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-payment-service-repository"

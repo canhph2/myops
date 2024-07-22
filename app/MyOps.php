@@ -160,6 +160,9 @@ class MyOps
             case CommandEnum::WORKING_DIR:
                 echo DirHelper::getWorkingDir();
                 break;
+            case CommandEnum::REPO_DIR:
+                echo DirHelper::getRepositoryDir();
+                break;
             case CommandEnum::REPLACE_TEXT_IN_FILE:
                 StrHelper::replaceTextInFile();
                 break;
