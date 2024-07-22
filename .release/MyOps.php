@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.15.6 ===
+// === MyOps v3.15.7 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.15.6';
+    const APP_VERSION = '3.15.7';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3228,11 +3228,11 @@ class GitHubHelper
     {
         // in progress
         $resultInProgress = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), $repoInfo->getCurrentRepositoryDir(), [
-            sprintf('gh run list --workflow workflow--%s--%s.yml --status in_progress --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
+            sprintf('gh run list --workflow workflow-%s.yml --branch %s --status in_progress --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch()),
         ]))->execMultiInWorkDirAndGetOutputStrAll();
         // queue
         $resultQueued = (new Process("check status of Actions workflow " . $repoInfo->getRepositoryName(), $repoInfo->getCurrentRepositoryDir(), [
-            sprintf('gh run list --workflow workflow--%s--%s.yml --status queued --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch())
+            sprintf('gh run list --workflow workflow-%s.yml --branch %s --status queued --json workflowName,status', $repoInfo->getRepositoryName(), $repoInfo->getCurrentBranch()),
         ]))->execMultiInWorkDirAndGetOutputStrAll();
         //
         return count(json_decode($resultInProgress, true)) || count(json_decode($resultQueued, true));
