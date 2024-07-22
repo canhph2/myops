@@ -5,7 +5,6 @@ namespace App\Helpers;
 use App\Classes\Base\CustomCollection;
 use App\Classes\Process;
 use App\Enum\DevelopmentEnum;
-use App\Enum\GitHubEnum;
 use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\TagEnum;
@@ -43,16 +42,6 @@ class DirHelper
     public static function getWorkingDir(...$subDirOrFiles): string
     {
         return count($subDirOrFiles) ? self::join($_SERVER['PWD'], ...$subDirOrFiles) : $_SERVER['PWD'];
-    }
-
-    /**
-     * @param ...$subDirOrFiles
-     * @return string
-     */
-    public static function getRepositoryDir(...$subDirOrFiles): string
-    {
-        $repositoryDir = exec(GitHubEnum::GET_REPOSITORY_DIR_COMMAND);
-        return count($subDirOrFiles) ? self::join($repositoryDir, ...$subDirOrFiles) : $repositoryDir;
     }
 
     /**
