@@ -36,6 +36,18 @@
       "image": "ECR_REPO_IMAGE_URI_INTEGRATION_API",
       "memoryReservation": 256,
       "essential": false
+    },
+    {
+      "name": "redis-service",
+      "image": "ECR_REPO_IMAGE_URI_REDIS_SERVICE",
+      "memoryReservation": 256,
+      "essential": false,
+      "portMappings": [
+        {
+          "containerPort": 6379,
+          "hostPort": 6379
+        }
+      ]
     }
   ]
 }

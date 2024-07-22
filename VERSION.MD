@@ -2,7 +2,8 @@
 
 ---
 ## === v3 ===
-- 3.14.0 | Add `generate-temp-envs`
+- 3.15.0 | Add `repo-dir` command
+- 3.14.0 | Add `generate-temp-envs` command
 - 3.13.0 | Add `info` command
 - 3.12.0 | Add `checkout` command
 - 3.11.0 | Add `merge-feature-all` command
