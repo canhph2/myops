@@ -161,19 +161,22 @@ class AWSHelper
                         break;
                 }
             }
+            $TAG_REDIS_SERVICE_NAME = "redis-7-2-bookworm-official";
             //   handle Dockerrun.aws.json content
             $DockerrunContent = str_replace(
                 [
                     "_MAIL_CATCHER_PORT_",
                     "ECR_REPO_IMAGE_URI_API", "ECR_REPO_IMAGE_URI_INVOICE_SERVICE",
-                    "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE", "ECR_REPO_IMAGE_URI_INTEGRATION_API"
+                    "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE", "ECR_REPO_IMAGE_URI_INTEGRATION_API",
+                    "ECR_REPO_IMAGE_URI_REDIS_SERVICE",
                 ],
                 [
                     getenv('EB_MAIL_CATCHER_PORT'),
                     sprintf("%s:%s", getenv('ECR_REPO_API'), $TAG_API_NAME),
                     sprintf("%s:%s", getenv('ECR_REPO_INVOICE_SERVICE'), $TAG_INVOICE_SERVICE_NAME),
                     sprintf("%s:%s", getenv('ECR_REPO_PAYMENT_SERVICE'), $TAG_PAYMENT_SERVICE_NAME),
-                    sprintf("%s:%s", getenv('ECR_REPO_INTEGRATION_API'), $TAG_INTEGRATION_API_NAME)
+                    sprintf("%s:%s", getenv('ECR_REPO_INTEGRATION_API'), $TAG_INTEGRATION_API_NAME),
+                    sprintf("%s:%s", getenv('ECR_REPO_OTHERS_SERVICE'), $TAG_REDIS_SERVICE_NAME),
                 ],
                 MyOps::getELBTemplate()["DockerrunTemplate"]
             );
@@ -335,6 +338,14 @@ class AWSHelper
             DirHelper::getHomeDir());
         StrHelper::replaceTextInFile($FirebaseConfigServerPath, $FirebaseConfigMacPath, $tempEnvDev);
         StrHelper::replaceTextInFile($FirebaseConfigServerPath, $FirebaseConfigMacPath, $tempEnvStg);
+        //
+        //    EC2_PRIVATE_IP (fake to localhost on Mac)
+        (new Process("fake EC2_PRIVATE_IP", DirHelper::getWorkingDir(), [
+            sprintf('printf "\n## [Generated] EC2 private IP (handle at container starting in engage-api-deploy/start-container.sh)\n" >> "%s" ', $tempEnvDev),
+            sprintf('echo "EC2_PRIVATE_IP=127.0.0.1" >> "%s" ', $tempEnvDev),
+            sprintf('printf "\n## [Generated] EC2 private IP (handle at container starting in engage-api-deploy/start-container.sh)\n" >> "%s" ', $tempEnvStg),
+            sprintf('echo "EC2_PRIVATE_IP=127.0.0.1" >> "%s" ', $tempEnvStg),
+        ]))->execMultiInWorkDir()->printOutput();
         //    engage-api
         //        APP_ENV (staging only)
         StrHelper::replaceTextInFile("###> symfony/framework-bundle ###\nAPP_ENV=prod",
