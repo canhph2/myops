@@ -1,3 +1,5 @@
+# todo think about migration when build test image for production env
+
 # All backend projects by environment
 name: workflow-myops-all-backend-build-docker-images-only
 
