@@ -6,6 +6,8 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 
 # usage:    sh .ops/build-all-backend-and-deploy-to-ELB.sh 'DEVICE_NAME'
 
+# todo think about migration when build test image for production env
+
 # cleanup: in case success, in case failure and exit with code at any commands
 trap 'myops post-work --process-id=${PROCESS_ID} --exit-code=$?    --message="${DEVICE} just finished building all Docker images for testing :test_tube: " ' EXIT
 #
