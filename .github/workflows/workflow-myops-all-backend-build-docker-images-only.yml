@@ -1,5 +1,5 @@
 # All backend projects by environment
-name: workflow-myops-all-backend
+name: workflow-myops-all-backend-build-docker-images-only
 
 # load shell configuration (Ubuntu | .bashrc)
 defaults:
