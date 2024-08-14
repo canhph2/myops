@@ -4,7 +4,7 @@ set -e # tells the shell to exit if a command returns a non-zero exit status
 [[ -f ~/.zshrc ]] && source ~/.zshrc # MAC
 [[ -f ~/.bashrc ]] && source ~/.bashrc # Ubuntu
 
-# usage:    sh .ops/build-all-backend-and-deploy-to-ELB.sh 'DEVICE_NAME'
+# usage:    sh .ops/build-all-backend-docker-images-only.sh 'DEVICE_NAME'
 
 # todo think about migration when build test image for production env
 
