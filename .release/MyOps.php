@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.15.14 ===
+// === MyOps v3.16.0 ===
 
 // === Generated libraries classes ===
 
@@ -1639,7 +1639,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.15.14';
+    const APP_VERSION = '3.16.0';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1668,7 +1668,7 @@ class CommandEnum
     const CHECKOUT = 'checkout';
     const CHECKOUT_CACHES = 'checkout-caches';
     const FORCE_CHECKOUT = 'force-checkout';
-    const MERGE_FEATURE_ALL = 'merge-feature-all';
+    const MERGE_FEATURE_ALL = 'merge-feature-all'; // MyOps only
     //        GitHub Actions
     const BUILD_ALL_PROJECTS = 'build-all-projects';
 
@@ -1758,7 +1758,7 @@ class CommandEnum
                 '.e.g to test source code in the server'
             ],
             self::MERGE_FEATURE_ALL => [
-                '[MyOps only] will merge feature to ship, develop, staging, master, support branches and push',
+                '[MyOps only] will merge feature to sync, develop, staging, master, support branches and push',
             ],
             //        GitHub Actions
             self::BUILD_ALL_PROJECTS => [

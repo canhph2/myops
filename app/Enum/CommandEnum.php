@@ -26,7 +26,7 @@ class CommandEnum
     const CHECKOUT = 'checkout';
     const CHECKOUT_CACHES = 'checkout-caches';
     const FORCE_CHECKOUT = 'force-checkout';
-    const MERGE_FEATURE_ALL = 'merge-feature-all';
+    const MERGE_FEATURE_ALL = 'merge-feature-all'; // MyOps only
     //        GitHub Actions
     const BUILD_ALL_PROJECTS = 'build-all-projects';
 
@@ -116,7 +116,7 @@ class CommandEnum
                 '.e.g to test source code in the server'
             ],
             self::MERGE_FEATURE_ALL => [
-                '[MyOps only] will merge feature to ship, develop, staging, master, support branches and push',
+                '[MyOps only] will merge feature to sync, develop, staging, master, support branches and push',
             ],
             //        GitHub Actions
             self::BUILD_ALL_PROJECTS => [
