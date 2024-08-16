@@ -11,7 +11,6 @@ require_once 'app/Traits/ConsoleUITrait.php';
 require_once 'app/Helpers/DirHelper.php';
 
 // === class zone ====
-use App\Classes\Base\CustomCollection;
 use App\Classes\Release;
 use App\Classes\Version;
 use App\Enum\AppInfoEnum;
@@ -254,21 +253,25 @@ class MyOps
          * @var  $descriptionArr array
          */
         foreach (CommandEnum::SUPPORT_COMMANDS() as $command => $descriptionArr) {
-            $commandColor = self::arg(1) && StrHelper::contains($command, self::arg(1)) ? UIEnum::COLOR_RED : UIEnum::COLOR_BLUE;
-            switch (count($descriptionArr)) {
-                case 0: // group command's title
-                    self::LineNew()->printSubTitle($command);
-                    break;
-                case 1: // group command's items - single line description
-                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)
-                        ->print("%s     : %s", self::color($command, $commandColor), $descriptionArr[0]);
-                    break;
-                default: // group command's items - multiple line description
-                    self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->print(self::color($command, $commandColor));
-                    foreach ($descriptionArr as $descriptionLine) {
-                        self::LineIndent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->print($descriptionLine);
-                    }
-                    break;
+            $isShowAll = !self::arg(1);
+            $isFilterCommand = self::arg(1) && StrHelper::contains($command, self::arg(1));
+            $filterCommandColor = $isFilterCommand ? UIEnum::COLOR_RED : UIEnum::COLOR_BLUE;
+            if ($isShowAll || $isFilterCommand) {
+                switch (count($descriptionArr)) {
+                    case 0: // group command's title
+                        self::LineNew()->printSubTitle($command);
+                        break;
+                    case 1: // group command's items - single line description
+                        self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)
+                            ->print("%s     : %s", self::color($command, $filterCommandColor), $descriptionArr[0]);
+                        break;
+                    default: // group command's items - multiple line description
+                        self::LineIndent(IndentLevelEnum::SUB_ITEM_LINE)->setIcon(IconEnum::HYPHEN)->print(self::color($command, $filterCommandColor));
+                        foreach ($descriptionArr as $descriptionLine) {
+                            self::LineIndent(IndentLevelEnum::LEVEL_3)->setIcon(IconEnum::DOT)->print($descriptionLine);
+                        }
+                        break;
+                }
             }
         }
         self::LineNew()->printSeparatorLine();
