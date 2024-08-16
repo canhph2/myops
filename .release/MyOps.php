@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.16.6 ===
+// === MyOps v3.16.7 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.16.6';
+    const APP_VERSION = '3.16.7';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -4771,7 +4771,7 @@ class FileHelper
             ->setTag(TagEnum::SUCCESS)
             ->print("The new fields have been successfully copied to project '%s'", $destinationProjectName)
             ->setTagMultiple(TagEnum::ACTION_REQUIRED)->setColor(UIEnum::COLOR_RED)
-            ->print('Please review the file and commit the changes');
+            ->print('Please review the files and commit the changes');
     }
 }
 
