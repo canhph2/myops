@@ -16,6 +16,9 @@ class GitHubRepositoryInfo
     /** @var bool */
     private $isGitHubAction;
 
+    /** @var string|null */
+    private $sourceDir;
+
     /** @var string */
     private $currentBranch;
 
@@ -24,15 +27,19 @@ class GitHubRepositoryInfo
 
     /**
      * @param string $repositoryName
+     * @param string $familyName
      * @param string $username
      * @param bool $isGitHubAction
+     * @param string|null $sourceDir
      */
-    public function __construct(string $repositoryName, string $familyName, string $username, bool $isGitHubAction = false)
+    public function __construct(string $repositoryName, string $familyName, string $username,
+                                bool   $isGitHubAction = false, string $sourceDir = null)
     {
         $this->repositoryName = $repositoryName;
         $this->familyName = $familyName;
         $this->username = $username;
         $this->isGitHubAction = $isGitHubAction;
+        $this->sourceDir = $sourceDir;
     }
 
     /**
@@ -149,6 +156,25 @@ class GitHubRepositoryInfo
     public function getCurrentRepositoryDir(): string
     {
         return sprintf('%s/%s', $this->currentWorkspaceDir, $this->repositoryName);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrentRepositorySourceDir(): string
+    {
+        return sprintf('%s/%s/%s', $this->currentWorkspaceDir, $this->repositoryName, $this->sourceDir);
+    }
+
+    public function getSourceDir(): ?string
+    {
+        return $this->sourceDir;
+    }
+
+    public function setSourceDir(?string $sourceDir): GitHubRepositoryInfo
+    {
+        $this->sourceDir = $sourceDir;
+        return $this;
     }
 
 }

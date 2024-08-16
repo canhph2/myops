@@ -26,7 +26,7 @@ class CommandEnum
     const CHECKOUT = 'checkout';
     const CHECKOUT_CACHES = 'checkout-caches';
     const FORCE_CHECKOUT = 'force-checkout';
-    const MERGE_FEATURE_ALL = 'merge-feature-all';
+    const MERGE_FEATURE_ALL = 'merge-feature-all'; // MyOps only
     //        GitHub Actions
     const BUILD_ALL_PROJECTS = 'build-all-projects';
 
@@ -47,6 +47,7 @@ class CommandEnum
     const CLEAR_OPS_DIR = 'clear-ops-dir';
     const TIME = 'time';
     const PROCESS = 'process';
+    const SYNC_SHARED_FILES = 'sync-shared-files';
 
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
@@ -58,9 +59,6 @@ class CommandEnum
     // === UI/Text ===
     const TITLE = 'title';
     const SUB_TITLE = 'sub-title';
-
-    // === others ==
-    const ON_REQUIRE_FILE = 'ON_REQUIRE_FILE';
 
     /**
      * @return array
@@ -116,7 +114,7 @@ class CommandEnum
                 '.e.g to test source code in the server'
             ],
             self::MERGE_FEATURE_ALL => [
-                '[MyOps only] will merge feature to ship, develop, staging, master, support branches and push',
+                '[MyOps only] will merge feature to sync, develop, staging, master, support branches and push',
             ],
             //        GitHub Actions
             self::BUILD_ALL_PROJECTS => [
@@ -173,6 +171,7 @@ class CommandEnum
                 "is used to handle 'MyOps process', the first version just show some info and mark starting time",
                 "use the sub-command 'start' to handle starting a 'MyOps process', wil return a process id "
             ],
+            self::SYNC_SHARED_FILES => ['sync all shared code files from another project'],
             // group title
             "PRIVATE" => [],
             self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => ['[PRIVATE] get S3 whitelist IPs to add to AWS Policy'],

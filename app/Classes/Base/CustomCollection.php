@@ -130,6 +130,28 @@ class CustomCollection implements IteratorAggregate
         return join($separator, $this->items);
     }
 
+    public function filter(Closure $func): CustomCollection
+    {
+        $filteredItems = [];
+        foreach ($this->items as $item) {
+            if ($func($item)) {
+                $filteredItems[] = $item;
+            }
+        }
+        return new CustomCollection($filteredItems);
+    }
+
+    /**
+     * Will filter all empty item: ''(empty string), 0, null, [](empty array)
+     * @return CustomCollection
+     */
+    public function filterEmpty(): CustomCollection
+    {
+        return $this->filter(function ($item) {
+            return $item;
+        });
+    }
+
     public function map(Closure $func): CustomCollection
     {
         $mapItems = [];

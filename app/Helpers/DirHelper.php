@@ -64,6 +64,14 @@ class DirHelper
     }
 
     /**
+     * @return string
+     */
+    public static function getWorkspaceDir(): string
+    {
+        return dirname(self::getRepositoryDir());
+    }
+
+    /**
      * get current working directory of script
      * @return string
      */
