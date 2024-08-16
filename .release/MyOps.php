@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.15.14 ===
+// === MyOps v3.16.2 ===
 
 // === Generated libraries classes ===
 
@@ -200,6 +200,28 @@ class CustomCollection implements IteratorAggregate
         return join($separator, $this->items);
     }
 
+    public function filter(Closure $func): CustomCollection
+    {
+        $filteredItems = [];
+        foreach ($this->items as $item) {
+            if ($func($item)) {
+                $filteredItems[] = $item;
+            }
+        }
+        return new CustomCollection($filteredItems);
+    }
+
+    /**
+     * Will filter all empty item: ''(empty string), 0, null, [](empty array)
+     * @return CustomCollection
+     */
+    public function filterEmpty(): CustomCollection
+    {
+        return $this->filter(function ($item) {
+            return $item;
+        });
+    }
+
     public function map(Closure $func): CustomCollection
     {
         $mapItems = [];
@@ -237,6 +259,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Enum\IndentLevelEnum;
 // [REMOVED] use App\Enum\PostWorkEnum;
 // [REMOVED] use App\Enum\ProcessEnum;
+// [REMOVED] use App\Enum\SharedFileEnum;
 // [REMOVED] use App\Enum\SlackEnum;
 // [REMOVED] use App\Enum\TagEnum;
 // [REMOVED] use App\Enum\TimeEnum;
@@ -253,6 +276,7 @@ class CustomCollection implements IteratorAggregate
 // [REMOVED] use App\Helpers\DirHelper;
 // [REMOVED] use App\Helpers\DockerHelper;
 // [REMOVED] use App\Helpers\ENVHelper;
+// [REMOVED] use App\Helpers\FileHelper;
 // [REMOVED] use App\Helpers\GitHubHelper;
 // [REMOVED] use App\Helpers\OPSHelper;
 // [REMOVED] use App\Helpers\ProcessHelper;
@@ -309,6 +333,7 @@ class Release
             DirHelper::getClassPathAndFileName(DevelopmentEnum::class),
             DirHelper::getClassPathAndFileName(SlackEnum::class),
             DirHelper::getClassPathAndFileName(ENVEnum::class),
+            DirHelper::getClassPathAndFileName(SharedFileEnum::class),
             // === Factories ===
             DirHelper::getClassPathAndFileName(ShellFactory::class),
             DirHelper::getClassPathAndFileName(GitHubFactory::class),
@@ -329,6 +354,7 @@ class Release
             DirHelper::getClassPathAndFileName(ValidationHelper::class),
             DirHelper::getClassPathAndFileName(ConsoleHelper::class),
             DirHelper::getClassPathAndFileName(ENVHelper::class),
+            DirHelper::getClassPathAndFileName(FileHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===
@@ -1401,6 +1427,9 @@ class GitHubRepositoryInfo
     /** @var bool */
     private $isGitHubAction;
 
+    /** @var string|null */
+    private $sourceDir;
+
     /** @var string */
     private $currentBranch;
 
@@ -1409,15 +1438,19 @@ class GitHubRepositoryInfo
 
     /**
      * @param string $repositoryName
+     * @param string $familyName
      * @param string $username
      * @param bool $isGitHubAction
+     * @param string|null $sourceDir
      */
-    public function __construct(string $repositoryName, string $familyName, string $username, bool $isGitHubAction = false)
+    public function __construct(string $repositoryName, string $familyName, string $username,
+                                bool   $isGitHubAction = false, string $sourceDir = null)
     {
         $this->repositoryName = $repositoryName;
         $this->familyName = $familyName;
         $this->username = $username;
         $this->isGitHubAction = $isGitHubAction;
+        $this->sourceDir = $sourceDir;
     }
 
     /**
@@ -1536,6 +1569,25 @@ class GitHubRepositoryInfo
         return sprintf('%s/%s', $this->currentWorkspaceDir, $this->repositoryName);
     }
 
+    /**
+     * @return string
+     */
+    public function getCurrentRepositorySourceDir(): string
+    {
+        return sprintf('%s/%s/%s', $this->currentWorkspaceDir, $this->repositoryName, $this->sourceDir);
+    }
+
+    public function getSourceDir(): ?string
+    {
+        return $this->sourceDir;
+    }
+
+    public function setSourceDir(?string $sourceDir): GitHubRepositoryInfo
+    {
+        $this->sourceDir = $sourceDir;
+        return $this;
+    }
+
 }
 
 // [REMOVED] namespace App\Classes;
@@ -1639,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.15.14';
+    const APP_VERSION = '3.16.2';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1668,7 +1720,7 @@ class CommandEnum
     const CHECKOUT = 'checkout';
     const CHECKOUT_CACHES = 'checkout-caches';
     const FORCE_CHECKOUT = 'force-checkout';
-    const MERGE_FEATURE_ALL = 'merge-feature-all';
+    const MERGE_FEATURE_ALL = 'merge-feature-all'; // MyOps only
     //        GitHub Actions
     const BUILD_ALL_PROJECTS = 'build-all-projects';
 
@@ -1689,6 +1741,7 @@ class CommandEnum
     const CLEAR_OPS_DIR = 'clear-ops-dir';
     const TIME = 'time';
     const PROCESS = 'process';
+    const SYNC_SHARED_FILES = 'sync-shared-files';
 
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
@@ -1700,9 +1753,6 @@ class CommandEnum
     // === UI/Text ===
     const TITLE = 'title';
     const SUB_TITLE = 'sub-title';
-
-    // === others ==
-    const ON_REQUIRE_FILE = 'ON_REQUIRE_FILE';
 
     /**
      * @return array
@@ -1758,7 +1808,7 @@ class CommandEnum
                 '.e.g to test source code in the server'
             ],
             self::MERGE_FEATURE_ALL => [
-                '[MyOps only] will merge feature to ship, develop, staging, master, support branches and push',
+                '[MyOps only] will merge feature to sync, develop, staging, master, support branches and push',
             ],
             //        GitHub Actions
             self::BUILD_ALL_PROJECTS => [
@@ -1815,6 +1865,7 @@ class CommandEnum
                 "is used to handle 'MyOps process', the first version just show some info and mark starting time",
                 "use the sub-command 'start' to handle starting a 'MyOps process', wil return a process id "
             ],
+            self::SYNC_SHARED_FILES => ['sync all shared code files from another project'],
             // group title
             "PRIVATE" => [],
             self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => ['[PRIVATE] get S3 whitelist IPs to add to AWS Policy'],
@@ -1899,6 +1950,9 @@ class GitHubEnum
     const ENGAGE_SELENIUM_TEST_1 = 'engage-selenium-test-1';
 
     //
+    const BACKEND_REPOSITORIES = [self::ENGAGE_API, self::ENGAGE_BOOKING_API, self::INVOICE_SERVICE,
+        self::PAYMENT_SERVICE, self::INTEGRATION_API, self::EMAIL_SERVICE];
+    const FRONTEND_REPOSITORIES = [self::ENGAGE_SPA, self::ENGAGE_BOOKING_SPA];
     const DEVELOPMENT_ONLY_REPOSITORIES = [self::DOCKER_BASE_IMAGES, self::ENGAGE_SELENIUM_TEST_1];
     const PRODUCTION_REPOSITORIES = [self::MYOPS, self::ENGAGE_API, self::ENGAGE_BOOKING_API, self::INVOICE_SERVICE, self::PAYMENT_SERVICE,
         self::INTEGRATION_API, self::EMAIL_SERVICE, self::ENGAGE_SPA, self::ENGAGE_BOOKING_SPA];
@@ -1911,12 +1965,15 @@ class GitHubEnum
         return [
             // === projects / modules / services ===
             //    backend
-            new GitHubRepositoryInfo(self::ENGAGE_API, 'Admin API (backend)', self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_API, 'Booking API (backend)', self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::INVOICE_SERVICE, 'Invoice Service (backend)', self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::PAYMENT_SERVICE, 'Payment Service (backend)', self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::INTEGRATION_API, 'Integration API (backend)', self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::EMAIL_SERVICE, 'Email Service (backend)', self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_API, 'Admin API (backend)',
+                self::INFOHKENGAGE, true, 'src'),
+            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_API, 'Booking API (backend)',
+                self::INFOHKENGAGE, true, 'app'),
+            new GitHubRepositoryInfo(self::INVOICE_SERVICE, 'Invoice Service (backend)',
+                self::INFOHKENGAGE, true, 'app'),
+            new GitHubRepositoryInfo(self::PAYMENT_SERVICE, 'Payment Service (backend)', self::INFOHKENGAGE, true, 'app'),
+            new GitHubRepositoryInfo(self::INTEGRATION_API, 'Integration API (backend)', self::INFOHKENGAGE, true, 'app'),
+            new GitHubRepositoryInfo(self::EMAIL_SERVICE, 'Email Service (backend)', self::INFOHKENGAGE, true, 'app'),
             //    frontend
             new GitHubRepositoryInfo(self::ENGAGE_SPA, 'Admin SPA (frontend)', self::INFOHKENGAGE, true),
             new GitHubRepositoryInfo(self::ENGAGE_BOOKING_SPA, 'Booking SPA (frontend)', self::INFOHKENGAGE, true),
@@ -1981,9 +2038,11 @@ class TagEnum
     const SLACK = 'SLACK';
     const SHELL = 'SHELL';
     const DONE = 'DONE';
+    const EXCEPTION = 'EXCEPTION';
 
     const VALIDATION_ERROR = [self::VALIDATION, self::ERROR];
     const VALIDATION_SUCCESS = [self::VALIDATION, self::SUCCESS];
+    const ERROR_EXCEPTION = [self::ERROR, self::EXCEPTION];
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2105,6 +2164,49 @@ class ENVEnum
     const STAGING = 'staging';
     const DEVELOP = 'develop';
     const LOCAL = 'local';
+}
+
+// [REMOVED] namespace App\Enum;
+
+class SharedFileEnum
+{
+    const LIST = [
+        // Enum
+        'Enum/CacheEnum.php',
+        'Enum/ColorEnum.php',
+        'Enum/DateEnum.php',
+        'Enum/ENVEnum.php',
+        'Enum/OriginEnum.php',
+        'Enum/PasswordResetEnum.php',
+        'Enum/PaymentGatewayTypeSettingEnum.php',
+        'Enum/PaymentMethodEnum.php',
+        'Enum/PaymentStatusEnum.php',
+        'Enum/PayslipUploadTypeEnum.php',
+        'Enum/ServiceFeeTypeEnum.php',
+        'Enum/SimpleAuditActionTypeEnum.php',
+        'Enum/SlackEnum.php',
+        'Enum/StaffMemberRoleEnum.php',
+        'Enum/StaffMemberStatusTypeEnum.php',
+        'Enum/SystemEnum.php',
+        'Enum/TAG.php',
+        'Enum/UserTypeEnum.php',
+        // Helpers
+        'Helpers/AppHelper.php',
+        'Helpers/ArrayHelper.php',
+        'Helpers/Cache.php',
+        'Helpers/Data.php',
+        'Helpers/DateHelper.php',
+        'Helpers/DirHelper.php',
+        'Helpers/ENVHelper.php',
+        'Helpers/HtmlHelper.php',
+        'Helpers/JsonHelper.php',
+        'Helpers/LogHelper.php',
+        'Helpers/ServerHelper.php',
+        'Helpers/StrHelper.php',
+        'Helpers/URLHelper.php',
+        'Helpers/UserHelper.php',
+        'Helpers/ValidationHelper.php',
+    ];
 }
 
 // [REMOVED] namespace App\Factories;
@@ -2370,6 +2472,14 @@ class DirHelper
     public static function getProjectDirName(): string
     {
         return basename(self::getWorkingDir());
+    }
+
+    /**
+     * @return string
+     */
+    public static function getWorkspaceDir(): string
+    {
+        return dirname(self::getRepositoryDir());
     }
 
     /**
@@ -4560,6 +4670,96 @@ class ENVHelper
     }
 }
 
+// [REMOVED] namespace App\Helpers;
+
+// [REMOVED] use App\Classes\Base\CustomCollection;
+// [REMOVED] use App\Classes\Process;
+// [REMOVED] use App\Enum\GitHubEnum;
+// [REMOVED] use App\Enum\SharedFileEnum;
+// [REMOVED] use App\Enum\TagEnum;
+// [REMOVED] use App\Enum\UIEnum;
+// [REMOVED] use App\Traits\ConsoleBaseTrait;
+// [REMOVED] use App\Traits\ConsoleUITrait;
+// [REMOVED] use Exception;
+
+/**
+ * (Last updated on August 15, 2024)
+ * ### A File Helper (MyOps)
+ */
+class FileHelper
+{
+    use ConsoleBaseTrait, ConsoleUITrait;
+
+    /**
+     * - Conditions:
+     *   - File list will be the destination project's file list
+     *   - The same file should exist in source project
+     * @return CustomCollection item format ['index' => AA, 'source' => BB, 'destination' => CC]
+     * @throws Exception
+     */
+    private static function generateProjectSharedFilesList(string $sourceProjectName, string $destinationProject): CustomCollection
+    {
+        // validate
+        $sourceRepoInfo = GitHubHelper::getRepositoryInfoByName($sourceProjectName);
+        $destinationRepoInfo = GitHubHelper::getRepositoryInfoByName($destinationProject);
+        if (!$sourceRepoInfo) {
+            throw new Exception("repository $sourceProjectName not found"); // END
+        }
+        if (!$destinationRepoInfo) {
+            throw new Exception("repository $destinationProject not found"); // END
+        }
+        // handle
+        $sourceRepoInfo->setCurrentWorkspaceDir(DirHelper::getWorkspaceDir());
+        $destinationRepoInfo->setCurrentWorkspaceDir(DirHelper::getWorkspaceDir());
+        return (new CustomCollection(SharedFileEnum::LIST))->map(function ($path)
+        use ($sourceRepoInfo, $destinationRepoInfo) {
+            $validIndex = is_file(DirHelper::join($sourceRepoInfo->getCurrentRepositorySourceDir(), $path))
+                && is_file(DirHelper::join($destinationRepoInfo->getCurrentRepositorySourceDir(), $path));
+            return $validIndex ? [
+                'index' => $path,
+                'source' => DirHelper::join($sourceRepoInfo->getCurrentRepositorySourceDir(), $path),
+                'destination' => DirHelper::join($destinationRepoInfo->getCurrentRepositorySourceDir(), $path),
+            ] : [];
+        })->filterEmpty();
+    }
+
+    /**
+     * - The file list will get destination project file list
+     * @return void
+     * @throws Exception
+     */
+    public static function syncSharedCodeFiles(): void
+    {
+        // validate
+        $sourceProjectName = readline(sprintf("Please input source project (default '%s'): ", GitHubEnum::ENGAGE_API));
+        $sourceProjectName = $sourceProjectName ?: GitHubEnum::ENGAGE_API;
+        //   source project
+        if (!in_array($sourceProjectName, GitHubEnum::BACKEND_REPOSITORIES)) {
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)
+                ->print("Un-support source project '%s'", $sourceProjectName);
+            exitApp(ERROR_END);
+        }
+        //   destination project
+        $destinationProject = DirHelper::getProjectDirName();
+        if (!in_array($destinationProject, GitHubEnum::BACKEND_REPOSITORIES)) {
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)
+                ->print("Un-support destination project '%s'", $destinationProject);
+            exitApp(ERROR_END);
+        }
+        // handle
+        self::lineNew()->printTitle("Sync shared code files from project '%s' to project '%s'",
+            $sourceProjectName, $destinationProject);
+        $copyCommands = self::generateProjectSharedFilesList($sourceProjectName, $destinationProject)->map(function ($item) {
+            return sprintf("cp -f '%s' '%s'", $item['source'], $item['destination']);
+        });
+        (new Process("copy shared fields", DirHelper::getWorkingDir(), $copyCommands))
+            ->execMultiInWorkDir()->printOutput();
+        //
+        self::lineNew()->printSeparatorLine()
+            ->setTag(TagEnum::DONE)->setColor(UIEnum::COLOR_GREEN)->print('Sync shared code files');
+    }
+}
+
 // [REMOVED] namespace App\Services;
 
 // [REMOVED] use App\Enum\GitHubEnum;
@@ -4991,163 +5191,171 @@ class MyOps
 
     public function run()
     {
-        // validate
-        ValidationHelper::validateCommand();
-        // handle
-        switch (self::command()) {
-            // === this app ===
-            case CommandEnum::HELP:
-                $this->help();
-                break;
-            case CommandEnum::INFO:
-                AppInfoHelper::info();
-                break;
-            case CommandEnum::RELEASE:
-                // release
-                (new Release())->handle();
-                break;
-            case CommandEnum::VERSION:
-                AppInfoHelper::printVersion();
-                break;
-            case CommandEnum::SYNC:
-                OPSHelper::sync();
-                break;
-            case CommandEnum::CREATE_ALIAS_DIRECTLY:
-                OPSHelper::createAliasDirectly();
-                break;
-            // === AWS related ===
-            case CommandEnum::LOAD_ENV_OPS:
-                echo AWSHelper::loadOpsEnvAndHandleMore();
-                break;
-            case CommandEnum::GET_SECRET_ENV:
-                // validate
-                if (!self::arg(1)) {
-                    self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
-                        ->print("required secret name");
-                    exit(); // END
-                }
-                // handle
-                AWSHelper::getSecretEnv(self::arg(1), self::arg(2));
-                break;
-            case CommandEnum::ELB_UPDATE_VERSION:
-                AWSHelper::ELBUpdateVersion();
-                break;
-            case CommandEnum::AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD:
-                AWSHelper::automateToSwitchAWSCredentialForCICD();
-                break;
-            case CommandEnum::GENERATE_TEMP_ENVS:
-                AWSHelper::generateTempEnvs();
-                break;
-            // === Git / GitHub ===
-            case CommandEnum::BRANCH:
-                echo exec(GitHubEnum::GET_BRANCH_COMMAND);
-                break;
-            case CommandEnum::REPOSITORY:
-                echo GitHubHelper::getRepository();
-                break;
-            case CommandEnum::HEAD_COMMIT_ID:
-                echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
-                break;
-            case CommandEnum::CHECKOUT:
-                GitHubHelper::checkout();
-                break;
-            case CommandEnum::CHECKOUT_CACHES:
-                GitHubHelper::checkoutCaches();
-                break;
-            case CommandEnum::FORCE_CHECKOUT:
-                GitHubHelper::forceCheckout();
-                break;
-            case CommandEnum::MERGE_FEATURE_ALL:
-                GitHubHelper::mergeFeatureAllConsole();
-                break;
-            //        GitHub Actions
-            case CommandEnum::BUILD_ALL_PROJECTS:
-                GitHubHelper::buildAllProject();
-                break;
-            // === Docker ===
-            case CommandEnum::DOCKER_KEEP_IMAGE_BY:
-                DockerHelper::keepImageBy();
-                break;
-            case CommandEnum::DOCKER_FILE_ADD_ENVS:
-                DockerHelper::DockerfileAddEnvs();
-                break;
-            // === utils ===
-            case CommandEnum::HOME_DIR:
-                echo DirHelper::getHomeDir();
-                break;
-            case  CommandEnum::SCRIPT_DIR:
-                echo DirHelper::getScriptDir();
-                break;
-            case CommandEnum::WORKING_DIR:
-                echo DirHelper::getWorkingDir();
-                break;
-            case CommandEnum::REPO_DIR:
-                echo DirHelper::getRepositoryDir();
-                break;
-            case CommandEnum::REPLACE_TEXT_IN_FILE:
-                StrHelper::replaceTextInFile();
-                break;
-            case CommandEnum::SLACK:
-                SlackService::sendMessageConsole();
-                break;
-            case CommandEnum::TMP:
-                DirHelper::tmp();
-                break;
-            case CommandEnum::PRE_WORK:
-                if (self::input('response-type') === 'eval') {
-                    echo OPSHelper::preWorkBashContentForEval();
-                } else {
-                    OPSHelper::preWorkNormal();
-                }
-                break;
-            case CommandEnum::POST_WORK:
-                OPSHelper::postWork();
-                break;
-            case CommandEnum::CLEAR_OPS_DIR:
-                DirHelper::removeFileOrDirInDir(DevelopmentEnum::OPS_DIR);
-                break;
-            case CommandEnum::TIME:
-                TimeHelper::handleTimeInConsole();
-                break;
-            case CommandEnum::PROCESS:
-                ProcessHelper::handleProcessInConsole();
-                break;
-            // === private ===
-            case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
-                echo OPSHelper::getS3WhiteListIpsDevelopment();
-                break;
-            case CommandEnum::UPDATE_GITHUB_TOKEN_ALL_PROJECT:
-                OPSHelper::updateGitHubTokenAllProjects();
-                break;
-            // === validation ===
-            case CommandEnum::VALIDATE:
-                ValidationHelper::handleValidateInConsole();
-                break;
-            // === UI/Text ===
-            case CommandEnum::TITLE:
-                // validate
-                if (!self::arg(1)) {
-                    self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
-                        ->print("required title text");
-                    exit(); // END
-                }
-                // handle
-                self::LineNew()->printTitle(self::arg(1));
-                break;
-            case CommandEnum::SUB_TITLE:
-                // validate
-                if (!self::arg(1)) {
-                    self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
-                        ->print("required sub title text");
-                    exit(); // END
-                }
-                // handle
-                self::LineNew()->printSubTitle(self::arg(1));
-                break;
-            // === other ===
-            default:
-                echo "[ERROR] Unknown error";
-                break;
+        try {
+            // validate
+            ValidationHelper::validateCommand();
+            // handle
+            switch (self::command()) {
+                // === this app ===
+                case CommandEnum::HELP:
+                    $this->help();
+                    break;
+                case CommandEnum::INFO:
+                    AppInfoHelper::info();
+                    break;
+                case CommandEnum::RELEASE:
+                    // release
+                    (new Release())->handle();
+                    break;
+                case CommandEnum::VERSION:
+                    AppInfoHelper::printVersion();
+                    break;
+                case CommandEnum::SYNC:
+                    OPSHelper::sync();
+                    break;
+                case CommandEnum::CREATE_ALIAS_DIRECTLY:
+                    OPSHelper::createAliasDirectly();
+                    break;
+                // === AWS related ===
+                case CommandEnum::LOAD_ENV_OPS:
+                    echo AWSHelper::loadOpsEnvAndHandleMore();
+                    break;
+                case CommandEnum::GET_SECRET_ENV:
+                    // validate
+                    if (!self::arg(1)) {
+                        self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                            ->print("required secret name");
+                        exit(); // END
+                    }
+                    // handle
+                    AWSHelper::getSecretEnv(self::arg(1), self::arg(2));
+                    break;
+                case CommandEnum::ELB_UPDATE_VERSION:
+                    AWSHelper::ELBUpdateVersion();
+                    break;
+                case CommandEnum::AUTOMATE_TO_SWITCH_AWS_CREDENTIAL_FOR_CICD:
+                    AWSHelper::automateToSwitchAWSCredentialForCICD();
+                    break;
+                case CommandEnum::GENERATE_TEMP_ENVS:
+                    AWSHelper::generateTempEnvs();
+                    break;
+                // === Git / GitHub ===
+                case CommandEnum::BRANCH:
+                    echo exec(GitHubEnum::GET_BRANCH_COMMAND);
+                    break;
+                case CommandEnum::REPOSITORY:
+                    echo GitHubHelper::getRepository();
+                    break;
+                case CommandEnum::HEAD_COMMIT_ID:
+                    echo exec(GitHubEnum::GET_HEAD_COMMIT_ID_COMMAND);
+                    break;
+                case CommandEnum::CHECKOUT:
+                    GitHubHelper::checkout();
+                    break;
+                case CommandEnum::CHECKOUT_CACHES:
+                    GitHubHelper::checkoutCaches();
+                    break;
+                case CommandEnum::FORCE_CHECKOUT:
+                    GitHubHelper::forceCheckout();
+                    break;
+                case CommandEnum::MERGE_FEATURE_ALL:
+                    GitHubHelper::mergeFeatureAllConsole();
+                    break;
+                //        GitHub Actions
+                case CommandEnum::BUILD_ALL_PROJECTS:
+                    GitHubHelper::buildAllProject();
+                    break;
+                // === Docker ===
+                case CommandEnum::DOCKER_KEEP_IMAGE_BY:
+                    DockerHelper::keepImageBy();
+                    break;
+                case CommandEnum::DOCKER_FILE_ADD_ENVS:
+                    DockerHelper::DockerfileAddEnvs();
+                    break;
+                // === utils ===
+                case CommandEnum::HOME_DIR:
+                    echo DirHelper::getHomeDir();
+                    break;
+                case  CommandEnum::SCRIPT_DIR:
+                    echo DirHelper::getScriptDir();
+                    break;
+                case CommandEnum::WORKING_DIR:
+                    echo DirHelper::getWorkingDir();
+                    break;
+                case CommandEnum::REPO_DIR:
+                    echo DirHelper::getRepositoryDir();
+                    break;
+                case CommandEnum::REPLACE_TEXT_IN_FILE:
+                    StrHelper::replaceTextInFile();
+                    break;
+                case CommandEnum::SLACK:
+                    SlackService::sendMessageConsole();
+                    break;
+                case CommandEnum::TMP:
+                    DirHelper::tmp();
+                    break;
+                case CommandEnum::PRE_WORK:
+                    if (self::input('response-type') === 'eval') {
+                        echo OPSHelper::preWorkBashContentForEval();
+                    } else {
+                        OPSHelper::preWorkNormal();
+                    }
+                    break;
+                case CommandEnum::POST_WORK:
+                    OPSHelper::postWork();
+                    break;
+                case CommandEnum::CLEAR_OPS_DIR:
+                    DirHelper::removeFileOrDirInDir(DevelopmentEnum::OPS_DIR);
+                    break;
+                case CommandEnum::TIME:
+                    TimeHelper::handleTimeInConsole();
+                    break;
+                case CommandEnum::PROCESS:
+                    ProcessHelper::handleProcessInConsole();
+                    break;
+                case CommandEnum::SYNC_SHARED_FILES:
+                    FileHelper::syncSharedCodeFiles();
+                    break;
+                // === private ===
+                case CommandEnum::GET_S3_WHITE_LIST_IPS_DEVELOPMENT:
+                    echo OPSHelper::getS3WhiteListIpsDevelopment();
+                    break;
+                case CommandEnum::UPDATE_GITHUB_TOKEN_ALL_PROJECT:
+                    OPSHelper::updateGitHubTokenAllProjects();
+                    break;
+                // === validation ===
+                case CommandEnum::VALIDATE:
+                    ValidationHelper::handleValidateInConsole();
+                    break;
+                // === UI/Text ===
+                case CommandEnum::TITLE:
+                    // validate
+                    if (!self::arg(1)) {
+                        self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                            ->print("required title text");
+                        exit(); // END
+                    }
+                    // handle
+                    self::LineNew()->printTitle(self::arg(1));
+                    break;
+                case CommandEnum::SUB_TITLE:
+                    // validate
+                    if (!self::arg(1)) {
+                        self::LineTagMultiple([TagEnum::VALIDATION, TagEnum::ERROR, TagEnum::PARAMS])
+                            ->print("required sub title text");
+                        exit(); // END
+                    }
+                    // handle
+                    self::LineNew()->printSubTitle(self::arg(1));
+                    break;
+                // === other ===
+                default:
+                    echo "[ERROR] Unknown error";
+                    break;
+            }
+        } catch (Exception $ex) {
+            self::lineTagMultiple(TagEnum::ERROR_EXCEPTION)->setIcon(IconEnum::X)
+                ->print($ex->getMessage());
         }
     }
 

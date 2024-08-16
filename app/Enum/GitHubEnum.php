@@ -59,6 +59,9 @@ class GitHubEnum
     const ENGAGE_SELENIUM_TEST_1 = 'engage-selenium-test-1';
 
     //
+    const BACKEND_REPOSITORIES = [self::ENGAGE_API, self::ENGAGE_BOOKING_API, self::INVOICE_SERVICE,
+        self::PAYMENT_SERVICE, self::INTEGRATION_API, self::EMAIL_SERVICE];
+    const FRONTEND_REPOSITORIES = [self::ENGAGE_SPA, self::ENGAGE_BOOKING_SPA];
     const DEVELOPMENT_ONLY_REPOSITORIES = [self::DOCKER_BASE_IMAGES, self::ENGAGE_SELENIUM_TEST_1];
     const PRODUCTION_REPOSITORIES = [self::MYOPS, self::ENGAGE_API, self::ENGAGE_BOOKING_API, self::INVOICE_SERVICE, self::PAYMENT_SERVICE,
         self::INTEGRATION_API, self::EMAIL_SERVICE, self::ENGAGE_SPA, self::ENGAGE_BOOKING_SPA];
@@ -71,12 +74,15 @@ class GitHubEnum
         return [
             // === projects / modules / services ===
             //    backend
-            new GitHubRepositoryInfo(self::ENGAGE_API, 'Admin API (backend)', self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_API, 'Booking API (backend)', self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::INVOICE_SERVICE, 'Invoice Service (backend)', self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::PAYMENT_SERVICE, 'Payment Service (backend)', self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::INTEGRATION_API, 'Integration API (backend)', self::INFOHKENGAGE, true),
-            new GitHubRepositoryInfo(self::EMAIL_SERVICE, 'Email Service (backend)', self::INFOHKENGAGE, true),
+            new GitHubRepositoryInfo(self::ENGAGE_API, 'Admin API (backend)',
+                self::INFOHKENGAGE, true, 'src'),
+            new GitHubRepositoryInfo(self::ENGAGE_BOOKING_API, 'Booking API (backend)',
+                self::INFOHKENGAGE, true, 'app'),
+            new GitHubRepositoryInfo(self::INVOICE_SERVICE, 'Invoice Service (backend)',
+                self::INFOHKENGAGE, true, 'app'),
+            new GitHubRepositoryInfo(self::PAYMENT_SERVICE, 'Payment Service (backend)', self::INFOHKENGAGE, true, 'app'),
+            new GitHubRepositoryInfo(self::INTEGRATION_API, 'Integration API (backend)', self::INFOHKENGAGE, true, 'app'),
+            new GitHubRepositoryInfo(self::EMAIL_SERVICE, 'Email Service (backend)', self::INFOHKENGAGE, true, 'app'),
             //    frontend
             new GitHubRepositoryInfo(self::ENGAGE_SPA, 'Admin SPA (frontend)', self::INFOHKENGAGE, true),
             new GitHubRepositoryInfo(self::ENGAGE_BOOKING_SPA, 'Booking SPA (frontend)', self::INFOHKENGAGE, true),
