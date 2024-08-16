@@ -92,6 +92,9 @@ class FileHelper
             ->execMultiInWorkDir()->printOutput();
         //
         self::lineNew()->printSeparatorLine()
-            ->setTag(TagEnum::DONE)->setColor(UIEnum::COLOR_GREEN)->print('Sync shared code files');
+            ->setTag(TagEnum::SUCCESS)
+            ->print("The new fields have been successfully copied to project '%s'", $destinationProjectName)
+            ->setTagMultiple(TagEnum::ACTION_REQUIRED)->setColor(UIEnum::COLOR_RED)
+            ->print('Please review the file and commit the changes');
     }
 }
