@@ -70,16 +70,22 @@ class FileHelper
             exitApp(ERROR_END);
         }
         //   destination project
-        $destinationProject = DirHelper::getProjectDirName();
-        if (!in_array($destinationProject, GitHubEnum::BACKEND_REPOSITORIES)) {
+        $destinationProjectName = DirHelper::getProjectDirName();
+        if (!in_array($destinationProjectName, GitHubEnum::BACKEND_REPOSITORIES)) {
             self::lineTagMultiple(TagEnum::VALIDATION_ERROR)
-                ->print("Un-support destination project '%s'", $destinationProject);
+                ->print("Un-support destination project '%s'", $destinationProjectName);
+            exitApp(ERROR_END);
+        }
+        //   same project
+        if($sourceProjectName === $destinationProjectName){
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)
+                ->print("Source project '%s' is same destination project '%s'", $sourceProjectName,  $destinationProjectName);
             exitApp(ERROR_END);
         }
         // handle
         self::lineNew()->printTitle("Sync shared code files from project '%s' to project '%s'",
-            $sourceProjectName, $destinationProject);
-        $copyCommands = self::generateProjectSharedFilesList($sourceProjectName, $destinationProject)->map(function ($item) {
+            $sourceProjectName, $destinationProjectName);
+        $copyCommands = self::generateProjectSharedFilesList($sourceProjectName, $destinationProjectName)->map(function ($item) {
             return sprintf("cp -f '%s' '%s'", $item['source'], $item['destination']);
         });
         (new Process("copy shared fields", DirHelper::getWorkingDir(), $copyCommands))
