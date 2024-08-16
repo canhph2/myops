@@ -14,6 +14,7 @@ use App\Enum\IconEnum;
 use App\Enum\IndentLevelEnum;
 use App\Enum\PostWorkEnum;
 use App\Enum\ProcessEnum;
+use App\Enum\SharedFileEnum;
 use App\Enum\SlackEnum;
 use App\Enum\TagEnum;
 use App\Enum\TimeEnum;
@@ -30,6 +31,7 @@ use App\Helpers\DateHelper;
 use App\Helpers\DirHelper;
 use App\Helpers\DockerHelper;
 use App\Helpers\ENVHelper;
+use App\Helpers\FileHelper;
 use App\Helpers\GitHubHelper;
 use App\Helpers\OPSHelper;
 use App\Helpers\ProcessHelper;
@@ -86,6 +88,7 @@ class Release
             DirHelper::getClassPathAndFileName(DevelopmentEnum::class),
             DirHelper::getClassPathAndFileName(SlackEnum::class),
             DirHelper::getClassPathAndFileName(ENVEnum::class),
+            DirHelper::getClassPathAndFileName(SharedFileEnum::class),
             // === Factories ===
             DirHelper::getClassPathAndFileName(ShellFactory::class),
             DirHelper::getClassPathAndFileName(GitHubFactory::class),
@@ -106,6 +109,7 @@ class Release
             DirHelper::getClassPathAndFileName(ValidationHelper::class),
             DirHelper::getClassPathAndFileName(ConsoleHelper::class),
             DirHelper::getClassPathAndFileName(ENVHelper::class),
+            DirHelper::getClassPathAndFileName(FileHelper::class),
             // === Services ===
             DirHelper::getClassPathAndFileName(SlackService::class),
             // === Traits ===

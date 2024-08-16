@@ -2,6 +2,7 @@
 
 ---
 ## === v3 ===
+- 3.16.0 | Add `sync-shared-files` command
 - 3.15.0 | Add `repo-dir` command
 - 3.14.0 | Add `generate-temp-envs` command
 - 3.13.0 | Add `info` command

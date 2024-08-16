@@ -18,7 +18,9 @@ class TagEnum
     const SLACK = 'SLACK';
     const SHELL = 'SHELL';
     const DONE = 'DONE';
+    const EXCEPTION = 'EXCEPTION';
 
     const VALIDATION_ERROR = [self::VALIDATION, self::ERROR];
     const VALIDATION_SUCCESS = [self::VALIDATION, self::SUCCESS];
+    const ERROR_EXCEPTION = [self::ERROR, self::EXCEPTION];
 }
