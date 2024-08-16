@@ -47,6 +47,7 @@ class CommandEnum
     const CLEAR_OPS_DIR = 'clear-ops-dir';
     const TIME = 'time';
     const PROCESS = 'process';
+    const SYNC_SHARED_FILES = 'sync-shared-files';
 
     // === ops private commands ===
     const GET_S3_WHITE_LIST_IPS_DEVELOPMENT = 'get-s3-white-list-ips-develop';
@@ -58,9 +59,6 @@ class CommandEnum
     // === UI/Text ===
     const TITLE = 'title';
     const SUB_TITLE = 'sub-title';
-
-    // === others ==
-    const ON_REQUIRE_FILE = 'ON_REQUIRE_FILE';
 
     /**
      * @return array
@@ -173,6 +171,7 @@ class CommandEnum
                 "is used to handle 'MyOps process', the first version just show some info and mark starting time",
                 "use the sub-command 'start' to handle starting a 'MyOps process', wil return a process id "
             ],
+            self::SYNC_SHARED_FILES => ['sync all shared code files from another project'],
             // group title
             "PRIVATE" => [],
             self::GET_S3_WHITE_LIST_IPS_DEVELOPMENT => ['[PRIVATE] get S3 whitelist IPs to add to AWS Policy'],
