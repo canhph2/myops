@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.16.5 ===
+// === MyOps v3.16.6 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.16.5';
+    const APP_VERSION = '3.16.6';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -4697,6 +4697,7 @@ class FileHelper
      * - Conditions:
      *   - File list will be the destination project's file list
      *   - The same file should exist in source project
+     * - Also checking difference
      * @return CustomCollection item format ['index' => AA, 'source' => BB, 'destination' => CC]
      * @throws Exception
      */
@@ -4716,9 +4717,11 @@ class FileHelper
         $destinationRepoInfo->setCurrentWorkspaceDir(DirHelper::getWorkspaceDir());
         return (new CustomCollection(SharedFileEnum::LIST))->map(function ($path)
         use ($sourceRepoInfo, $destinationRepoInfo) {
-            $validIndex = is_file(DirHelper::join($sourceRepoInfo->getCurrentRepositorySourceDir(), $path))
-                && is_file(DirHelper::join($destinationRepoInfo->getCurrentRepositorySourceDir(), $path));
-            return $validIndex ? [
+            $sourcePath = DirHelper::join($sourceRepoInfo->getCurrentRepositorySourceDir(), $path);
+            $destinationPath = DirHelper::join($destinationRepoInfo->getCurrentRepositorySourceDir(), $path);
+            $validIndexAndChange = is_file($sourcePath) && is_file($destinationPath)
+                && file_get_contents($sourcePath) !== file_get_contents($destinationPath);
+            return $validIndexAndChange ? [
                 'index' => $path,
                 'source' => DirHelper::join($sourceRepoInfo->getCurrentRepositorySourceDir(), $path),
                 'destination' => DirHelper::join($destinationRepoInfo->getCurrentRepositorySourceDir(), $path),
@@ -4750,9 +4753,9 @@ class FileHelper
             exitApp(ERROR_END);
         }
         //   same project
-        if($sourceProjectName === $destinationProjectName){
+        if ($sourceProjectName === $destinationProjectName) {
             self::lineTagMultiple(TagEnum::VALIDATION_ERROR)
-                ->print("Source project '%s' is same destination project '%s'", $sourceProjectName,  $destinationProjectName);
+                ->print("Source project '%s' is same destination project '%s'", $sourceProjectName, $destinationProjectName);
             exitApp(ERROR_END);
         }
         // handle
