@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.16.4 ===
+// === MyOps v3.16.5 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.16.4';
+    const APP_VERSION = '3.16.5';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2039,10 +2039,13 @@ class TagEnum
     const SHELL = 'SHELL';
     const DONE = 'DONE';
     const EXCEPTION = 'EXCEPTION';
+    const ACTION = 'ACTION';
+    const REQUIRED = 'REQUIRED';
 
     const VALIDATION_ERROR = [self::VALIDATION, self::ERROR];
     const VALIDATION_SUCCESS = [self::VALIDATION, self::SUCCESS];
     const ERROR_EXCEPTION = [self::ERROR, self::EXCEPTION];
+    const ACTION_REQUIRED = [self::ACTION, self::REQUIRED];
 }
 
 // [REMOVED] namespace App\Enum;
@@ -4762,7 +4765,10 @@ class FileHelper
             ->execMultiInWorkDir()->printOutput();
         //
         self::lineNew()->printSeparatorLine()
-            ->setTag(TagEnum::DONE)->setColor(UIEnum::COLOR_GREEN)->print('Sync shared code files');
+            ->setTag(TagEnum::SUCCESS)
+            ->print("The new fields have been successfully copied to project '%s'", $destinationProjectName)
+            ->setTagMultiple(TagEnum::ACTION_REQUIRED)->setColor(UIEnum::COLOR_RED)
+            ->print('Please review the file and commit the changes');
     }
 }
 
