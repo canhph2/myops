@@ -98,6 +98,6 @@ class FileHelper
             ->setTag(TagEnum::SUCCESS)
             ->print("The new fields have been successfully copied to project '%s'", $destinationProjectName)
             ->setTagMultiple(TagEnum::ACTION_REQUIRED)->setColor(UIEnum::COLOR_RED)
-            ->print('Please review the file and commit the changes');
+            ->print('Please review the files and commit the changes');
     }
 }
