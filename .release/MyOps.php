@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.16.3 ===
+// === MyOps v3.16.4 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.16.3';
+    const APP_VERSION = '3.16.4';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -4740,16 +4740,22 @@ class FileHelper
             exitApp(ERROR_END);
         }
         //   destination project
-        $destinationProject = DirHelper::getProjectDirName();
-        if (!in_array($destinationProject, GitHubEnum::BACKEND_REPOSITORIES)) {
+        $destinationProjectName = DirHelper::getProjectDirName();
+        if (!in_array($destinationProjectName, GitHubEnum::BACKEND_REPOSITORIES)) {
             self::lineTagMultiple(TagEnum::VALIDATION_ERROR)
-                ->print("Un-support destination project '%s'", $destinationProject);
+                ->print("Un-support destination project '%s'", $destinationProjectName);
+            exitApp(ERROR_END);
+        }
+        //   same project
+        if($sourceProjectName === $destinationProjectName){
+            self::lineTagMultiple(TagEnum::VALIDATION_ERROR)
+                ->print("Source project '%s' is same destination project '%s'", $sourceProjectName,  $destinationProjectName);
             exitApp(ERROR_END);
         }
         // handle
         self::lineNew()->printTitle("Sync shared code files from project '%s' to project '%s'",
-            $sourceProjectName, $destinationProject);
-        $copyCommands = self::generateProjectSharedFilesList($sourceProjectName, $destinationProject)->map(function ($item) {
+            $sourceProjectName, $destinationProjectName);
+        $copyCommands = self::generateProjectSharedFilesList($sourceProjectName, $destinationProjectName)->map(function ($item) {
             return sprintf("cp -f '%s' '%s'", $item['source'], $item['destination']);
         });
         (new Process("copy shared fields", DirHelper::getWorkingDir(), $copyCommands))
