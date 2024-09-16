@@ -34,6 +34,7 @@ class SharedFileEnum
         'Helpers/ENVHelper.php',
         'Helpers/HtmlHelper.php',
         'Helpers/JsonHelper.php',
+        'Helpers/LaravelPaymentHelper.php',
         'Helpers/LogHelper.php',
         'Helpers/ServerHelper.php',
         'Helpers/SharedInvoiceHelper.php',
