@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.16.9 ===
+// === MyOps v3.16.10 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.16.9';
+    const APP_VERSION = '3.16.10';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2203,6 +2203,7 @@ class SharedFileEnum
         'Helpers/ENVHelper.php',
         'Helpers/HtmlHelper.php',
         'Helpers/JsonHelper.php',
+        'Helpers/LaravelPaymentHelper.php',
         'Helpers/LogHelper.php',
         'Helpers/ServerHelper.php',
         'Helpers/SharedInvoiceHelper.php',
