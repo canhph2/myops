@@ -36,6 +36,8 @@ class SharedFileEnum
         'Helpers/JsonHelper.php',
         'Helpers/LogHelper.php',
         'Helpers/ServerHelper.php',
+        'Helpers/SharedInvoiceHelper.php',
+        'Helpers/SharedPaymentHelper.php',
         'Helpers/StrHelper.php',
         'Helpers/URLHelper.php',
         'Helpers/UserHelper.php',
