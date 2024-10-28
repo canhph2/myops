@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.17.3 ===
+// === MyOps v3.17.4 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.17.3';
+    const APP_VERSION = '3.17.4';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1773,7 +1773,7 @@ class CommandEnum
                 'show list support command and usage',
                 sprintf("add arg1 is your <search command> to highlight red the command .e.g % help searchA", AppInfoEnum::APP_MAIN_COMMAND),
             ],
-            self::INFO => ['to get current project info like environment, image name'],
+            self::INFO => ['to get current project info like environment, image name u1'],
             self::RELEASE => [
                 sprintf("combine all PHP files into '.release/MyOps.php' and install a alias '%s'", AppInfoEnum::APP_MAIN_COMMAND),
                 "default version increasing is 'patch'",

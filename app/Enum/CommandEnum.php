@@ -79,7 +79,7 @@ class CommandEnum
                 'show list support command and usage',
                 sprintf("add arg1 is your <search command> to highlight red the command .e.g % help searchA", AppInfoEnum::APP_MAIN_COMMAND),
             ],
-            self::INFO => ['to get current project info like environment, image name'],
+            self::INFO => ['to get current project info like environment, image name u1'],
             self::RELEASE => [
                 sprintf("combine all PHP files into '.release/MyOps.php' and install a alias '%s'", AppInfoEnum::APP_MAIN_COMMAND),
                 "default version increasing is 'patch'",
