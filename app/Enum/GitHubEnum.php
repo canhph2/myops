@@ -35,7 +35,7 @@ class GitHubEnum
 
     // === GitHub users ===
     const INFOHKENGAGE = 'infohkengage';
-    const CONGNQNEXLESOFT = 'congnqnexlesoft';
+    const CANHPH_2 = 'canhph2';
 
     // === projects / modules / services ===
     //    backend
@@ -91,10 +91,10 @@ class GitHubEnum
             new GitHubRepositoryInfo(self::ENGAGE_TEACHER_APP, 'EngagePlus Teacher App', self::INFOHKENGAGE),
             //    support
             new GitHubRepositoryInfo(self::ENGAGE_API_DEPLOY, 'API Deploy (CICD)', self::INFOHKENGAGE),
-            new GitHubRepositoryInfo(self::ENGAGE_DATABASE_UTILS, 'Engage Database Utilities', self::CONGNQNEXLESOFT),
-            new GitHubRepositoryInfo(self::MYOPS, 'MyOps', self::CONGNQNEXLESOFT, true),
-            new GitHubRepositoryInfo(self::DOCKER_BASE_IMAGES, '(Engage) Docker Base Images', self::CONGNQNEXLESOFT),
-            new GitHubRepositoryInfo(self::ENGAGE_SELENIUM_TEST_1, "(Engage) Selenium Test 1", self::CONGNQNEXLESOFT),
+            new GitHubRepositoryInfo(self::ENGAGE_DATABASE_UTILS, 'Engage Database Utilities', self::CANHPH_2),
+            new GitHubRepositoryInfo(self::MYOPS, 'MyOps', self::CANHPH_2, true),
+            new GitHubRepositoryInfo(self::DOCKER_BASE_IMAGES, '(Engage) Docker Base Images', self::CANHPH_2),
+            new GitHubRepositoryInfo(self::ENGAGE_SELENIUM_TEST_1, "(Engage) Selenium Test 1", self::CANHPH_2),
         ];
     }
 }
