@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.17.10 ===
+// === MyOps v3.17.11 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.17.10';
+    const APP_VERSION = '3.17.11';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3587,6 +3587,9 @@ class AWSHelper
                 sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME),
                 str_replace("_2ND_DISK_SIZE_", getenv('EB_2ND_DISK_SIZE'), MyOps::getELBTemplate()["blockdeviceTemplate"])
             );
+
+            static::ElbSetupCloudwatchAgent();
+
             file_put_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME), $DockerrunContent);
             //    validate configs files again
             //        .ebextensions/blockdevice-xvdcz.config
