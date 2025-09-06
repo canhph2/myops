@@ -61,6 +61,7 @@ class MyOps
             ? json_decode(base64_decode(self::ELB_TEMPLATE_BASE_64), true)
             : [
                 'blockdeviceTemplate' => file_get_contents('app/_AWS_/ELB-template/.ebextensions/blockdevice-xvdcz.config.TEMPLATE'),
+                'cloudwatchAgentTemplate' => file_get_contents('app/_AWS_/ELB-template/.ebextensions/cloudwatch-agent.config.TEMPLATE'),
                 'DockerrunTemplate' => file_get_contents('app/_AWS_/ELB-template/Dockerrun.aws.json.TEMPLATE'),
             ];
     }
