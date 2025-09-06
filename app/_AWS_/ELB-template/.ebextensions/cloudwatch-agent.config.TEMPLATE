@@ -4,10 +4,18 @@ packages:
     amazon-cloudwatch-agent: []   # install CloudWatch Agent
 
 commands:
-  01-start-cwagent:
+  01-fix-perms:
     command: |
-      /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-        -a fetch-config \
-        -m ec2 \
-        -c ssm:_CLOUDWATCH_CONFIG_PARAMETER_ \
-        -s
+      chown -R root:root /opt/aws/amazon-cloudwatch-agent
+
+  02-enable-cwagent:
+    command: |
+      systemctl enable amazon-cloudwatch-agent
+
+  03-start-cwagent:
+      command: |
+        sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+          -a fetch-config \
+          -m ec2 \
+          -c ssm:_CLOUDWATCH_CONFIG_PARAMETER_ \
+          -s
