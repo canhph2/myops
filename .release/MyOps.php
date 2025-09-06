@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.17.11 ===
+// === MyOps v3.17.13 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.17.11';
+    const APP_VERSION = '3.17.13';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3684,11 +3684,13 @@ class AWSHelper
                 exitApp(ERROR_END);
             }
             // === handle ===
+            $ENV = getenv('ENV');
+
             self::LineNew()->printSeparatorLine()
                 ->setTagMultiple([getenv('REPOSITORY'), getenv('BRANCH')])
                 ->printTitle("Handle ELB cloudwatch agent - ELASTIC BEANSTALK");
-            //    vars
-            $ENV = getenv('ENV');
+            self::LineNew()->print("Config parameter name: " . ('cw-agent-config-' . $ENV));
+
             $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
             (new Process("handle ELB extension directory", DirHelper::getWorkingDir(), $commands))
                 ->execMultiInWorkDir()->printOutput();
