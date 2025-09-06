@@ -11,9 +11,3 @@ commands:
         -m ec2 \
         -c ssm:_CLOUDWATCH_CONFIG_PARAMETER_ \
         -s
-
-sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-  -a fetch-config \
-  -m ec2 \
-  -c ssm:cw-agent-config-develop \
-  -s
