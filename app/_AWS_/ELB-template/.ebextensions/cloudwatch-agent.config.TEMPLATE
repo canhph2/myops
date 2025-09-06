@@ -5,17 +5,17 @@ packages:
 
 commands:
   01-fix-perms:
-    command: |
-      chown -R root:root /opt/aws/amazon-cloudwatch-agent
+      command: |
+        chown -R root:root /opt/aws/amazon-cloudwatch-agent
 
-  02-enable-cwagent:
-    command: |
-      systemctl enable amazon-cloudwatch-agent
-
-  03-start-cwagent:
+  02-fetch-config:
       command: |
         sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
           -a fetch-config \
           -m ec2 \
           -c ssm:_CLOUDWATCH_CONFIG_PARAMETER_ \
           -s
+
+  03-enable-cwagent:
+      command: |
+        systemctl enable amazon-cloudwatch-agent
