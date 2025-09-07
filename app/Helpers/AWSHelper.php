@@ -22,6 +22,7 @@ class AWSHelper
     const ELB_TEMP_DIR = "tmp/elb-version";
     const ELB_EBEXTENSIONS_DIR = ".ebextensions"; // should place at inside elb version dir
     const ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME = "blockdevice-xvdcz.config";
+    const ELB_EBEXTENSIONS_CLOOUDWATCH_AGENT_FILE_NAME = "cloudwatch-agent.config";
     const ELB_DOCKERRUN_FILE_NAME = "Dockerrun.aws.json";
     const ELB_LOG_UPDATE_SUCCESSFULLY = "Environment update completed successfully.";
     const ELB_LOG_UPDATE_FAILED = "Failed to deploy application.";
@@ -185,6 +186,9 @@ class AWSHelper
                 sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME),
                 str_replace("_2ND_DISK_SIZE_", getenv('EB_2ND_DISK_SIZE'), MyOps::getELBTemplate()["blockdeviceTemplate"])
             );
+
+            static::ElbSetupCloudwatchAgent();
+
             file_put_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME), $DockerrunContent);
             //    validate configs files again
             //        .ebextensions/blockdevice-xvdcz.config
@@ -261,6 +265,40 @@ class AWSHelper
             //             case timeout
             self::LineTag(TagEnum::ERROR)->print("Deployment got a timeout result");
             exitApp(ERROR_END);
+        } catch (Exception $ex) {
+            self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
+            exitApp(ERROR_END);
+        }
+    }
+
+    public static function ElbSetupCloudwatchAgent()
+    {
+        try {
+            // === validate ===
+            if (!ValidationHelper::validateEnvVars([
+                'BRANCH',
+                "REPOSITORY",
+                'ENV',
+            ])) {
+                exitApp(ERROR_END);
+            }
+            // === handle ===
+            $ENV = getenv('ENV');
+
+            self::LineNew()->printSeparatorLine()
+                ->setTagMultiple([getenv('REPOSITORY'), getenv('BRANCH')])
+                ->printTitle("Handle ELB cloudwatch agent - ELASTIC BEANSTALK");
+            self::LineNew()->print("Config parameter name: " . ('cw-agent-config-' . $ENV));
+
+            $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
+            (new Process("handle ELB extension directory", DirHelper::getWorkingDir(), $commands))
+                ->execMultiInWorkDir()->printOutput();
+            //   handle SSM and get image tag values
+            //    write files
+            file_put_contents(
+                sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_CLOOUDWATCH_AGENT_FILE_NAME),
+                str_replace("_CLOUDWATCH_CONFIG_PARAMETER_", ('cw-agent-config-' . $ENV), MyOps::getELBTemplate()["cloudwatchAgentTemplate"])
+            );
         } catch (Exception $ex) {
             self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
             exitApp(ERROR_END);
