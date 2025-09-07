@@ -33,7 +33,7 @@ commands:
 
   02-fetch-config:
       command: |
-        sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+        /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
           -a fetch-config \
           -m ec2 \
           -c ssm:_CLOUDWATCH_CONFIG_PARAMETER_ \
@@ -41,9 +41,9 @@ commands:
 
   03-copy-config:
       command: |
-        sudo cp /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.d/ssm__CLOUDWATCH_CONFIG_PARAMETER_ /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+        cp /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.d/ssm__CLOUDWATCH_CONFIG_PARAMETER_ /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
 
   04-enable-cwagent:
       command: |
-        sudo systemctl enable amazon-cloudwatch-agent
-        sudo systemctl restart amazon-cloudwatch-agent
+        systemctl enable amazon-cloudwatch-agent
+        systemctl restart amazon-cloudwatch-agent
