@@ -34,6 +34,8 @@ class OPSHelper
             '115.73.208.183', // Nexle HCM office - IP 2
             '14.161.25.117', // Nexle HCM office - IP 3
             '113.160.235.76', // Nexle DN office NEW (2 2024)
+            '16.163.233.149',
+            '18.167.70.56',
         ];
         $GITHUB_RUNNER_SERVER_IP = '18.167.126.148';
         $EC2DevelopIp = exec("echo $(curl https://develop-api.engageplus.io/api/booking/IP-QYIa20HxwQ)");

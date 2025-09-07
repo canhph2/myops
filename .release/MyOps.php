@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.17.8 ===
+// === MyOps v3.17.24 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.17.8';
+    const APP_VERSION = '3.17.24';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2762,6 +2762,8 @@ class OPSHelper
             '115.73.208.183', // Nexle HCM office - IP 2
             '14.161.25.117', // Nexle HCM office - IP 3
             '113.160.235.76', // Nexle DN office NEW (2 2024)
+            '16.163.233.149',
+            '18.167.70.56',
         ];
         $GITHUB_RUNNER_SERVER_IP = '18.167.126.148';
         $EC2DevelopIp = exec("echo $(curl https://develop-api.engageplus.io/api/booking/IP-QYIa20HxwQ)");
@@ -3421,6 +3423,7 @@ class AWSHelper
     const ELB_TEMP_DIR = "tmp/elb-version";
     const ELB_EBEXTENSIONS_DIR = ".ebextensions"; // should place at inside elb version dir
     const ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME = "blockdevice-xvdcz.config";
+    const ELB_EBEXTENSIONS_CLOOUDWATCH_AGENT_FILE_NAME = "cloudwatch-agent.config";
     const ELB_DOCKERRUN_FILE_NAME = "Dockerrun.aws.json";
     const ELB_LOG_UPDATE_SUCCESSFULLY = "Environment update completed successfully.";
     const ELB_LOG_UPDATE_FAILED = "Failed to deploy application.";
@@ -3584,6 +3587,9 @@ class AWSHelper
                 sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_BLOCKDEVICE_FILE_NAME),
                 str_replace("_2ND_DISK_SIZE_", getenv('EB_2ND_DISK_SIZE'), MyOps::getELBTemplate()["blockdeviceTemplate"])
             );
+
+            static::ElbSetupCloudwatchAgent();
+
             file_put_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME), $DockerrunContent);
             //    validate configs files again
             //        .ebextensions/blockdevice-xvdcz.config
@@ -3660,6 +3666,40 @@ class AWSHelper
             //             case timeout
             self::LineTag(TagEnum::ERROR)->print("Deployment got a timeout result");
             exitApp(ERROR_END);
+        } catch (Exception $ex) {
+            self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
+            exitApp(ERROR_END);
+        }
+    }
+
+    public static function ElbSetupCloudwatchAgent()
+    {
+        try {
+            // === validate ===
+            if (!ValidationHelper::validateEnvVars([
+                'BRANCH',
+                "REPOSITORY",
+                'ENV',
+            ])) {
+                exitApp(ERROR_END);
+            }
+            // === handle ===
+            $ENV = getenv('ENV');
+
+            self::LineNew()->printSeparatorLine()
+                ->setTagMultiple([getenv('REPOSITORY'), getenv('BRANCH')])
+                ->printTitle("Handle ELB cloudwatch agent - ELASTIC BEANSTALK");
+            self::LineNew()->print("Config parameter name: " . ('cw-agent-config-' . $ENV));
+
+            $commands[] = sprintf("mkdir -p '%s/%s'", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), self::ELB_EBEXTENSIONS_DIR);
+            (new Process("handle ELB extension directory", DirHelper::getWorkingDir(), $commands))
+                ->execMultiInWorkDir()->printOutput();
+            //   handle SSM and get image tag values
+            //    write files
+            file_put_contents(
+                sprintf("%s/%s/%s", self::ELB_TEMP_DIR, self::ELB_EBEXTENSIONS_DIR, self::ELB_EBEXTENSIONS_CLOOUDWATCH_AGENT_FILE_NAME),
+                str_replace("_CLOUDWATCH_CONFIG_PARAMETER_", ('cw-agent-config-' . $ENV), MyOps::getELBTemplate()["cloudwatchAgentTemplate"])
+            );
         } catch (Exception $ex) {
             self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
             exitApp(ERROR_END);
@@ -5190,7 +5230,7 @@ class MyOps
             : file_get_contents('app/_shell_/handle-env-ops.sh');
     }
 
-    const ELB_TEMPLATE_BASE_64 = 'eyJibG9ja2RldmljZVRlbXBsYXRlIjoib3B0aW9uX3NldHRpbmdzOlxuICBhd3M6YXV0b3NjYWxpbmc6bGF1bmNoY29uZmlndXJhdGlvbjpcbiAgICBCbG9ja0RldmljZU1hcHBpbmdzOiBcL2RldlwveHZkY3o9Ol8yTkRfRElTS19TSVpFXzp0cnVlOmdwMlxuIiwiRG9ja2VycnVuVGVtcGxhdGUiOiJ7XG4gIFwiQVdTRUJEb2NrZXJydW5WZXJzaW9uXCI6IDIsXG4gIFwiY29udGFpbmVyRGVmaW5pdGlvbnNcIjogW1xuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9BUElcIixcbiAgICAgIFwiZXNzZW50aWFsXCI6IHRydWUsXG4gICAgICBcIm1lbW9yeVJlc2VydmF0aW9uXCI6IDI1NixcbiAgICAgIFwicG9ydE1hcHBpbmdzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiaG9zdFBvcnRcIjogODAsXG4gICAgICAgICAgXCJjb250YWluZXJQb3J0XCI6IDgwODBcbiAgICAgICAgfVxuICAgICAgICBfTUFJTF9DQVRDSEVSX1BPUlRfXG4gICAgICBdLFxuICAgICAgXCJsaW5rc1wiOiBbXG4gICAgICAgIFwicGF5bWVudC1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW52b2ljZS1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW50ZWdyYXRpb24tYXBpXCJcbiAgICAgIF1cbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludm9pY2Utc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlZPSUNFX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcInBheW1lbnQtc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9QQVlNRU5UX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludGVncmF0aW9uLWFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlRFR1JBVElPTl9BUElcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcInJlZGlzLXNlcnZpY2VcIixcbiAgICAgIFwiaW1hZ2VcIjogXCJFQ1JfUkVQT19JTUFHRV9VUklfUkVESVNfU0VSVklDRVwiLFxuICAgICAgXCJtZW1vcnlSZXNlcnZhdGlvblwiOiAyNTYsXG4gICAgICBcImVzc2VudGlhbFwiOiBmYWxzZSxcbiAgICAgIFwicG9ydE1hcHBpbmdzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiY29udGFpbmVyUG9ydFwiOiA2Mzc5LFxuICAgICAgICAgIFwiaG9zdFBvcnRcIjogNjM3OVxuICAgICAgICB9XG4gICAgICBdXG4gICAgfVxuICBdXG59XG4ifQ==';
+    const ELB_TEMPLATE_BASE_64 = 'eyJibG9ja2RldmljZVRlbXBsYXRlIjoib3B0aW9uX3NldHRpbmdzOlxuICBhd3M6YXV0b3NjYWxpbmc6bGF1bmNoY29uZmlndXJhdGlvbjpcbiAgICBCbG9ja0RldmljZU1hcHBpbmdzOiBcL2RldlwveHZkY3o9Ol8yTkRfRElTS19TSVpFXzp0cnVlOmdwMlxuIiwiY2xvdWR3YXRjaEFnZW50VGVtcGxhdGUiOiIjIC5lYmV4dGVuc2lvbnNcL2Nsb3Vkd2F0Y2gtYWdlbnQuY29uZmlnXG5wYWNrYWdlczpcbiAgeXVtOlxuICAgIGFtYXpvbi1jbG91ZHdhdGNoLWFnZW50OiBbXSAgICMgaW5zdGFsbCBDbG91ZFdhdGNoIEFnZW50XG5cbmZpbGVzOlxuICBcIlwvb3B0XC9hd3NcL2FtYXpvbi1jbG91ZHdhdGNoLWFnZW50XC9ldGNcL2FtYXpvbi1jbG91ZHdhdGNoLWFnZW50Lmpzb25cIjpcbiAgICBtb2RlOiBcIjAwMDY0NFwiXG4gICAgb3duZXI6IHJvb3RcbiAgICBncm91cDogcm9vdFxuICAgIGNvbnRlbnQ6IHxcbiAgICAgIHtcbiAgICAgICAgXCJhZ2VudFwiOiB7XG4gICAgICAgICAgXCJtZXRyaWNzX2NvbGxlY3Rpb25faW50ZXJ2YWxcIjogNjAsXG4gICAgICAgICAgXCJydW5fYXNfdXNlclwiOiBcInJvb3RcIlxuICAgICAgICB9LFxuICAgICAgICBcIm1ldHJpY3NcIjoge1xuICAgICAgICAgIFwibWV0cmljc19jb2xsZWN0ZWRcIjoge1xuICAgICAgICAgICAgXCJtZW1cIjoge1xuICAgICAgICAgICAgICBcIm1lYXN1cmVtZW50XCI6IFtcbiAgICAgICAgICAgICAgICBcIm1lbV91c2VkX3BlcmNlbnRcIlxuICAgICAgICAgICAgICBdLFxuICAgICAgICAgICAgICBcIm1ldHJpY3NfY29sbGVjdGlvbl9pbnRlcnZhbFwiOiA2MFxuICAgICAgICAgICAgfVxuICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgICAgfVxuXG5jb250YWluZXJfY29tbWFuZHM6XG4gIDAxLWZpeC1wZXJtczpcbiAgICAgIGNvbW1hbmQ6IHxcbiAgICAgICAgY2hvd24gLVIgcm9vdDpyb290IFwvb3B0XC9hd3NcL2FtYXpvbi1jbG91ZHdhdGNoLWFnZW50XG5cbiAgMDItZmV0Y2gtY29uZmlnOlxuICAgICAgY29tbWFuZDogfFxuICAgICAgICBcL29wdFwvYXdzXC9hbWF6b24tY2xvdWR3YXRjaC1hZ2VudFwvYmluXC9hbWF6b24tY2xvdWR3YXRjaC1hZ2VudC1jdGwgXFxcbiAgICAgICAgICAtYSBmZXRjaC1jb25maWcgXFxcbiAgICAgICAgICAtbSBlYzIgXFxcbiAgICAgICAgICAtYyBzc206X0NMT1VEV0FUQ0hfQ09ORklHX1BBUkFNRVRFUl9cblxuICAwMy1jb3B5LWNvbmZpZzpcbiAgICAgIGNvbW1hbmQ6IHxcbiAgICAgICAgY3AgXC9vcHRcL2F3c1wvYW1hem9uLWNsb3Vkd2F0Y2gtYWdlbnRcL2V0Y1wvYW1hem9uLWNsb3Vkd2F0Y2gtYWdlbnQuZFwvc3NtX19DTE9VRFdBVENIX0NPTkZJR19QQVJBTUVURVJfIFwvb3B0XC9hd3NcL2FtYXpvbi1jbG91ZHdhdGNoLWFnZW50XC9ldGNcL2FtYXpvbi1jbG91ZHdhdGNoLWFnZW50Lmpzb25cblxuICAwNC1lbmFibGUtY3dhZ2VudDpcbiAgICAgIGNvbW1hbmQ6IHxcbiAgICAgICAgc3lzdGVtY3RsIGVuYWJsZSBhbWF6b24tY2xvdWR3YXRjaC1hZ2VudFxuICAgICAgICBzeXN0ZW1jdGwgcmVzdGFydCBhbWF6b24tY2xvdWR3YXRjaC1hZ2VudFxuIiwiRG9ja2VycnVuVGVtcGxhdGUiOiJ7XG4gIFwiQVdTRUJEb2NrZXJydW5WZXJzaW9uXCI6IDIsXG4gIFwiY29udGFpbmVyRGVmaW5pdGlvbnNcIjogW1xuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9BUElcIixcbiAgICAgIFwiZXNzZW50aWFsXCI6IHRydWUsXG4gICAgICBcIm1lbW9yeVJlc2VydmF0aW9uXCI6IDI1NixcbiAgICAgIFwicG9ydE1hcHBpbmdzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiaG9zdFBvcnRcIjogODAsXG4gICAgICAgICAgXCJjb250YWluZXJQb3J0XCI6IDgwODBcbiAgICAgICAgfVxuICAgICAgICBfTUFJTF9DQVRDSEVSX1BPUlRfXG4gICAgICBdLFxuICAgICAgXCJsaW5rc1wiOiBbXG4gICAgICAgIFwicGF5bWVudC1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW52b2ljZS1zZXJ2aWNlXCIsXG4gICAgICAgIFwiaW50ZWdyYXRpb24tYXBpXCJcbiAgICAgIF1cbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludm9pY2Utc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlZPSUNFX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcInBheW1lbnQtc2VydmljZVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9QQVlNRU5UX1NFUlZJQ0VcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcImludGVncmF0aW9uLWFwaVwiLFxuICAgICAgXCJpbWFnZVwiOiBcIkVDUl9SRVBPX0lNQUdFX1VSSV9JTlRFR1JBVElPTl9BUElcIixcbiAgICAgIFwibWVtb3J5UmVzZXJ2YXRpb25cIjogMjU2LFxuICAgICAgXCJlc3NlbnRpYWxcIjogZmFsc2VcbiAgICB9LFxuICAgIHtcbiAgICAgIFwibmFtZVwiOiBcInJlZGlzLXNlcnZpY2VcIixcbiAgICAgIFwiaW1hZ2VcIjogXCJFQ1JfUkVQT19JTUFHRV9VUklfUkVESVNfU0VSVklDRVwiLFxuICAgICAgXCJtZW1vcnlSZXNlcnZhdGlvblwiOiAyNTYsXG4gICAgICBcImVzc2VudGlhbFwiOiBmYWxzZSxcbiAgICAgIFwicG9ydE1hcHBpbmdzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiY29udGFpbmVyUG9ydFwiOiA2Mzc5LFxuICAgICAgICAgIFwiaG9zdFBvcnRcIjogNjM3OVxuICAgICAgICB9XG4gICAgICBdXG4gICAgfVxuICBdXG59XG4ifQ==';
 
     public static function getELBTemplate()
     {
@@ -5198,6 +5238,7 @@ class MyOps
             ? json_decode(base64_decode(self::ELB_TEMPLATE_BASE_64), true)
             : [
                 'blockdeviceTemplate' => file_get_contents('app/_AWS_/ELB-template/.ebextensions/blockdevice-xvdcz.config.TEMPLATE'),
+                'cloudwatchAgentTemplate' => file_get_contents('app/_AWS_/ELB-template/.ebextensions/cloudwatch-agent.config.TEMPLATE'),
                 'DockerrunTemplate' => file_get_contents('app/_AWS_/ELB-template/Dockerrun.aws.json.TEMPLATE'),
             ];
     }
