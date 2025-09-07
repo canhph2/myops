@@ -187,7 +187,7 @@ class AWSHelper
                 str_replace("_2ND_DISK_SIZE_", getenv('EB_2ND_DISK_SIZE'), MyOps::getELBTemplate()["blockdeviceTemplate"])
             );
 
-//            static::ElbSetupCloudwatchAgent();
+            static::ElbSetupCloudwatchAgent();
 
             file_put_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME), $DockerrunContent);
             //    validate configs files again
