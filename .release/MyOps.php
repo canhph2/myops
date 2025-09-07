@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.17.16 ===
+// === MyOps v3.17.17 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.17.16';
+    const APP_VERSION = '3.17.17';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3588,7 +3588,7 @@ class AWSHelper
                 str_replace("_2ND_DISK_SIZE_", getenv('EB_2ND_DISK_SIZE'), MyOps::getELBTemplate()["blockdeviceTemplate"])
             );
 
-            static::ElbSetupCloudwatchAgent();
+//            static::ElbSetupCloudwatchAgent();
 
             file_put_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME), $DockerrunContent);
             //    validate configs files again
