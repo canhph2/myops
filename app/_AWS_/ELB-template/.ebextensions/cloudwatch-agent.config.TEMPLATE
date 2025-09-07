@@ -39,7 +39,11 @@ commands:
           -c ssm:_CLOUDWATCH_CONFIG_PARAMETER_ \
           -s || echo "SSM fetch failed, continuing with default config"
 
-  03-enable-cwagent:
+  03-copy-config:
+      command: |
+        sudo cp /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.d/ssm__CLOUDWATCH_CONFIG_PARAMETER_ /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+
+  04-enable-cwagent:
       command: |
         systemctl enable amazon-cloudwatch-agent
         systemctl restart amazon-cloudwatch-agent
