@@ -41,7 +41,7 @@ commands:
 
   03-copy-config:
       command: |
-        sudo cp /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.d/ssm__CLOUDWATCH_CONFIG_PARAMETER_ /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+        sudo cp /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.d/ssm___CLOUDWATCH_CONFIG_PARAMETER_ /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
 
   04-enable-cwagent:
       command: |
