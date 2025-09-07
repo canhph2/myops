@@ -45,5 +45,5 @@ commands:
 
   04-enable-cwagent:
       command: |
-        systemctl enable amazon-cloudwatch-agent
-        systemctl restart amazon-cloudwatch-agent
+        sudo systemctl enable amazon-cloudwatch-agent
+        sudo systemctl restart amazon-cloudwatch-agent
