@@ -37,7 +37,7 @@ fi
 if [ "${BRANCH}" = "staging" ]; then
   export ENV=stg
   export API_DEPLOY_BRANCH=staging-multi-container
-  export EB_ENVIRONMENT_NAME="staging-multi-container"
+  export EB_ENVIRONMENT_NAME="staging-multi-container-v2"
   export EB_2ND_DISK_SIZE="20"
   export EB_MAIL_CATCHER_PORT=",{ \"hostPort\": 1025, \"containerPort\": 1025 }" # maybe remove after email-service
   export ENV_URL_PREFIX="${BRANCH}-"
