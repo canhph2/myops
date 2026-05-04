@@ -22,7 +22,7 @@ export COMPOSER_INSTALL_PRODUCTION_TO_BUILD_CACHES="composer install --no-dev --
 if [ "${BRANCH}" = "develop" ]; then
   export ENV=dev
   export API_DEPLOY_BRANCH=develop-multi-container
-  export EB_ENVIRONMENT_NAME="develop-multi-container"
+  export EB_ENVIRONMENT_NAME="develop-multi-container-v2"
   export EB_2ND_DISK_SIZE="20"
   export EB_MAIL_CATCHER_PORT=",{ \"hostPort\": 1025, \"containerPort\": 1025 }" # maybe remove after email-service
   export ENV_URL_PREFIX="${BRANCH}-"
@@ -37,7 +37,7 @@ fi
 if [ "${BRANCH}" = "staging" ]; then
   export ENV=stg
   export API_DEPLOY_BRANCH=staging-multi-container
-  export EB_ENVIRONMENT_NAME="staging-multi-container"
+  export EB_ENVIRONMENT_NAME="staging-multi-container-v2"
   export EB_2ND_DISK_SIZE="20"
   export EB_MAIL_CATCHER_PORT=",{ \"hostPort\": 1025, \"containerPort\": 1025 }" # maybe remove after email-service
   export ENV_URL_PREFIX="${BRANCH}-"
@@ -52,7 +52,7 @@ fi
 if [ "${BRANCH}" = "master" ]; then
   export ENV=prd
   export API_DEPLOY_BRANCH=master-multi-container
-  export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container"
+  export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container-2026"
   export EB_2ND_DISK_SIZE="100"
   export EB_MAIL_CATCHER_PORT="    " # maybe remove after email-service | 4 spaces to pass empty string
   export ENV_URL_PREFIX=""
