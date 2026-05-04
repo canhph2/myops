@@ -52,7 +52,7 @@ fi
 if [ "${BRANCH}" = "master" ]; then
   export ENV=prd
   export API_DEPLOY_BRANCH=master-multi-container
-  export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container"
+  export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container-2026"
   export EB_2ND_DISK_SIZE="100"
   export EB_MAIL_CATCHER_PORT="    " # maybe remove after email-service | 4 spaces to pass empty string
   export ENV_URL_PREFIX=""
