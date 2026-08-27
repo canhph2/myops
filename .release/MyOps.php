@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.17.30 ===
+// === MyOps v3.17.31 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.17.30';
+    const APP_VERSION = '3.17.31';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3172,7 +3172,11 @@ class GitHubHelper
             exit(ERROR_END);
         }
 
-        $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
+        $cacheDirName = $branch === GitHubEnum::UPGRADE
+            ? sprintf("%s-%s", $repository, $branch)   // e.g. "engage-spa-upgrade"
+            : $repository;                              // unchanged for every other branch
+        $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $cacheDirName);
+
         //     message validate
         if ($customRepository) $repositoryFrom = "CODE";
         elseif (self::arg(1)) $repositoryFrom = "CONSOLE";

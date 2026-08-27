@@ -172,7 +172,11 @@ class GitHubHelper
             exit(ERROR_END);
         }
 
-        $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $repository);
+        $cacheDirName = $branch === GitHubEnum::UPGRADE
+            ? sprintf("%s-%s", $repository, $branch)   // e.g. "engage-spa-upgrade"
+            : $repository;                              // unchanged for every other branch
+        $EngagePlusCachesRepositoryDir = sprintf("%s/%s", $engagePlusCachesDir, $cacheDirName);
+
         //     message validate
         if ($customRepository) $repositoryFrom = "CODE";
         elseif (self::arg(1)) $repositoryFrom = "CONSOLE";

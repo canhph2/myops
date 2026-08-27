@@ -1,4 +1,4 @@
-# MyOps v3.17.30
+# MyOps v3.17.31
 *DevOps | CI/CD | MyOps App (PHP)*
 
 ## === Usage ===
@@ -49,6 +49,7 @@ alias myops="php <HOME DIR>/<ENGAGE CACHES DIR>/myops/.release/MyOps.php"
 php app/MyOps.php release
 ```
 ```shell
+### just run below command to make the myops sync with current code here
 php app/MyOps.php sync
 php vendor/phpunit/phpunit/phpunit tests
 php app/MyOps.php merge-feature-all --skip-commit
