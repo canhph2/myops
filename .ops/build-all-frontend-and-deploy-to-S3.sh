@@ -11,6 +11,13 @@ trap 'myops post-work --process-id=${PROCESS_ID} --exit-code=$?    --message="${
 #
 eval "$(myops pre-work --response-type=eval)"
 myops pre-work --message="${DEVICE} starts to build all frontend projects:"
+
+# block the 'upgrade' branch from running this deploy script
+if [ "${BRANCH}" = "upgrade" ]; then
+    echo "Branch 'upgrade' is not allowed to run this deploy script. Aborting."
+    exit 1
+fi
+
 # validate
 myops validate --type=device --type=branch
 # handle

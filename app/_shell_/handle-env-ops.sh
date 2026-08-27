@@ -93,6 +93,10 @@ export EB_APP_NAME="engageplus"
 export ENGAGEPLUS_CACHES_FOLDER=".caches_engageplus"
 export ENGAGEPLUS_CACHES_DIR="$(myops home-dir)/${ENGAGEPLUS_CACHES_FOLDER}"
 export ENGAGEPLUS_CACHES_REPOSITORY_DIR="${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}"
+
+if [ "${BRANCH}" = "upgrade" ]; then
+  export ENGAGEPLUS_CACHES_REPOSITORY_DIR="${ENGAGEPLUS_CACHES_DIR}/${REPOSITORY}-${BRANCH}"
+fi
 # === END ===
 
 # === get DEVICE from param 1 ===
