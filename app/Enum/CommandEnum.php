@@ -114,7 +114,7 @@ class CommandEnum
                 '.e.g to test source code in the server'
             ],
             self::MERGE_FEATURE_ALL => [
-                '[MyOps only] will merge feature to sync, develop, staging, master, support branches and push',
+                '[MyOps only] will merge feature to sync, develop, upgrade, staging, master, support branches and push',
             ],
             //        GitHub Actions
             self::BUILD_ALL_PROJECTS => [
@@ -182,7 +182,7 @@ class CommandEnum
                 "required: 'set -e' in bash file",
                 '  [NEW] batch validation: --type=<type1> --type=<type2>...',
                 '  support TYPEs:',
-                '    branch  : to only allow develop, staging, master',
+                '    branch  : to only allow develop, upgrade, staging, master',
                 '    docker  : docker should is running',
                 '    device  : should pass env var: DEVICE in your first command',
                 '    file-contains-text  : check if a file should contain a text or some texts',

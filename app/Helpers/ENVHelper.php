@@ -26,6 +26,8 @@ class ENVHelper
                 return ENVEnum::PRODUCTION;
             case ENVEnum::STAGING_CODE:
                 return ENVEnum::STAGING;
+            case ENVEnum::UPGRADE_CODE:
+                return ENVEnum::UPGRADE;
             case ENVEnum::DEVELOP_CODE:
                 return ENVEnum::DEVELOP;
             case ENVEnum::LOCAL_CODE:

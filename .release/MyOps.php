@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.17.29 ===
+// === MyOps v3.17.30 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.17.29';
+    const APP_VERSION = '3.17.30';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -1808,7 +1808,7 @@ class CommandEnum
                 '.e.g to test source code in the server'
             ],
             self::MERGE_FEATURE_ALL => [
-                '[MyOps only] will merge feature to sync, develop, staging, master, support branches and push',
+                '[MyOps only] will merge feature to sync, develop, upgrade, staging, master, support branches and push',
             ],
             //        GitHub Actions
             self::BUILD_ALL_PROJECTS => [
@@ -1876,7 +1876,7 @@ class CommandEnum
                 "required: 'set -e' in bash file",
                 '  [NEW] batch validation: --type=<type1> --type=<type2>...',
                 '  support TYPEs:',
-                '    branch  : to only allow develop, staging, master',
+                '    branch  : to only allow develop, upgrade, staging, master',
                 '    docker  : docker should is running',
                 '    device  : should pass env var: DEVICE in your first command',
                 '    file-contains-text  : check if a file should contain a text or some texts',
@@ -1918,10 +1918,11 @@ class GitHubEnum
     const MAIN = 'main';
     const MASTER = 'master';
     const STAGING = 'staging';
+    const UPGRADE = 'upgrade';
     const DEVELOP = 'develop';
     const SYNC = 'sync'; // sync MyOps to the CI/CD server on May 25, 2024.
     const DIVIDER_BRANCH = '---'; // a divider to reduce wrong click
-    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::DEVELOP, self::SYNC];
+    const SUPPORT_BRANCHES = [self::MAIN, self::MASTER, self::STAGING, self::UPGRADE, self::DEVELOP, self::SYNC];
     const PRODUCTION_BRANCHES = [self::MAIN, self::MASTER];
 
     // === GitHub users ===
@@ -2160,11 +2161,13 @@ class ENVEnum
     // code
     const PRODUCTION_CODE = 'prd';
     const STAGING_CODE = 'stg';
+    const UPGRADE_CODE = 'upg';
     const DEVELOP_CODE = 'dev';
     const LOCAL_CODE = 'loc';
     // name
     const PRODUCTION = 'production';
     const STAGING = 'staging';
+    const UPGRADE = 'upgrade';
     const DEVELOP = 'develop';
     const LOCAL = 'local';
 }
@@ -4705,6 +4708,8 @@ class ENVHelper
                 return ENVEnum::PRODUCTION;
             case ENVEnum::STAGING_CODE:
                 return ENVEnum::STAGING;
+            case ENVEnum::UPGRADE_CODE:
+                return ENVEnum::UPGRADE;
             case ENVEnum::DEVELOP_CODE:
                 return ENVEnum::DEVELOP;
             case ENVEnum::LOCAL_CODE:
