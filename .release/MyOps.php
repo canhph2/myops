@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.17.26 ===
+// === MyOps v3.17.27 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.17.26';
+    const APP_VERSION = '3.17.27';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -3068,7 +3068,7 @@ class GitHubHelper
     public static function getRemoteOriginUrl_Custom(string $repositoryName, string $GitHubPersonalAccessToken = null): string
     {
         return $GitHubPersonalAccessToken
-            ? sprintf("https://%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, self::getRepositoryInfoByName($repositoryName)->getUsername(), $repositoryName)
+            ? sprintf("https://x-access-token:%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, self::getRepositoryInfoByName($repositoryName)->getUsername(), $repositoryName)
             : sprintf("https://github.com/%s/%s.git", self::getRepositoryInfoByName($repositoryName)->getUsername(), $repositoryName);
     }
 
