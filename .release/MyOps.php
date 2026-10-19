@@ -1,5 +1,5 @@
 <?php
-// === MyOps v3.17.32 ===
+// === MyOps v3.17.33 ===
 
 // === Generated libraries classes ===
 
@@ -1691,7 +1691,7 @@ class AppInfoEnum
     const APP_NAME = 'MyOps';
     const APP_MAIN_COMMAND = 'myops';
     const RELEASE_PATH = '.release/MyOps.php';
-    const APP_VERSION = '3.17.32';
+    const APP_VERSION = '3.17.33';
 }
 
 // [REMOVED] namespace App\Enum;
@@ -2806,7 +2806,7 @@ class OPSHelper
                 $resultCode = null;
                 exec(join(';', [
                     sprintf("cd \"%s\"", $projectDir), # jump into this directory
-                    sprintf("git remote set-url origin https://%s@github.com/%s/%s.git", $GITHUB_PERSONAL_ACCESS_TOKEN_NEW, $repoInfo->getUsername(), $repoInfo->getRepositoryName()),
+                    sprintf("git remote set-url origin https://x-access-token:%s@github.com/%s/%s.git", $GITHUB_PERSONAL_ACCESS_TOKEN_NEW, $repoInfo->getUsername(), $repoInfo->getRepositoryName()),
                 ]), $output, $resultCode);
                 // print output
                 foreach ($output as $line) {
@@ -3071,7 +3071,7 @@ class GitHubHelper
     public static function getRemoteOriginUrl_Custom(string $repositoryName, string $GitHubPersonalAccessToken = null): string
     {
         return $GitHubPersonalAccessToken
-            ? sprintf("https://%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, self::getRepositoryInfoByName($repositoryName)->getUsername(), $repositoryName)
+            ? sprintf("https://x-access-token:%s@github.com/%s/%s.git", $GitHubPersonalAccessToken, self::getRepositoryInfoByName($repositoryName)->getUsername(), $repositoryName)
             : sprintf("https://github.com/%s/%s.git", self::getRepositoryInfoByName($repositoryName)->getUsername(), $repositoryName);
     }
 
