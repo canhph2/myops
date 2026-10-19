@@ -73,7 +73,7 @@ class OPSHelper
                 $resultCode = null;
                 exec(join(';', [
                     sprintf("cd \"%s\"", $projectDir), # jump into this directory
-                    sprintf("git remote set-url origin https://%s@github.com/%s/%s.git", $GITHUB_PERSONAL_ACCESS_TOKEN_NEW, $repoInfo->getUsername(), $repoInfo->getRepositoryName()),
+                    sprintf("git remote set-url origin https://x-access-token:%s@github.com/%s/%s.git", $GITHUB_PERSONAL_ACCESS_TOKEN_NEW, $repoInfo->getUsername(), $repoInfo->getRepositoryName()),
                 ]), $output, $resultCode);
                 // print output
                 foreach ($output as $line) {
