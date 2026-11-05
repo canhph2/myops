@@ -49,6 +49,21 @@ if [ "${BRANCH}" = "staging" ]; then
   export EMAIL_SERVICE_EXTERNAL_PORT=10001
   export EMAIL_SERVICE_CONTAINER_PORT=80
 fi
+if [ "${BRANCH}" = "upgrade" ]; then
+  export ENV=upg
+  export API_DEPLOY_BRANCH=upgrade-multi-container
+  export EB_ENVIRONMENT_NAME="upgrade-multi-container-v2"
+  export EB_2ND_DISK_SIZE="20"
+  export EB_MAIL_CATCHER_PORT=",{ \"hostPort\": 1025, \"containerPort\": 1025 }" # maybe remove after email-service
+  export ENV_URL_PREFIX="${BRANCH}-"
+  #
+  export COMPOSER_INSTALL="${COMPOSER_INSTALL_DEVELOP}"
+  export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_DEVELOP}"
+  export DOCKER_BASE_TAG_API="${DOCKER_BASE_TAG_DEVELOP}" # maybe remove after email-service
+  #
+  export EMAIL_SERVICE_EXTERNAL_PORT=10003
+  export EMAIL_SERVICE_CONTAINER_PORT=80
+fi
 if [ "${BRANCH}" = "master" ]; then
   export ENV=prd
   export API_DEPLOY_BRANCH=master-multi-container
