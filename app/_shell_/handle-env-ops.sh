@@ -56,7 +56,7 @@ if [ "${BRANCH}" = "upgrade" ]; then
   export EB_2ND_DISK_SIZE="20"
   export EB_MAIL_CATCHER_PORT=",{ \"hostPort\": 1025, \"containerPort\": 1025 }" # maybe remove after email-service
   export ENV_URL_PREFIX="${BRANCH}-"
-  #
+  ##
   export COMPOSER_INSTALL="${COMPOSER_INSTALL_DEVELOP}"
   export DOCKER_BASE_TAG="${DOCKER_BASE_TAG_DEVELOP}"
   export DOCKER_BASE_TAG_API="${DOCKER_BASE_TAG_DEVELOP}" # maybe remove after email-service
