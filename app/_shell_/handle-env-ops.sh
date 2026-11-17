@@ -23,6 +23,7 @@ export COMPOSER_INSTALL_PRODUCTION_TO_BUILD_CACHES="composer install --no-dev --
 #               default is "false", set "true" inside an environment block below when that environment is ready
 export API_SPLIT="false"
 if [ "${BRANCH}" = "develop" ]; then
+  export API_SPLIT="true" # deploy 'api' (legacy) and 'booking' as two images/containers
   export ENV=dev
   export API_DEPLOY_BRANCH=develop-multi-container
   export EB_ENVIRONMENT_NAME="develop-multi-container-v2"
