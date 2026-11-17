@@ -39,6 +39,7 @@ if [ "${BRANCH}" = "develop" ]; then
   export EMAIL_SERVICE_CONTAINER_PORT=80
 fi
 if [ "${BRANCH}" = "staging" ]; then
+  export API_SPLIT="true" # deploy 'api' (legacy) and 'booking' as two images/containers
   export ENV=stg
   export API_DEPLOY_BRANCH=staging-multi-container
   export EB_ENVIRONMENT_NAME="staging-multi-container-v2"
