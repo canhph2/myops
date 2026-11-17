@@ -112,13 +112,15 @@ class AWSHelper
     {
         try {
             // === validate ===
-            if (!ValidationHelper::validateEnvVars([
+            //    'api' (legacy) and 'booking' are 2 images / 2 containers, otherwise 1 combined 'api' image
+            $isApiSplit = getenv('API_SPLIT') === 'true';
+            if (!ValidationHelper::validateEnvVars(array_merge([
                 'BRANCH', "REPOSITORY",
                 'ENV', 'ECR_REPO_API', 'S3_EB_APP_VERSION_BUCKET_NAME',
                 'EB_APP_VERSION_FOLDER_NAME', 'EB_ENVIRONMENT_NAME',
                 'EB_2ND_DISK_SIZE',
                 'EB_MAIL_CATCHER_PORT', // maybe remove after email-serivce
-            ])) {
+            ], $isApiSplit ? ['ECR_REPO_API_LEGACY', 'ECR_REPO_API_BOOKING'] : []))) {
                 exitApp(ERROR_END);
             }
             // === handle ===
@@ -136,17 +138,33 @@ class AWSHelper
                 ->execMultiInWorkDir()->printOutput();
             //   handle SSM and get image tag values
             //        SSM tag names
-            $SSM_ENV_TAG_API_NAME = "/$ENV/TAG_API_NAME";
+            $SSM_ENV_TAG_API_NAME = "/$ENV/TAG_API_NAME"; // combined image (API_SPLIT is not "true")
+            $SSM_ENV_TAG_API_LEGACY_NAME = "/$ENV/TAG_API_LEGACY_NAME"; // API_SPLIT = "true"
+            $SSM_ENV_TAG_API_BOOKING_NAME = "/$ENV/TAG_API_BOOKING_NAME"; // API_SPLIT = "true"
             $SSM_ENV_TAG_INVOICE_SERVICE_NAME = "/$ENV/TAG_INVOICE_SERVICE_NAME";
             $SSM_ENV_TAG_PAYMENT_SERVICE_NAME = "/$ENV/TAG_PAYMENT_SERVICE_NAME";
             $SSM_ENV_TAG_INTEGRATION_API_NAME = "/$ENV/TAG_INTEGRATION_API_NAME";
+            $TAG_API_NAME = $TAG_API_LEGACY_NAME = $TAG_API_BOOKING_NAME = null;
+            $TAG_INVOICE_SERVICE_NAME = $TAG_PAYMENT_SERVICE_NAME = $TAG_INTEGRATION_API_NAME = null;
+            $ssmTagNames = array_merge(
+                $isApiSplit ? [$SSM_ENV_TAG_API_LEGACY_NAME, $SSM_ENV_TAG_API_BOOKING_NAME] : [$SSM_ENV_TAG_API_NAME],
+                [$SSM_ENV_TAG_INVOICE_SERVICE_NAME, $SSM_ENV_TAG_PAYMENT_SERVICE_NAME, $SSM_ENV_TAG_INTEGRATION_API_NAME]
+            );
             $imageTagValues = (new Process("get image tag value from AWS SSM", DirHelper::getWorkingDir(), [
-                "aws ssm get-parameters --names '$SSM_ENV_TAG_API_NAME' '$SSM_ENV_TAG_INVOICE_SERVICE_NAME' '$SSM_ENV_TAG_PAYMENT_SERVICE_NAME' '$SSM_ENV_TAG_INTEGRATION_API_NAME' --output json"
+                sprintf("aws ssm get-parameters --names %s --output json", join(' ', array_map(function ($name) {
+                    return "'$name'";
+                }, $ssmTagNames)))
             ]))->execMulti()->getOutputStrAll();
             foreach (json_decode($imageTagValues, true)['Parameters'] as $paramObj) {
                 switch ($paramObj['Name']) {
                     case $SSM_ENV_TAG_API_NAME:
                         $TAG_API_NAME = $paramObj['Value'];
+                        break;
+                    case $SSM_ENV_TAG_API_LEGACY_NAME:
+                        $TAG_API_LEGACY_NAME = $paramObj['Value'];
+                        break;
+                    case $SSM_ENV_TAG_API_BOOKING_NAME:
+                        $TAG_API_BOOKING_NAME = $paramObj['Value'];
                         break;
                     case $SSM_ENV_TAG_INVOICE_SERVICE_NAME:
                         $TAG_INVOICE_SERVICE_NAME = $paramObj['Value'];
@@ -162,24 +180,38 @@ class AWSHelper
                         break;
                 }
             }
+            //   all image tags must exist, otherwise the Dockerrun.aws.json will point to an invalid image
+            $requiredTags = array_merge(
+                $isApiSplit
+                    ? [$SSM_ENV_TAG_API_LEGACY_NAME => $TAG_API_LEGACY_NAME, $SSM_ENV_TAG_API_BOOKING_NAME => $TAG_API_BOOKING_NAME]
+                    : [$SSM_ENV_TAG_API_NAME => $TAG_API_NAME],
+                [
+                    $SSM_ENV_TAG_INVOICE_SERVICE_NAME => $TAG_INVOICE_SERVICE_NAME,
+                    $SSM_ENV_TAG_PAYMENT_SERVICE_NAME => $TAG_PAYMENT_SERVICE_NAME,
+                    $SSM_ENV_TAG_INTEGRATION_API_NAME => $TAG_INTEGRATION_API_NAME,
+                ]
+            );
+            $missingTagNames = array_keys(array_filter($requiredTags, function ($tag) {
+                return !$tag;
+            }));
+            if ($missingTagNames) {
+                self::LineTag(TagEnum::ERROR)->print("missing image tag(s) on AWS SSM Parameter Store: %s", join(', ', $missingTagNames));
+                exitApp(ERROR_END);
+            }
             $TAG_REDIS_SERVICE_NAME = "redis-7-2-bookworm-official";
             //   handle Dockerrun.aws.json content
-            $DockerrunContent = str_replace(
-                [
-                    "_MAIL_CATCHER_PORT_",
-                    "ECR_REPO_IMAGE_URI_API", "ECR_REPO_IMAGE_URI_INVOICE_SERVICE",
-                    "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE", "ECR_REPO_IMAGE_URI_INTEGRATION_API",
-                    "ECR_REPO_IMAGE_URI_REDIS_SERVICE",
-                ],
-                [
-                    getenv('EB_MAIL_CATCHER_PORT'),
-                    sprintf("%s:%s", getenv('ECR_REPO_API'), $TAG_API_NAME),
-                    sprintf("%s:%s", getenv('ECR_REPO_INVOICE_SERVICE'), $TAG_INVOICE_SERVICE_NAME),
-                    sprintf("%s:%s", getenv('ECR_REPO_PAYMENT_SERVICE'), $TAG_PAYMENT_SERVICE_NAME),
-                    sprintf("%s:%s", getenv('ECR_REPO_INTEGRATION_API'), $TAG_INTEGRATION_API_NAME),
-                    sprintf("%s:%s", getenv('ECR_REPO_OTHERS_SERVICE'), $TAG_REDIS_SERVICE_NAME),
-                ],
-                MyOps::getELBTemplate()["DockerrunTemplate"]
+            $imageUris = [
+                'api' => $isApiSplit
+                    ? sprintf("%s:%s", getenv('ECR_REPO_API_LEGACY'), $TAG_API_LEGACY_NAME)
+                    : sprintf("%s:%s", getenv('ECR_REPO_API'), $TAG_API_NAME),
+                'booking' => $isApiSplit ? sprintf("%s:%s", getenv('ECR_REPO_API_BOOKING'), $TAG_API_BOOKING_NAME) : null,
+                'invoice-service' => sprintf("%s:%s", getenv('ECR_REPO_INVOICE_SERVICE'), $TAG_INVOICE_SERVICE_NAME),
+                'payment-service' => sprintf("%s:%s", getenv('ECR_REPO_PAYMENT_SERVICE'), $TAG_PAYMENT_SERVICE_NAME),
+                'integration-api' => sprintf("%s:%s", getenv('ECR_REPO_INTEGRATION_API'), $TAG_INTEGRATION_API_NAME),
+                'redis-service' => sprintf("%s:%s", getenv('ECR_REPO_OTHERS_SERVICE'), $TAG_REDIS_SERVICE_NAME),
+            ];
+            $DockerrunContent = self::generateDockerrunContent(
+                MyOps::getELBTemplate()["DockerrunTemplate"], $imageUris, getenv('EB_MAIL_CATCHER_PORT')
             );
             //    write files
             file_put_contents(
@@ -201,20 +233,21 @@ class AWSHelper
             //        Dockerrun.aws.json
             $DockerrunContentToCheckAgain = file_get_contents(sprintf("%s/%s", self::ELB_TEMP_DIR, self::ELB_DOCKERRUN_FILE_NAME));
             self::LineNew()->printSubTitle("Dockerrun.aws.json")->print($DockerrunContentToCheckAgain);
-            if (!StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_API'))
-                || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_API_NAME)
-                || !StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INVOICE_SERVICE'))
-                || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_INVOICE_SERVICE_NAME)
-                || !StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_PAYMENT_SERVICE'))
-                || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_PAYMENT_SERVICE_NAME)
-                || !StrHelper::contains($DockerrunContentToCheckAgain, getenv('ECR_REPO_INTEGRATION_API'))
-                || !StrHelper::contains($DockerrunContentToCheckAgain, $TAG_INTEGRATION_API_NAME)
-            ) {
+            $isDockerrunValid = json_decode($DockerrunContentToCheckAgain) !== null; // valid JSON
+            foreach (array_filter($imageUris) as $imageUri) { // every image URI (ECR repo + tag) is inside
+                $isDockerrunValid = $isDockerrunValid && StrHelper::contains($DockerrunContentToCheckAgain, $imageUri);
+            }
+            if (!$isDockerrunValid) {
                 self::LineTag(TagEnum::ERROR)->print("Dockerrun.aws.json got an error");
                 exitApp(ERROR_END);
             }
             //    create ELB version and update
-            $EB_APP_VERSION_LABEL = sprintf("$ENV-$TAG_API_NAME-$TAG_INVOICE_SERVICE_NAME-$TAG_PAYMENT_SERVICE_NAME-$TAG_INTEGRATION_API_NAME-%sZ", (new DateTime())->format('Ymd-His'));
+            $TAGS_API_FOR_VERSION_LABEL = $isApiSplit ? "$TAG_API_LEGACY_NAME-$TAG_API_BOOKING_NAME" : $TAG_API_NAME;
+            $EB_APP_VERSION_LABEL = sprintf("$ENV-$TAGS_API_FOR_VERSION_LABEL-$TAG_INVOICE_SERVICE_NAME-$TAG_PAYMENT_SERVICE_NAME-$TAG_INTEGRATION_API_NAME-%sZ", (new DateTime())->format('Ymd-His'));
+            if (strlen($EB_APP_VERSION_LABEL) > 100) { // limit of Elastic Beanstalk
+                self::LineTag(TagEnum::ERROR)->print("ELB version label is longer than 100 characters (%s): %s", strlen($EB_APP_VERSION_LABEL), $EB_APP_VERSION_LABEL);
+                exitApp(ERROR_END);
+            }
             (new Process("zip ELB version", DirHelper::getWorkingDir(self::ELB_TEMP_DIR), [
                 //    create .zip file
                 sprintf("zip -r %s.zip Dockerrun.aws.json .ebextensions", $EB_APP_VERSION_LABEL),
@@ -269,6 +302,39 @@ class AWSHelper
             self::LineTag(TagEnum::ERROR)->print($ex->getMessage());
             exitApp(ERROR_END);
         }
+    }
+
+    /**
+     * fill image URIs into the Dockerrun.aws.json template
+     * the 'booking' container (and the link to it) is added only when $imageUris['booking'] is set (API_SPLIT = "true")
+     *
+     * @param string $template
+     * @param array $imageUris keys: api, booking (null = not split), invoice-service, payment-service, integration-api, redis-service
+     * @param string $mailCatcherPort
+     * @return string
+     */
+    public static function generateDockerrunContent(string $template, array $imageUris, string $mailCatcherPort): string
+    {
+        $isApiSplit = !empty($imageUris['booking']);
+        return str_replace(
+            [
+                "_MAIL_CATCHER_PORT_", "_BOOKING_LINK_", "_BOOKING_CONTAINER_", // the container has the next placeholder
+                "ECR_REPO_IMAGE_URI_API", "ECR_REPO_IMAGE_URI_BOOKING", "ECR_REPO_IMAGE_URI_INVOICE_SERVICE",
+                "ECR_REPO_IMAGE_URI_PAYMENT_SERVICE", "ECR_REPO_IMAGE_URI_INTEGRATION_API",
+                "ECR_REPO_IMAGE_URI_REDIS_SERVICE",
+            ],
+            [
+                $mailCatcherPort,
+                $isApiSplit ? ",\n        \"booking\"" : "",
+                $isApiSplit
+                    ? ",\n    {\n      \"name\": \"booking\",\n      \"image\": \"ECR_REPO_IMAGE_URI_BOOKING\",\n      \"memoryReservation\": 256,\n      \"essential\": false\n    }"
+                    : "",
+                $imageUris['api'], $imageUris['booking'] ?? '', $imageUris['invoice-service'],
+                $imageUris['payment-service'], $imageUris['integration-api'],
+                $imageUris['redis-service'],
+            ],
+            $template
+        );
     }
 
     public static function ElbSetupCloudwatchAgent()

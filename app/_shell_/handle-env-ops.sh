@@ -19,6 +19,9 @@ export COMPOSER_INSTALL_PRODUCTION="composer install --no-dev --optimize-autoloa
 export COMPOSER_INSTALL_PRODUCTION_TO_BUILD_CACHES="composer install --no-dev --no-autoloader --no-scripts --no-plugins"
 
 # === handle branches vars ===
+#    API_SPLIT: "true" = deploy 'api' (legacy) and 'booking' as two images/containers, "false" = one combined 'api' image
+#               default is "false", set "true" inside an environment block below when that environment is ready
+export API_SPLIT="false"
 if [ "${BRANCH}" = "develop" ]; then
   export ENV=dev
   export API_DEPLOY_BRANCH=develop-multi-container
@@ -79,6 +82,9 @@ export ECR_REPO_EMAIL_SERVICE_BASE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaw
 export ECR_REPO_OTHERS_SERVICE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-others-service-repository"
 #        normal repositories
 export ECR_REPO_API="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-api-repository"
+#            used when API_SPLIT="true"
+export ECR_REPO_API_LEGACY="${ECR_REPO_API}"
+export ECR_REPO_API_BOOKING="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-booking-repository"
 export ECR_REPO_PAYMENT_SERVICE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-payment-service-repository"
 export ECR_REPO_INVOICE_SERVICE="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-invoice-service-repository"
 export ECR_REPO_INTEGRATION_API="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/engageplus-${ENV}-integration-api-repository"

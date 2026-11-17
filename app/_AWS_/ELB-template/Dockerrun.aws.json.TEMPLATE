@@ -16,9 +16,9 @@
       "links": [
         "payment-service",
         "invoice-service",
-        "integration-api"
+        "integration-api"_BOOKING_LINK_
       ]
-    },
+    }_BOOKING_CONTAINER_,
     {
       "name": "invoice-service",
       "image": "ECR_REPO_IMAGE_URI_INVOICE_SERVICE",
