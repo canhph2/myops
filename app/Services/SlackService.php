@@ -59,7 +59,15 @@ class SlackService
             $message = trim(sprintf("%s starts to build the project %s", getenv('DEVICE'),
                 GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName()));
         } else if (self::input('type') === ProcessEnum::FINISH) {
-            $message = trim(sprintf("%s just finished building and deploying the project %s %s", getenv('DEVICE'),
+            // build finished but the deploy was skipped on purpose (DEPLOY_SKIPPED=true, set by the deploy scripts)
+            $isDeploySkipped = getenv('DEPLOY_SKIPPED') === 'true' && !(int)self::input('exit-code');
+
+            if ($isDeploySkipped) {
+                $resultEmoji = SlackEnum::WARNING_EMOJI;
+            }
+
+            $message = trim(sprintf("%s just finished building %sthe project %s %s", getenv('DEVICE'),
+                $isDeploySkipped ? "(deploy skipped) " : "and deploying ",
                 GitHubHelper::getRepositoryInfoByName(getenv('REPOSITORY'))->getFamilyName(), $buildTime));
         } else if (self::input('message')) {
             $message = trim(sprintf("%s %s", self::input('message'), $buildTime));
