@@ -55,6 +55,7 @@ if [ "${BRANCH}" = "staging" ]; then
   export EMAIL_SERVICE_CONTAINER_PORT=80
 fi
 if [ "${BRANCH}" = "master" ]; then
+  export API_SPLIT="true" # deploy 'api' (legacy) and 'booking' as two images/containers
   export ENV=prd
   export API_DEPLOY_BRANCH=master-multi-container
   export EB_ENVIRONMENT_NAME="engageplus-prod-multi-container-2026"
